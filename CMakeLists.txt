@@ -64,7 +64,6 @@ install (FILES ${HEADER_FILES} DESTINATION include/cellists)
 # Install library
 install (TARGETS celllists DESTINATION lib)
 
-# Tests
-# enable_testing()
-# add_test (NAME checkops
-#           COMMAND checkops)
+# Unit Tests with Google testing framework
+enable_testing()
+add_subdirectory(celllists/tests)
