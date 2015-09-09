@@ -29,6 +29,7 @@ set (CELLLISTS_PATCH 0)
 
 set (CELLLISTS_VERSION ${CELLLISTS_MAJOR}.${CELLLISTS_MINOR}.${CELLLISTS_PATCH})
 set (CELLLISTS_SOVERSION ${CELLLISTS_MAJOR}.${CELLLISTS_MINOR})
+set (PROJECT_BRIEF "A 3D domain decomposition library")
 
 # Configure a header file to pass some of the CMake settings
 # to the source code.
@@ -67,3 +68,13 @@ install (TARGETS celllists DESTINATION lib)
 # Unit Tests with Google testing framework
 enable_testing()
 add_subdirectory(celllists/tests)
+
+# Documentation with doxygen
+find_package(Doxygen)
+if(DOXYGEN_FOUND)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/doxygen.conf.in ${CMAKE_CURRENT_BINARY_DIR}/doxygen.conf @ONLY)
+    add_custom_target(doc ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/doxygen.conf
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Generating API documentation with Doxygen" VERBATIM
+)
+endif(DOXYGEN_FOUND)

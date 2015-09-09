@@ -4,5 +4,5 @@ echo "Cleaning code in ${PWD} and subdirectories."
 IFS=$'\n'
 # send all relevant files to the code cleaner
 find | \
-    egrep "(\.cpp$)|(\.h$)|(\.in$)|(\.sh$)|(\.py$)|(\.txt$)|(.gitignore$)" | \
+    egrep "(\.cpp$)|(\.h$)|(\.in$)|(\.sh$)|(\.py$)|(\.txt$)|(\.conf$)|(.gitignore$)" | \
     xargs ./tools/codecleaner.py
