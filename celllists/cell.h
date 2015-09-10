@@ -209,11 +209,14 @@ class BaseCell {
  */
 class GeneralCell : public BaseCell {
     private:
-        double rvecs[9], gvecs[9];
-        double rlengths[3], glengths[3];
-        double rspacings[3], gspacings[3];
-        double volume;
-        const int nvec;
+        double rvecs[9];       //!< real-space vectors,       one per row, row-major
+        double gvecs[9];       //!< reciprocal-space vectors, one per row, row-major
+        double rlengths[3];    //!< real-space vector lengths
+        double glengths[3];    //!< reciprocal-space vector lengths
+        double rspacings[3];   //!< spacing between real-space crystal planes
+        double gspacings[3];   //!< spacing between reciprocal-space crystal planes
+        double volume;         //!< volume (or area or length) of the cell
+        const int nvec;        //!< number of defined cell vectors
     public:
         /** @brief
                 Construct a Cell object.
