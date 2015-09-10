@@ -68,7 +68,7 @@ GeneralCell::GeneralCell(const double* _rvecs, int _nvec): nvec(_nvec) {
     // If the volume is zero and nvec > 0, raise an error. In this case, the
     // reciprocal cell vectors can not be computed.
     if ((volume == 0.0) && (nvec > 0)) {
-        throw std::domain_error("The cell vectors are degenerate");
+        throw singular_cell_vectors("The cell vectors are degenerate");
     }
 
     // complete the list of rvecs in case nvec < 3
@@ -94,7 +94,7 @@ GeneralCell::GeneralCell(const double* _rvecs, int _nvec): nvec(_nvec) {
             int ismall = 0;
             if (fabs(rvecs[1]) < fabs(rvecs[0])) {
                 ismall = 1;
-                if (fabs(rvecs[2]) < fabs(rvecs[1])) {
+                if (fabs(rvecs[2]) <= fabs(rvecs[1])) {
                     ismall = 2;
                 }
             } else if (fabs(rvecs[2]) < fabs(rvecs[0])) {
@@ -105,10 +105,10 @@ GeneralCell::GeneralCell(const double* _rvecs, int _nvec): nvec(_nvec) {
             rvecs[7] = 0.0;
             rvecs[8] = 0.0;
             rvecs[ismall+6] = 1.0;
-            // 3) compute the cross product of vector 1 and 3
-            rvecs[3] = rvecs[1]*rvecs[8] - rvecs[2]*rvecs[7];
-            rvecs[4] = rvecs[2]*rvecs[6] - rvecs[0]*rvecs[8];
-            rvecs[5] = rvecs[0]*rvecs[7] - rvecs[1]*rvecs[6];
+            // 3) compute the cross product of vector 3 and 1
+            rvecs[3] = rvecs[2]*rvecs[7] - rvecs[1]*rvecs[8];
+            rvecs[4] = rvecs[0]*rvecs[8] - rvecs[2]*rvecs[6];
+            rvecs[5] = rvecs[1]*rvecs[6] - rvecs[0]*rvecs[7];
             // 4) normalize
             double norm = sqrt(rvecs[3]*rvecs[3] + rvecs[4]*rvecs[4] + rvecs[5]*rvecs[5]);
             rvecs[3] /= norm;
@@ -167,7 +167,7 @@ GeneralCell::GeneralCell(const double* _rvecs, int _nvec): nvec(_nvec) {
 
 
 void GeneralCell::wrap(double* delta) const {
-    // Wrap the relative vector back into the cell in the range [-0.5, 0.5[.
+    // Wrap the relative vector back into the cell in the range ]-0.5, 0.5].
     double x;
     if (nvec == 0) return;
     // Compute the first fractional coordinates, subtract one half and ceil. The round
@@ -240,35 +240,58 @@ void GeneralCell::add_rvec(double* delta, const long* coeffs) const {
 }
 
 
-double GeneralCell::get_rspacing(int i) const {
-    if ((i < 0) || (i > 3)) {
-        throw std::domain_error("Index must be 0, 1 or 2.");
+double GeneralCell::get_rvec(int ivec, int icomp) const {
+    if ((ivec < 0) || (ivec > 3)) {
+        throw std::domain_error("ivec must be 0, 1 or 2.");
     }
-    return rspacings[i];
+    if ((icomp < 0) || (icomp > 3)) {
+        throw std::domain_error("icomp must be 0, 1 or 2.");
+    }
+    return rvecs[3*ivec + icomp];
 }
 
 
-double GeneralCell::get_gspacing(int i) const {
-    if ((i < 0) || (i > 3)) {
-        throw std::domain_error("Index must be 0, 1 or 2.");
+double GeneralCell::get_gvec(int ivec, int icomp) const {
+    if ((ivec < 0) || (ivec > 3)) {
+        throw std::domain_error("ivec must be 0, 1 or 2.");
     }
-    return gspacings[i];
+    if ((icomp < 0) || (icomp > 3)) {
+        throw std::domain_error("icomp must be 0, 1 or 2.");
+    }
+    return gvecs[3*ivec + icomp];
 }
 
-double GeneralCell::get_rlength(int i) const {
-    if ((i < 0) || (i > 3)) {
-        throw std::domain_error("Index must be 0, 1 or 2.");
+
+double GeneralCell::get_rlength(int ivec) const {
+    if ((ivec < 0) || (ivec > 3)) {
+        throw std::domain_error("ivec must be 0, 1 or 2.");
     }
-    return rlengths[i];
+    return rlengths[ivec];
 }
 
-double GeneralCell::get_glength(int i) const {
-    if ((i < 0) || (i > 3)) {
-        throw std::domain_error("Index must be 0, 1 or 2.");
+
+double GeneralCell::get_glength(int ivec) const {
+    if ((ivec < 0) || (ivec > 3)) {
+        throw std::domain_error("ivec must be 0, 1 or 2.");
     }
-    return glengths[i];
+    return glengths[ivec];
 }
 
+
+double GeneralCell::get_rspacing(int ivec) const {
+    if ((ivec < 0) || (ivec > 3)) {
+        throw std::domain_error("ivec must be 0, 1 or 2.");
+    }
+    return rspacings[ivec];
+}
+
+
+double GeneralCell::get_gspacing(int ivec) const {
+    if ((ivec < 0) || (ivec > 3)) {
+        throw std::domain_error("ivec must be 0, 1 or 2.");
+    }
+    return gspacings[ivec];
+}
 
 void GeneralCell::set_ranges_rcut(const double* center, double rcut, long* ranges_begin,
     long* ranges_end) const {

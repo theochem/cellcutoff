@@ -23,6 +23,17 @@
 #ifndef CELLLIST_CELL_H_
 #define CELLLIST_CELL_H_
 
+#include <exception>
+#include <string>
+
+/** @brief
+        An exception for singular cell vectors
+ */
+class singular_cell_vectors : public std::domain_error {
+    public:
+        explicit singular_cell_vectors (const std::string& what_arg) : std::domain_error(what_arg) {};
+};
+
 
 /** @brief
         Abstract base class for cells
@@ -42,7 +53,7 @@
 class BaseCell {
     public:
         /** @brief
-                Wrap a (relative) vector back into the cell [-0.5, 0.5[.
+                Wrap a (relative) vector back into the cell ]-0.5, 0.5].
 
             @param delta
                 A pointer to 3 doubles with the (relative) vector. It will be
@@ -127,16 +138,20 @@ class BaseCell {
 
         //! Returns the number of periodic dimensions.
         virtual int get_nvec() const = 0;
+        //! Returns a component of the real-space vector.
+        virtual double get_rvec(int ivec, int icomp) const = 0;
+        //! Returns a component of the reciprocal-space vector.
+        virtual double get_gvec(int ivec, int icomp) const = 0;
         //! Returns the volume (or area or length) of the cell.
         virtual double get_volume() const = 0;
-        //! Returns the spacing between the i-th real-space crystal plane
-        virtual double get_rspacing(int i) const = 0;
-        //! Returns the spacing between the i-th reciprocal crystal plane
-        virtual double get_gspacing(int i) const = 0;
         //! Returns the length of the i-th real-space cell vector
-        virtual double get_rlength(int i) const = 0;
+        virtual double get_rlength(int ivec) const = 0;
         //! Returns the length of the i-th reciprocal cell vector
-        virtual double get_glength(int i) const = 0;
+        virtual double get_glength(int ivec) const = 0;
+        //! Returns the spacing between the i-th real-space crystal plane
+        virtual double get_rspacing(int ivec) const = 0;
+        //! Returns the spacing between the i-th reciprocal crystal plane
+        virtual double get_gspacing(int ivec) const = 0;
 
         /** @brief
                 Get the ranges of cells within a cutoff radius.
@@ -209,14 +224,14 @@ class BaseCell {
  */
 class GeneralCell : public BaseCell {
     private:
+        const int nvec;        //!< number of defined cell vectors
         double rvecs[9];       //!< real-space vectors,       one per row, row-major
         double gvecs[9];       //!< reciprocal-space vectors, one per row, row-major
+        double volume;         //!< volume (or area or length) of the cell
         double rlengths[3];    //!< real-space vector lengths
         double glengths[3];    //!< reciprocal-space vector lengths
         double rspacings[3];   //!< spacing between real-space crystal planes
         double gspacings[3];   //!< spacing between reciprocal-space crystal planes
-        double volume;         //!< volume (or area or length) of the cell
-        const int nvec;        //!< number of defined cell vectors
     public:
         /** @brief
                 Construct a Cell object.
@@ -239,11 +254,13 @@ class GeneralCell : public BaseCell {
         void add_rvec(double* delta, const long* coeffs) const;
 
         int get_nvec() const {return nvec;};
+        double get_rvec(int ivec, int icomp) const;
+        double get_gvec(int ivec, int icomp) const;
         double get_volume() const {return volume;};
-        double get_rspacing(int i) const;
-        double get_gspacing(int i) const;
-        double get_rlength(int i) const;
-        double get_glength(int i) const;
+        double get_rlength(int ivec) const;
+        double get_glength(int ivec) const;
+        double get_rspacing(int ivec) const;
+        double get_gspacing(int ivec) const;
 
         void set_ranges_rcut(const double* center, double rcut, long* ranges_begin,
             long* ranges_end) const;

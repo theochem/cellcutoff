@@ -21,21 +21,22 @@
 
 #include <stdexcept>
 #include <gtest/gtest.h>
+#include <cstdlib>
 #include "celllists/cell.h"
 
 TEST(general_cell_test, constructor_singular1) {
     double rvecs[3] = {0, 0, 0};
-    ASSERT_THROW(GeneralCell cell(rvecs, 1), std::domain_error);
+    ASSERT_THROW(GeneralCell cell(rvecs, 1), singular_cell_vectors);
 }
 
 TEST(general_cell_test, constructor_singular2) {
     double rvecs[6] = {1, 0, 0, 1, 0, 0};
-    ASSERT_THROW(GeneralCell cell(rvecs, 2), std::domain_error);
+    ASSERT_THROW(GeneralCell cell(rvecs, 2), singular_cell_vectors);
 }
 
 TEST(general_cell_test, constructor_singular3) {
     double rvecs[9] = {1, 0, 0, 0, 1, 0, 0.5, 0.5, 0};
-    ASSERT_THROW(GeneralCell cell(rvecs, 3), std::domain_error);
+    ASSERT_THROW(GeneralCell cell(rvecs, 3), singular_cell_vectors);
 }
 
 TEST(general_cell_test, constructor_nvec_negative) {
@@ -48,8 +49,76 @@ TEST(general_cell_test, constructor_nvec_too_large) {
     ASSERT_THROW(GeneralCell cell(rvecs, 4), std::domain_error);
 }
 
-TEST(general_cell_test, volume) {
+TEST(general_cell_test, constructor_simple) {
+    double rvecs[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
+    for(int nvec=0; nvec <=3; nvec++) {
+        GeneralCell cell(rvecs, nvec);
+        SCOPED_TRACE(nvec);
+        ASSERT_EQ(cell.get_nvec(), nvec);
+        ASSERT_EQ(cell.get_rvec(0, 0), 1.0);
+        ASSERT_EQ(cell.get_rvec(0, 1), 0.0);
+        ASSERT_EQ(cell.get_rvec(0, 1), 0.0);
+        ASSERT_EQ(cell.get_rvec(1, 0), 0.0);
+        ASSERT_EQ(cell.get_rvec(1, 1), 1.0);
+        ASSERT_EQ(cell.get_rvec(1, 2), 0.0);
+        ASSERT_EQ(cell.get_rvec(2, 0), 0.0);
+        ASSERT_EQ(cell.get_rvec(2, 1), 0.0);
+        ASSERT_EQ(cell.get_rvec(2, 2), 1.0);
+        ASSERT_EQ(cell.get_gvec(0, 0), 1.0);
+        ASSERT_EQ(cell.get_gvec(0, 1), 0.0);
+        ASSERT_EQ(cell.get_gvec(0, 2), 0.0);
+        ASSERT_EQ(cell.get_gvec(1, 0), 0.0);
+        ASSERT_EQ(cell.get_gvec(1, 1), 1.0);
+        ASSERT_EQ(cell.get_gvec(1, 2), 0.0);
+        ASSERT_EQ(cell.get_gvec(2, 0), 0.0);
+        ASSERT_EQ(cell.get_gvec(2, 1), 0.0);
+        ASSERT_EQ(cell.get_gvec(2, 2), 1.0);
+        ASSERT_EQ(cell.get_volume(), nvec > 0);
+        ASSERT_EQ(cell.get_rspacing(0), 1.0);
+        ASSERT_EQ(cell.get_rspacing(1), 1.0);
+        ASSERT_EQ(cell.get_rspacing(2), 1.0);
+        ASSERT_EQ(cell.get_gspacing(0), 1.0);
+        ASSERT_EQ(cell.get_gspacing(1), 1.0);
+        ASSERT_EQ(cell.get_gspacing(2), 1.0);
+    }
+}
+
+GeneralCell create_random_cell(long nvec, unsigned int seed) {
+    srand(seed);
+    double rvecs[nvec*3];
+    while (true) {
+        try {
+            for (long ivec=0; ivec<nvec*3; ivec++) {
+                rvecs[ivec] = rand()/(RAND_MAX + 1.0);
+            }
+            return GeneralCell(rvecs, nvec);
+        }
+        catch (singular_cell_vectors) {}
+    }
+}
+
+TEST(general_cell_test, wrap_edges) {
     double rvecs[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
     GeneralCell cell(rvecs, 3);
-    EXPECT_EQ(cell.get_volume(), 1.0);
+    double delta[3] = {-0.5, -0.5, -0.5};
+    cell.wrap(delta);
+    ASSERT_EQ(delta[0], 0.5);
+    ASSERT_EQ(delta[1], 0.5);
+    ASSERT_EQ(delta[2], 0.5);
+}
+
+TEST(general_cell_test, wrap_random) {
+    for (int irep=0; irep < 100; irep++) {
+        GeneralCell cell = create_random_cell(3, irep);
+        double delta[3] = {0.5*irep, 0.9*irep, 1.3*irep};
+        double frac[3];
+        cell.wrap(delta);
+        cell.to_frac(delta, frac);
+        ASSERT_LT(frac[0], 0.5);
+        ASSERT_LT(frac[1], 0.5);
+        ASSERT_LT(frac[2], 0.5);
+        ASSERT_GE(frac[0], -0.5);
+        ASSERT_GE(frac[1], -0.5);
+        ASSERT_GE(frac[2], -0.5);
+    }
 }
