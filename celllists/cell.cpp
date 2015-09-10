@@ -241,10 +241,10 @@ void Cell::add_rvec(double* delta, const long* coeffs) const {
 
 
 double Cell::get_rvec(int ivec, int icomp) const {
-    if ((ivec < 0) || (ivec > 3)) {
+    if ((ivec < 0) || (ivec >= 3)) {
         throw std::domain_error("ivec must be 0, 1 or 2.");
     }
-    if ((icomp < 0) || (icomp > 3)) {
+    if ((icomp < 0) || (icomp >= 3)) {
         throw std::domain_error("icomp must be 0, 1 or 2.");
     }
     return rvecs[3*ivec + icomp];
@@ -252,10 +252,10 @@ double Cell::get_rvec(int ivec, int icomp) const {
 
 
 double Cell::get_gvec(int ivec, int icomp) const {
-    if ((ivec < 0) || (ivec > 3)) {
+    if ((ivec < 0) || (ivec >= 3)) {
         throw std::domain_error("ivec must be 0, 1 or 2.");
     }
-    if ((icomp < 0) || (icomp > 3)) {
+    if ((icomp < 0) || (icomp >= 3)) {
         throw std::domain_error("icomp must be 0, 1 or 2.");
     }
     return gvecs[3*ivec + icomp];
@@ -263,7 +263,7 @@ double Cell::get_gvec(int ivec, int icomp) const {
 
 
 double Cell::get_rlength(int ivec) const {
-    if ((ivec < 0) || (ivec > 3)) {
+    if ((ivec < 0) || (ivec >= 3)) {
         throw std::domain_error("ivec must be 0, 1 or 2.");
     }
     return rlengths[ivec];
@@ -271,7 +271,7 @@ double Cell::get_rlength(int ivec) const {
 
 
 double Cell::get_glength(int ivec) const {
-    if ((ivec < 0) || (ivec > 3)) {
+    if ((ivec < 0) || (ivec >= 3)) {
         throw std::domain_error("ivec must be 0, 1 or 2.");
     }
     return glengths[ivec];
@@ -279,7 +279,7 @@ double Cell::get_glength(int ivec) const {
 
 
 double Cell::get_rspacing(int ivec) const {
-    if ((ivec < 0) || (ivec > 3)) {
+    if ((ivec < 0) || (ivec >= 3)) {
         throw std::domain_error("ivec must be 0, 1 or 2.");
     }
     return rspacings[ivec];
@@ -287,7 +287,7 @@ double Cell::get_rspacing(int ivec) const {
 
 
 double Cell::get_gspacing(int ivec) const {
-    if ((ivec < 0) || (ivec > 3)) {
+    if ((ivec < 0) || (ivec >= 3)) {
         throw std::domain_error("ivec must be 0, 1 or 2.");
     }
     return gspacings[ivec];
@@ -296,17 +296,22 @@ double Cell::get_gspacing(int ivec) const {
 
 bool Cell::is_cubic() const {
     if (!is_cuboid()) return false;
+    if (nvec < 2) return true;
     if (rvecs[0] != rvecs[4]) return false;
+    if (nvec < 3) return true;
     if (rvecs[0] != rvecs[8]) return false;
     return true;
 }
 
 
 bool Cell::is_cuboid() const {
+    if (nvec < 1) return true;
     if (rvecs[1] != 0.0) return false;
     if (rvecs[2] != 0.0) return false;
+    if (nvec < 2) return true;
     if (rvecs[3] != 0.0) return false;
     if (rvecs[5] != 0.0) return false;
+    if (nvec < 3) return true;
     if (rvecs[6] != 0.0) return false;
     if (rvecs[7] != 0.0) return false;
     return true;

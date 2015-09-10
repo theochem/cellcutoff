@@ -44,11 +44,12 @@ class singular_cell_vectors : public std::domain_error {
     supported.
 
     Even though lower-dimensional periodic boundary conditions are supported, this class
-    is specific for 3D systems, In case of 1D or 2D PBC, the cell vectors are internally
+    is specific for 3D systems. In case of 1D or 2D PBC, the cell vectors are internally
     extended with orthonormal basis vectors to guarantee an invertible transformation
     between Cartesian and fractional coordinates. In that case, the fractional coordinates
     are actually also Cartesian coordinates in directions orthogonal to the available cell
-    vectors.
+    vectors. The extra basis vectors are always such that the complete set of vectors is
+    right-handed
  */
 class Cell {
     private:
@@ -174,10 +175,20 @@ class Cell {
         //! Returns the spacing between the i-th reciprocal crystal plane
         double get_gspacing(int ivec) const;
 
-        //! Test if cell is cubic and aligned with Cartesian axes. No small errors allowed.
+        /** @brief
+                Test if cell is cubic
+
+            The cell must also be aligned with Cartesian axes, i.e a to x, b to y and c to
+            z. No small errors allowed.
+          */
         bool is_cubic() const;
 
-        //! Test if cell is cuboid (orthorombic) and aligned with Cartesian axes. No small errors allowed.
+        /** @brief
+                Test if cell is cuboid (orthorombic)
+
+            The cell must also be aligned with Cartesian axes, i.e a to x, b to y and c to
+            z. No small errors allowed.
+          */
         bool is_cuboid() const;
 
         /** @brief
