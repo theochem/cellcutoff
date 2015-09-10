@@ -247,7 +247,7 @@ class Cell {
 
 /**
     @brief
-        A standardized modulo operation that works across all compilers.
+        A standardized modulo operation geared toward boundary conditions.
 
     @param i
         The numerator of the integer division.
