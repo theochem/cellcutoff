@@ -937,3 +937,35 @@ TEST(CellTest, set_ranges_rcut_random3) {
         }
     }
 }
+
+// select_inside
+// -------------
+
+// TODO
+
+// smart_wrap
+// ----------
+
+TEST(SmartWrap, examples) {
+    EXPECT_EQ(smart_wrap(-15, 5, true), 0);
+    EXPECT_EQ(smart_wrap( -5, 5, true), 0);
+    EXPECT_EQ(smart_wrap( -3, 5, true), 2);
+    EXPECT_EQ(smart_wrap( -1, 5, true), 4);
+    EXPECT_EQ(smart_wrap(  0, 5, true), 0);
+    EXPECT_EQ(smart_wrap(  3, 5, true), 3);
+    EXPECT_EQ(smart_wrap(  5, 5, true), 0);
+    EXPECT_EQ(smart_wrap(  6, 5, true), 1);
+    EXPECT_EQ(smart_wrap( 10, 5, true), 0);
+    EXPECT_EQ(smart_wrap( 12, 5, true), 2);
+    EXPECT_EQ(smart_wrap(-15, 5, false), -1);
+    EXPECT_EQ(smart_wrap( -5, 5, false), -1);
+    EXPECT_EQ(smart_wrap( -3, 5, false), -1);
+    EXPECT_EQ(smart_wrap( -1, 5, false), -1);
+    EXPECT_EQ(smart_wrap(  0, 5, false),  0);
+    EXPECT_EQ(smart_wrap(  3, 5, false),  3);
+    EXPECT_EQ(smart_wrap(  4, 5, false),  4);
+    EXPECT_EQ(smart_wrap(  5, 5, false), -1);
+    EXPECT_EQ(smart_wrap(  6, 5, false), -1);
+    EXPECT_EQ(smart_wrap( 10, 5, false), -1);
+    EXPECT_EQ(smart_wrap( 12, 5, false), -1);
+}

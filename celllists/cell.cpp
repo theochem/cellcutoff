@@ -403,14 +403,15 @@ int Cell::select_inside(const double* origin, const double* center, double rcut,
 
 
 int smart_wrap(int i, int shape, bool pbc) {
-    if ((i < 0) || (i >= shape)) {
-        if (pbc) {
-            int j = i%shape;
-            if (j < 0) j += shape; // just to make sure that this works on all compilers.
-            return j;
-        } else {
-            return -1;
-        }
+    if (pbc) {
+        i %= shape;
+        if (i < 0) i += shape;
+        return i;
+    } else if (i < 0) {
+        return -1;
+    } else if (i >= shape) {
+        return -1;
+    } else {
+        return i;
     }
-    return i;
 }
