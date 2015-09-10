@@ -235,8 +235,8 @@ class Cell {
         Whether periodic boundary conditions apply.
 
     @return
-        `i % shape` (guaranteed to be positive) if pbc is non-zero. If pbc is zero, `-1`
-        is returned.
+        `i % shape` (guaranteed to be positive) if `pbc` is non-zero. If `pbc` is zero,
+        `i` is returned if it lies in `[0,shape[`, `-1` is returned otherwise.
  */
 long smart_wrap(long i, long shape, long pbc);
 
