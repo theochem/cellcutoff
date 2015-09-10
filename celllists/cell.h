@@ -146,7 +146,7 @@ class Cell {
         void dot_rvecs(const double* frac, double* dots) const;
 
         /** @brief
-                Add a linear combination of cell vectors to delta.
+                Add an integer linear combination of cell vectors to delta.
 
             @param delta
                 A pointer to 3 doubles for the real-space vector to which the
