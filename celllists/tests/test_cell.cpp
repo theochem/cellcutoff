@@ -31,18 +31,18 @@
 //! Fills an array of doubles with random numbers in range ]-0.5*scale, 0.5*scale]
 void fill_random_double(double* array, size_t size, unsigned int seed, double scale=1) {
     srand(seed);
-    for (long i=0; i<size; i++)
+    for (int i=0; i<size; i++)
         array[i] = (rand() + 1.0)/(RAND_MAX + 1.0) - 0.5;
 }
 
-//! Fills an array of long with random numbers in range [-range, range]
-void fill_random_long(long* array, size_t size, unsigned int seed, long range) {
+//! Fills an array of int with random numbers in range [-range, range]
+void fill_random_int(int* array, size_t size, unsigned int seed, int range) {
     srand(seed);
-    for (long i=0; i<size; i++)
+    for (int i=0; i<size; i++)
         array[i] = (rand() % (2*range+1))-range;
 }
 
-Cell create_random_cell(long nvec, unsigned int seed, double scale=1) {
+Cell create_random_cell(int nvec, unsigned int seed, double scale=1) {
     double rvecs[nvec*3];
     while (true) {
         try {
@@ -254,8 +254,8 @@ TEST(CellTest, wrap_random3) {
 TEST(CellTest, wrap_consistency1) {
     for (int irep=0; irep < 100; irep++) {
         Cell cell = create_random_cell(1, irep);
-        long coeffs[1];
-        fill_random_long(coeffs, 1, irep, 5);
+        int coeffs[1];
+        fill_random_int(coeffs, 1, irep, 5);
         double frac[3];
         double cart1[3];
         double cart2[3];
@@ -273,8 +273,8 @@ TEST(CellTest, wrap_consistency1) {
 TEST(CellTest, wrap_consistency2) {
     for (int irep=0; irep < 100; irep++) {
         Cell cell = create_random_cell(2, irep);
-        long coeffs[2];
-        fill_random_long(coeffs, 2, irep, 5);
+        int coeffs[2];
+        fill_random_int(coeffs, 2, irep, 5);
         double frac[3];
         double cart1[3];
         double cart2[3];
@@ -292,8 +292,8 @@ TEST(CellTest, wrap_consistency2) {
 TEST(CellTest, wrap_consistency3) {
     for (int irep=0; irep < 100; irep++) {
         Cell cell = create_random_cell(3, irep);
-        long coeffs[3];
-        fill_random_long(coeffs, 3, irep, 5);
+        int coeffs[3];
+        fill_random_int(coeffs, 3, irep, 5);
         double frac[3];
         double cart1[3];
         double cart2[3];
@@ -519,8 +519,8 @@ TEST(CellTest, g_lincomb_dot_rvecs_consistency3) {
 TEST(CellTest, add_rvec_consistency1) {
     for (int irep=0; irep < 100; irep++) {
         Cell cell = create_random_cell(1, irep);
-        long coeffs[1];
-        fill_random_long(coeffs, 1, irep, 5);
+        int coeffs[1];
+        fill_random_int(coeffs, 1, irep, 5);
         double cart1[3];
         double cart2[3];
         double frac1[3];
@@ -541,8 +541,8 @@ TEST(CellTest, add_rvec_consistency1) {
 TEST(CellTest, add_rvec_consistency2) {
     for (int irep=0; irep < 100; irep++) {
         Cell cell = create_random_cell(2, irep);
-        long coeffs[2];
-        fill_random_long(coeffs, 2, irep, 5);
+        int coeffs[2];
+        fill_random_int(coeffs, 2, irep, 5);
         double cart1[3];
         double cart2[3];
         double frac1[3];
@@ -563,8 +563,8 @@ TEST(CellTest, add_rvec_consistency2) {
 TEST(CellTest, add_rvec_consistency3) {
     for (int irep=0; irep < 100; irep++) {
         Cell cell = create_random_cell(3, irep);
-        long coeffs[3];
-        fill_random_long(coeffs, 3, irep, 5);
+        int coeffs[3];
+        fill_random_int(coeffs, 3, irep, 5);
         double cart1[3];
         double cart2[3];
         double frac1[3];
@@ -589,7 +589,7 @@ TEST(CellTest, add_rvec_consistency3) {
 // get_nvec() is already tested above
 
 TEST(CellTest, get_rvec) {
-    for (long nvec=1; nvec<=3; nvec++) {
+    for (int nvec=1; nvec<=3; nvec++) {
         double rvecs[nvec*3];
         SCOPED_TRACE(nvec);
         Cell* cell = NULL;
@@ -610,7 +610,7 @@ TEST(CellTest, get_rvec) {
 }
 
 TEST(CellTest, get_domain) {
-    for (long nvec=1; nvec<=3; nvec++) {
+    for (int nvec=1; nvec<=3; nvec++) {
         double rvecs[nvec*3];
         SCOPED_TRACE(nvec);
         Cell* cell = NULL;
@@ -741,8 +741,8 @@ TEST_F(CellTest3, cubic_cuboid_example) {
 
 TEST_F(CellTest1, set_ranges_rcut_example) {
     double center[3] = {6.3, 0.2, -0.8};
-    long ranges_begin[1];
-    long ranges_end[1];
+    int ranges_begin[1];
+    int ranges_end[1];
     cell->set_ranges_rcut(center, 1.0, ranges_begin, ranges_end);
     EXPECT_EQ(ranges_begin[0], 2);
     EXPECT_EQ(ranges_end[0], 4);
@@ -756,8 +756,8 @@ TEST_F(CellTest1, set_ranges_rcut_example) {
 
 TEST_F(CellTest1, set_ranges_rcut_edge) {
     double center[3] = {2.0, 0.2, -0.8};
-    long ranges_begin[1];
-    long ranges_end[1];
+    int ranges_begin[1];
+    int ranges_end[1];
     cell->set_ranges_rcut(center, 1.0, ranges_begin, ranges_end);
     EXPECT_EQ(ranges_begin[0], 0);
     EXPECT_EQ(ranges_end[0], 2);
@@ -771,8 +771,8 @@ TEST_F(CellTest1, set_ranges_rcut_edge) {
 
 TEST_F(CellTest2, set_ranges_rcut_example) {
     double center[3] = {6.3, 0.2, -5.0};
-    long ranges_begin[2];
-    long ranges_end[2];
+    int ranges_begin[2];
+    int ranges_end[2];
     cell->set_ranges_rcut(center, 1.1, ranges_begin, ranges_end);
     EXPECT_EQ(ranges_begin[0], 2);
     EXPECT_EQ(ranges_begin[1], -2);
@@ -782,8 +782,8 @@ TEST_F(CellTest2, set_ranges_rcut_example) {
 
 TEST_F(CellTest2, set_ranges_rcut_edge) {
     double center[3] = {4.0, 0.2, -2.0};
-    long ranges_begin[2];
-    long ranges_end[2];
+    int ranges_begin[2];
+    int ranges_end[2];
     cell->set_ranges_rcut(center, 2.0, ranges_begin, ranges_end);
     EXPECT_EQ(ranges_begin[0], 1);
     EXPECT_EQ(ranges_begin[1], -1);
@@ -793,8 +793,8 @@ TEST_F(CellTest2, set_ranges_rcut_edge) {
 
 TEST_F(CellTest3, set_ranges_rcut_example) {
     double center[3] = {6.3, 2.2, -5.8};
-    long ranges_begin[3];
-    long ranges_end[3];
+    int ranges_begin[3];
+    int ranges_end[3];
     cell->set_ranges_rcut(center, 1.0, ranges_begin, ranges_end);
     EXPECT_EQ(ranges_begin[0], 2);
     EXPECT_EQ(ranges_begin[1], 1);
@@ -806,8 +806,8 @@ TEST_F(CellTest3, set_ranges_rcut_example) {
 
 TEST_F(CellTest3, set_ranges_rcut_edge) {
     double center[3] = {10.0, -2.0, -6.0};
-    long ranges_begin[3];
-    long ranges_end[3];
+    int ranges_begin[3];
+    int ranges_end[3];
     cell->set_ranges_rcut(center, 2.0, ranges_begin, ranges_end);
     EXPECT_EQ(ranges_begin[0], 4);
     EXPECT_EQ(ranges_begin[1], -4);
@@ -819,8 +819,8 @@ TEST_F(CellTest3, set_ranges_rcut_edge) {
 
 TEST_F(CellTest3, set_ranges_rcut_domain) {
     double center[3] = {6.3, 2.2, -5.8};
-    long ranges_begin[3];
-    long ranges_end[3];
+    int ranges_begin[3];
+    int ranges_end[3];
     EXPECT_THROW(cell->set_ranges_rcut(center, -1.0, ranges_begin, ranges_end), std::domain_error);
     EXPECT_THROW(cell->set_ranges_rcut(center, 0.0, ranges_begin, ranges_end), std::domain_error);
 }
@@ -829,8 +829,8 @@ TEST(CellTest, set_ranges_rcut_random1) {
     for (int icell=0; icell < 100; icell++) {
         Cell cell = create_random_cell(1, icell);
         double center[3];
-        long ranges_begin[1];
-        long ranges_end[1];
+        int ranges_begin[1];
+        int ranges_end[1];
         double rcut = 0.3*(icell+1);
         fill_random_double(center, 3, icell+2, 5.0);
         cell.set_ranges_rcut(center, rcut, ranges_begin, ranges_end);
@@ -861,8 +861,8 @@ TEST(CellTest, set_ranges_rcut_random2) {
     for (int icell=0; icell < 100; icell++) {
         Cell cell = create_random_cell(2, icell);
         double center[3];
-        long ranges_begin[2];
-        long ranges_end[2];
+        int ranges_begin[2];
+        int ranges_end[2];
         double rcut = 0.3*(icell+1);
         fill_random_double(center, 3, icell+3, 5.0);
         cell.set_ranges_rcut(center, rcut, ranges_begin, ranges_end);
@@ -895,8 +895,8 @@ TEST(CellTest, set_ranges_rcut_random3) {
     for (int icell=0; icell < 100; icell++) {
         Cell cell = create_random_cell(3, icell);
         double center[3];
-        long ranges_begin[3];
-        long ranges_end[3];
+        int ranges_begin[3];
+        int ranges_end[3];
         double rcut = 0.3*(icell+1);
         fill_random_double(center, 3, icell+5, 5.0);
         cell.set_ranges_rcut(center, rcut, ranges_begin, ranges_end);

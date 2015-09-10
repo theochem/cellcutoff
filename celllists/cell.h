@@ -156,7 +156,7 @@ class Cell {
                 A pointer to 3 doubles with the coefficients of the linear
                 combination.
          */
-        void add_rvec(double* delta, const long* coeffs) const;
+        void add_rvec(double* delta, const int* coeffs) const;
 
         //! Returns the number of periodic dimensions.
         int get_nvec() const {return nvec;};
@@ -213,8 +213,8 @@ class Cell {
             This function effectively defines a supercell that is guaranteed to
             enclose the cutoff sphere.
          */
-        void set_ranges_rcut(const double* center, double rcut, long* ranges_begin,
-            long* ranges_end) const;
+        void set_ranges_rcut(const double* center, double rcut, int* ranges_begin,
+            int* ranges_end) const;
 
         /** @brief
                 Selects a list of cells inside a cutoff sphere.
@@ -251,9 +251,9 @@ class Cell {
                 ranges_begin and ranges_end. The number of columns equals `nvec`.
                 The elements are stored in row-major order.
           */
-        long select_inside(const double* origin, const double* center, double rcut,
-            const long* ranges_begin, const long* ranges_end, const long* shape,
-            const long* pbc, long* indices) const;
+        int select_inside(const double* origin, const double* center, double rcut,
+            const int* ranges_begin, const int* ranges_end, const int* shape,
+            const bool* pbc, int* indices) const;
 };
 
 /**
@@ -270,9 +270,10 @@ class Cell {
         Whether periodic boundary conditions apply.
 
     @return
-        `i % shape` (guaranteed to be positive) if `pbc` is non-zero. If `pbc` is zero,
-        `i` is returned if it lies in `[0,shape[`, `-1` is returned otherwise.
+        `i % shape` (guaranteed to be positive) if `pbc` is true. If `pbc` is false,
+        `i` is returned if `i` lies in `[0,shape[`. If `pbc` is false and `i` falls out of
+        that range, `-1` is returned.
  */
-long smart_wrap(long i, long shape, long pbc);
+int smart_wrap(int i, int shape, bool pbc);
 
 #endif

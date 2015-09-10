@@ -14,7 +14,7 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with this program; if not, see <http://www.gnu.org/licenses/>
+// aint with this program; if not, see <http://www.gnu.org/licenses/>
 //
 //--
 
@@ -223,7 +223,7 @@ void Cell::dot_rvecs(const double* frac, double* dots) const {
 }
 
 
-void Cell::add_rvec(double* delta, const long* coeffs) const {
+void Cell::add_rvec(double* delta, const int* coeffs) const {
     // Simply adds an linear combination of real cell vectors to delta.
     if (nvec == 0) return;
     delta[0] += coeffs[0]*rvecs[0];
@@ -318,8 +318,8 @@ bool Cell::is_cuboid() const {
 }
 
 
-void Cell::set_ranges_rcut(const double* center, double rcut, long* ranges_begin,
-    long* ranges_end) const {
+void Cell::set_ranges_rcut(const double* center, double rcut, int* ranges_begin,
+    int* ranges_end) const {
     if (rcut <= 0) {
         throw std::domain_error("rcut must be strictly positive.");
     }
@@ -336,17 +336,17 @@ void Cell::set_ranges_rcut(const double* center, double rcut, long* ranges_begin
 }
 
 
-long Cell::select_inside(const double* origin, const double* center, double rcut,
-    const long* ranges_begin, const long* ranges_end, const long* shape, const long* pbc,
-    long* indices) const {
+int Cell::select_inside(const double* origin, const double* center, double rcut,
+    const int* ranges_begin, const int* ranges_end, const int* shape, const bool* pbc,
+    int* indices) const {
 
     if (nvec == 0)
         throw std::domain_error("The cell must be at least 1D periodic for select_inside.");
 
-    long my_ranges_begin[3];
-    long my_ranges_end[3];
-    long my_pbc[3];
-    long my_shape[3];
+    int my_ranges_begin[3];
+    int my_ranges_end[3];
+    bool my_pbc[3];
+    int my_shape[3];
 
     for (int i=nvec-1; i>=0; i--) {
         my_ranges_begin[i] = ranges_begin[i];
@@ -361,18 +361,18 @@ long Cell::select_inside(const double* origin, const double* center, double rcut
         my_pbc[i] = 0;
     }
 
-    long nselect = 0;
+    int nselect = 0;
 
-    for (long i0 = my_ranges_begin[0]; i0 < my_ranges_end[0]; i0++) {
-        long j0 = smart_wrap(i0, my_shape[0], my_pbc[0]);
+    for (int i0 = my_ranges_begin[0]; i0 < my_ranges_end[0]; i0++) {
+        int j0 = smart_wrap(i0, my_shape[0], my_pbc[0]);
         if (j0 == -1) continue;
 
-        for (long i1 = my_ranges_begin[1]; i1 < my_ranges_end[1]; i1++) {
-            long j1 = smart_wrap(i1, my_shape[1], my_pbc[1]);
+        for (int i1 = my_ranges_begin[1]; i1 < my_ranges_end[1]; i1++) {
+            int j1 = smart_wrap(i1, my_shape[1], my_pbc[1]);
             if (j1 == -1) continue;
 
-            for (long i2 = my_ranges_begin[2]; i2 < my_ranges_end[2]; i2++) {
-                long j2 = smart_wrap(i2, my_shape[2], my_pbc[2]);
+            for (int i2 = my_ranges_begin[2]; i2 < my_ranges_end[2]; i2++) {
+                int j2 = smart_wrap(i2, my_shape[2], my_pbc[2]);
                 if (j2 == -1) continue;
 
                 // Compute the distance between the point and the image of the center
@@ -402,10 +402,10 @@ long Cell::select_inside(const double* origin, const double* center, double rcut
 }
 
 
-long smart_wrap(long i, long shape, long pbc) {
+int smart_wrap(int i, int shape, bool pbc) {
     if ((i < 0) || (i >= shape)) {
         if (pbc) {
-            long j = i%shape;
+            int j = i%shape;
             if (j < 0) j += shape; // just to make sure that this works on all compilers.
             return j;
         } else {
