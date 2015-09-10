@@ -64,6 +64,9 @@ class CellTest1 : public ::testing::Test {
             double rvecs[3] = {2, 0, 0};
             cell = new Cell(rvecs, 1);
         }
+        virtual void TearDown() {
+            delete cell;
+        }
 };
 
 
@@ -74,6 +77,9 @@ class CellTest2 : public ::testing::Test {
             double rvecs[6] = {2, 0, 0, 0, 0, 4};
             cell = new Cell(rvecs, 2);
         }
+        virtual void TearDown() {
+            delete cell;
+        }
 };
 
 
@@ -83,6 +89,9 @@ class CellTest3 : public ::testing::Test {
         virtual void SetUp() {
             double rvecs[9] = {2, 0, 0, 0, 1, 0, 0, 0, 4};
             cell = new Cell(rvecs, 3);
+        }
+        virtual void TearDown() {
+            delete cell;
         }
 };
 
@@ -606,6 +615,7 @@ TEST(CellTest, get_rvec) {
         EXPECT_EQ(cell->get_rvec(2, 0), rvecs[6]);
         EXPECT_EQ(cell->get_rvec(2, 1), rvecs[7]);
         EXPECT_EQ(cell->get_rvec(2, 2), rvecs[8]);
+        delete cell;
     }
 }
 
@@ -632,6 +642,7 @@ TEST(CellTest, get_domain) {
         EXPECT_THROW(cell->get_rspacing(3), std::domain_error);
         EXPECT_THROW(cell->get_gspacing(-1), std::domain_error);
         EXPECT_THROW(cell->get_gspacing(3), std::domain_error);
+        delete cell;
     }
 }
 
