@@ -22,6 +22,7 @@
 #include <stdexcept>
 #include <gtest/gtest.h>
 #include <cstdlib>
+#include <cmath>
 #include "celllists/cell.h"
 
 // Helper functions
@@ -733,4 +734,195 @@ TEST_F(CellTest2, cubic_cuboid_example) {
 TEST_F(CellTest3, cubic_cuboid_example) {
     EXPECT_FALSE(cell->is_cubic());
     EXPECT_TRUE(cell->is_cuboid());
+}
+
+// set_ranges_rcut
+// ---------------
+
+TEST_F(CellTest1, set_ranges_rcut_example) {
+    double center[3] = {6.3, 0.2, -0.8};
+    long ranges_begin[1];
+    long ranges_end[1];
+    cell->set_ranges_rcut(center, 1.0, ranges_begin, ranges_end);
+    EXPECT_EQ(ranges_begin[0], 2);
+    EXPECT_EQ(ranges_end[0], 4);
+    cell->set_ranges_rcut(center, 2.0, ranges_begin, ranges_end);
+    EXPECT_EQ(ranges_begin[0], 2);
+    EXPECT_EQ(ranges_end[0], 5);
+    cell->set_ranges_rcut(center, 3.0, ranges_begin, ranges_end);
+    EXPECT_EQ(ranges_begin[0], 1);
+    EXPECT_EQ(ranges_end[0], 5);
+}
+
+TEST_F(CellTest1, set_ranges_rcut_edge) {
+    double center[3] = {2.0, 0.2, -0.8};
+    long ranges_begin[1];
+    long ranges_end[1];
+    cell->set_ranges_rcut(center, 1.0, ranges_begin, ranges_end);
+    EXPECT_EQ(ranges_begin[0], 0);
+    EXPECT_EQ(ranges_end[0], 2);
+    cell->set_ranges_rcut(center, 2.0, ranges_begin, ranges_end);
+    EXPECT_EQ(ranges_begin[0], 0);
+    EXPECT_EQ(ranges_end[0], 2);
+    cell->set_ranges_rcut(center, 3.0, ranges_begin, ranges_end);
+    EXPECT_EQ(ranges_begin[0], -1);
+    EXPECT_EQ(ranges_end[0], 3);
+}
+
+TEST_F(CellTest2, set_ranges_rcut_example) {
+    double center[3] = {6.3, 0.2, -5.0};
+    long ranges_begin[2];
+    long ranges_end[2];
+    cell->set_ranges_rcut(center, 1.1, ranges_begin, ranges_end);
+    EXPECT_EQ(ranges_begin[0], 2);
+    EXPECT_EQ(ranges_begin[1], -2);
+    EXPECT_EQ(ranges_end[0], 4);
+    EXPECT_EQ(ranges_end[1], 0);
+}
+
+TEST_F(CellTest2, set_ranges_rcut_edge) {
+    double center[3] = {4.0, 0.2, -2.0};
+    long ranges_begin[2];
+    long ranges_end[2];
+    cell->set_ranges_rcut(center, 2.0, ranges_begin, ranges_end);
+    EXPECT_EQ(ranges_begin[0], 1);
+    EXPECT_EQ(ranges_begin[1], -1);
+    EXPECT_EQ(ranges_end[0], 3);
+    EXPECT_EQ(ranges_end[1], 0);
+}
+
+TEST_F(CellTest3, set_ranges_rcut_example) {
+    double center[3] = {6.3, 2.2, -5.8};
+    long ranges_begin[3];
+    long ranges_end[3];
+    cell->set_ranges_rcut(center, 1.0, ranges_begin, ranges_end);
+    EXPECT_EQ(ranges_begin[0], 2);
+    EXPECT_EQ(ranges_begin[1], 1);
+    EXPECT_EQ(ranges_begin[2], -2);
+    EXPECT_EQ(ranges_end[0], 4);
+    EXPECT_EQ(ranges_end[1], 4);
+    EXPECT_EQ(ranges_end[2], -1);
+}
+
+TEST_F(CellTest3, set_ranges_rcut_edge) {
+    double center[3] = {10.0, -2.0, -6.0};
+    long ranges_begin[3];
+    long ranges_end[3];
+    cell->set_ranges_rcut(center, 2.0, ranges_begin, ranges_end);
+    EXPECT_EQ(ranges_begin[0], 4);
+    EXPECT_EQ(ranges_begin[1], -4);
+    EXPECT_EQ(ranges_begin[2], -2);
+    EXPECT_EQ(ranges_end[0], 6);
+    EXPECT_EQ(ranges_end[1], 0);
+    EXPECT_EQ(ranges_end[2], -1);
+}
+
+TEST_F(CellTest3, set_ranges_rcut_domain) {
+    double center[3] = {6.3, 2.2, -5.8};
+    long ranges_begin[3];
+    long ranges_end[3];
+    EXPECT_THROW(cell->set_ranges_rcut(center, -1.0, ranges_begin, ranges_end), std::domain_error);
+    EXPECT_THROW(cell->set_ranges_rcut(center, 0.0, ranges_begin, ranges_end), std::domain_error);
+}
+
+TEST(CellTest, set_ranges_rcut_random1) {
+    for (int icell=0; icell < 100; icell++) {
+        Cell cell = create_random_cell(1, icell);
+        double center[3];
+        long ranges_begin[1];
+        long ranges_end[1];
+        double rcut = 0.3*(icell+1);
+        fill_random_double(center, 3, icell+2, 5.0);
+        cell.set_ranges_rcut(center, rcut, ranges_begin, ranges_end);
+        for (int ipoint=0; ipoint < 1000; ipoint++) {
+            // Make a random point that is uniformly distributed within a sphere, but
+            // that has a high probability of setting on the edge.
+            double point[3];
+            double frac[3];
+            double norm;
+            fill_random_double(point, 3, ipoint+icell*1000, 1.0);
+            norm = sqrt(point[0]*point[0] + point[1]*point[1] + point[2]*point[2]);
+            if (norm > 1) {
+                point[0] /= norm;
+                point[1] /= norm;
+                point[2] /= norm;
+            }
+            point[0] = center[0] + rcut*point[0];
+            point[1] = center[1] + rcut*point[1];
+            point[2] = center[2] + rcut*point[2];
+            cell.to_frac(point, frac);
+            EXPECT_LE(ranges_begin[0], frac[0]);
+            EXPECT_GE(ranges_end[0], frac[0]);
+        }
+    }
+}
+
+TEST(CellTest, set_ranges_rcut_random2) {
+    for (int icell=0; icell < 100; icell++) {
+        Cell cell = create_random_cell(2, icell);
+        double center[3];
+        long ranges_begin[2];
+        long ranges_end[2];
+        double rcut = 0.3*(icell+1);
+        fill_random_double(center, 3, icell+3, 5.0);
+        cell.set_ranges_rcut(center, rcut, ranges_begin, ranges_end);
+        for (int ipoint=0; ipoint < 1000; ipoint++) {
+            // Make a random point that is uniformly distributed within a sphere, but
+            // that has a high probability of setting on the edge.
+            double point[3];
+            double frac[3];
+            double norm;
+            fill_random_double(point, 3, ipoint+icell*1000, 1.0);
+            norm = sqrt(point[0]*point[0] + point[1]*point[1] + point[2]*point[2]);
+            if (norm > 1) {
+                point[0] /= norm;
+                point[1] /= norm;
+                point[2] /= norm;
+            }
+            point[0] = center[0] + rcut*point[0];
+            point[1] = center[1] + rcut*point[1];
+            point[2] = center[2] + rcut*point[2];
+            cell.to_frac(point, frac);
+            EXPECT_LE(ranges_begin[0], frac[0]);
+            EXPECT_LE(ranges_begin[1], frac[1]);
+            EXPECT_GE(ranges_end[0], frac[0]);
+            EXPECT_GE(ranges_end[1], frac[1]);
+        }
+    }
+}
+
+TEST(CellTest, set_ranges_rcut_random3) {
+    for (int icell=0; icell < 100; icell++) {
+        Cell cell = create_random_cell(3, icell);
+        double center[3];
+        long ranges_begin[3];
+        long ranges_end[3];
+        double rcut = 0.3*(icell+1);
+        fill_random_double(center, 3, icell+5, 5.0);
+        cell.set_ranges_rcut(center, rcut, ranges_begin, ranges_end);
+        for (int ipoint=0; ipoint < 1000; ipoint++) {
+            // Make a random point that is uniformly distributed within a sphere, but
+            // that has a high probability of setting on the edge.
+            double point[3];
+            double frac[3];
+            double norm;
+            fill_random_double(point, 3, ipoint+icell*1000, 1.0);
+            norm = sqrt(point[0]*point[0] + point[1]*point[1] + point[2]*point[2]);
+            if (norm > 1) {
+                point[0] /= norm;
+                point[1] /= norm;
+                point[2] /= norm;
+            }
+            point[0] = center[0] + rcut*point[0];
+            point[1] = center[1] + rcut*point[1];
+            point[2] = center[2] + rcut*point[2];
+            cell.to_frac(point, frac);
+            EXPECT_LE(ranges_begin[0], frac[0]);
+            EXPECT_LE(ranges_begin[1], frac[1]);
+            EXPECT_LE(ranges_begin[2], frac[2]);
+            EXPECT_GE(ranges_end[0], frac[0]);
+            EXPECT_GE(ranges_end[1], frac[1]);
+            EXPECT_GE(ranges_end[2], frac[2]);
+        }
+    }
 }

@@ -320,12 +320,15 @@ bool Cell::is_cuboid() const {
 
 void Cell::set_ranges_rcut(const double* center, double rcut, long* ranges_begin,
     long* ranges_end) const {
+    if (rcut <= 0) {
+        throw std::domain_error("rcut must be strictly positive.");
+    }
     double frac[3];
     to_frac(center, frac);
     for (int i=nvec-1; i>=0; i--) {
         double step = rcut/rspacings[i];
-        ranges_begin[i] = ceil(-frac[i]-step);
-        ranges_end[i] = ceil(-frac[i]+step);
+        ranges_begin[i] = floor(frac[i]-step);
+        ranges_end[i] = ceil(frac[i]+step);
     }
 }
 
