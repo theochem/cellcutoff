@@ -22,8 +22,8 @@
 #include <gtest/gtest.h>
 #include "celllists/cell.h"
 
-TEST(CellTest, Volume) {
+TEST(GeneralCellTest, Volume) {
     double rvecs[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
-    Cell cell(rvecs, 3);
+    GeneralCell cell(rvecs, 3);
     EXPECT_EQ(cell.get_volume(), 1.0);
 }

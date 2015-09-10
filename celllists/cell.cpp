@@ -24,14 +24,13 @@
 #include "celllists/cell.h"
 
 
-Cell::Cell(double* _rvecs, int _nvec) {
+GeneralCell::GeneralCell(const double* _rvecs, int _nvec): nvec(_nvec) {
     // check if nvec is sensible
     if ((_nvec < 0) || (_nvec > 3)) {
         throw std::domain_error("The number of cell vectors must be 0, 1, 2 or 3.");
     }
 
     // copy the given _rvecs and _nvec:
-    nvec = _nvec;
     for (int i=nvec*3-1; i>=0; i--) {
         rvecs[i] = _rvecs[i];
     }
@@ -167,7 +166,7 @@ Cell::Cell(double* _rvecs, int _nvec) {
 }
 
 
-void Cell::wrap(double* delta) const {
+void GeneralCell::wrap(double* delta) const {
     // Wrap the relative vector back into the cell in the range [-0.5, 0.5[.
     double x;
     if (nvec == 0) return;
@@ -193,14 +192,14 @@ void Cell::wrap(double* delta) const {
 }
 
 
-void Cell::to_frac(double* cart, double* frac) const {
+void GeneralCell::to_frac(const double* cart, double* frac) const {
     // Transfroms to fractional coordinates
     frac[0] = gvecs[0]*cart[0] + gvecs[1]*cart[1] + gvecs[2]*cart[2];
     frac[1] = gvecs[3]*cart[0] + gvecs[4]*cart[1] + gvecs[5]*cart[2];
     frac[2] = gvecs[6]*cart[0] + gvecs[7]*cart[1] + gvecs[8]*cart[2];
 }
 
-void Cell::to_cart(double* frac, double* cart) const {
+void GeneralCell::to_cart(const double* frac, double* cart) const {
     // Transfroms to Cartesian coordinates
     cart[0] = rvecs[0]*frac[0] + rvecs[3]*frac[1] + rvecs[6]*frac[2];
     cart[1] = rvecs[1]*frac[0] + rvecs[4]*frac[1] + rvecs[7]*frac[2];
@@ -208,7 +207,7 @@ void Cell::to_cart(double* frac, double* cart) const {
 }
 
 
-void Cell::g_lincomb(double* coeffs, double* gvec) const {
+void GeneralCell::g_lincomb(const double* coeffs, double* gvec) const {
     // Make a linear combination of reciprocal cell vectors
     gvec[0] = gvecs[0]*coeffs[0] + gvecs[3]*coeffs[1] + gvecs[6]*coeffs[2];
     gvec[1] = gvecs[1]*coeffs[0] + gvecs[4]*coeffs[1] + gvecs[7]*coeffs[2];
@@ -216,7 +215,7 @@ void Cell::g_lincomb(double* coeffs, double* gvec) const {
 }
 
 
-void Cell::dot_rvecs(double* frac, double* dots) const {
+void GeneralCell::dot_rvecs(const double* frac, double* dots) const {
     // Take dot product with real cell vectors
     dots[0] = rvecs[0]*frac[0] + rvecs[1]*frac[1] + rvecs[2]*frac[2];
     dots[1] = rvecs[3]*frac[0] + rvecs[4]*frac[1] + rvecs[5]*frac[2];
@@ -224,7 +223,7 @@ void Cell::dot_rvecs(double* frac, double* dots) const {
 }
 
 
-void Cell::add_rvec(double* delta, long* coeffs) const {
+void GeneralCell::add_rvec(double* delta, const long* coeffs) const {
     // Simply adds an linear combination of real cell vectors to delta.
     if (nvec == 0) return;
     delta[0] += coeffs[0]*rvecs[0];
@@ -241,7 +240,7 @@ void Cell::add_rvec(double* delta, long* coeffs) const {
 }
 
 
-double Cell::get_rspacing(int i) const {
+double GeneralCell::get_rspacing(int i) const {
     if ((i < 0) || (i > 3)) {
         throw std::domain_error("Index must be 0, 1 or 2.");
     }
@@ -249,21 +248,21 @@ double Cell::get_rspacing(int i) const {
 }
 
 
-double Cell::get_gspacing(int i) const {
+double GeneralCell::get_gspacing(int i) const {
     if ((i < 0) || (i > 3)) {
         throw std::domain_error("Index must be 0, 1 or 2.");
     }
     return gspacings[i];
 }
 
-double Cell::get_rlength(int i) const {
+double GeneralCell::get_rlength(int i) const {
     if ((i < 0) || (i > 3)) {
         throw std::domain_error("Index must be 0, 1 or 2.");
     }
     return rlengths[i];
 }
 
-double Cell::get_glength(int i) const {
+double GeneralCell::get_glength(int i) const {
     if ((i < 0) || (i > 3)) {
         throw std::domain_error("Index must be 0, 1 or 2.");
     }
@@ -271,7 +270,7 @@ double Cell::get_glength(int i) const {
 }
 
 
-void Cell::set_ranges_rcut(double* center, double rcut,  long* ranges_begin,
+void GeneralCell::set_ranges_rcut(const double* center, double rcut, long* ranges_begin,
     long* ranges_end) const {
     double frac[3];
     to_frac(center, frac);
@@ -283,8 +282,8 @@ void Cell::set_ranges_rcut(double* center, double rcut,  long* ranges_begin,
 }
 
 
-long Cell::select_inside(double* origin, double* center, double rcut,
-    long* ranges_begin, long* ranges_end, long* shape, long* pbc,
+long GeneralCell::select_inside(const double* origin, const double* center, double rcut,
+    const long* ranges_begin, const long* ranges_end, const long* shape, const long* pbc,
     long* indices) const {
 
     if (nvec == 0)

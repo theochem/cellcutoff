@@ -23,42 +23,24 @@
 #ifndef CELLLIST_CELL_H_
 #define CELLLIST_CELL_H_
 
+
 /** @brief
-        3D/2D/1D (Tri)clinic cell and derived quantities.
+        Abstract base class for cells
 
     Upon construction, an object of this class acts as a read-only representation of the
     cell. Reciprocal cell vectors, vector lengths and spacings between planes are computed
     immediately. All sorts of manipulations of fractional or Cartesian coordinates are
     supported.
 
-    Note that this implementation is specific for 3D systems, even though lower-
-    dimensional periodic boundary conditions are supported. In case of 1D or 2D
-    PBC, the cell vectors are internally extended with orthonormal basis vectors
-    to guarantee an invertible transformation between Cartesian and fractional
-    coordinates. In that case, the fractional coordinates are actually also Cartesian
-    coordinates in directions orthogonal to the available cell vectors.
+    Note that this class is specific for 3D systems, even though lower-dimensional
+    periodic boundary conditions may be supported by some subclasses. In case of 1D or 2D
+    PBC, the cell vectors are internally extended with orthonormal basis vectors to
+    guarantee an invertible transformation between Cartesian and fractional coordinates.
+    In that case, the fractional coordinates are actually also Cartesian coordinates in
+    directions orthogonal to the available cell vectors.
  */
-class Cell {
-    private:
-        double rvecs[9], gvecs[9];
-        double rlengths[3], glengths[3];
-        double rspacings[3], gspacings[3];
-        double volume;
-        int nvec;
+class BaseCell {
     public:
-        /** @brief
-                Construct a Cell object.
-
-            @param _rvecs
-                A pointer to `3*nvec` doubles that represent the real-space vectors in
-                row-major ordering.
-
-            @param _nvec
-                The number of cell vectors. This corresponds to the number of periodic
-                dimensions of a unit cell. `nvec` must be 0, 1, 2 or 3.
-        */
-        Cell(double* _rvecs, int _nvec);
-
         /** @brief
                 Wrap a (relative) vector back into the cell [-0.5, 0.5[.
 
@@ -75,7 +57,7 @@ class Cell {
             images. For more details see:
             http://scicomp.stackexchange.com/questions/3107/minimum-image-convention-for-triclinic-unit-cell
         */
-        void wrap(double* delta) const;
+        virtual void wrap(double* delta) const = 0;
 
         /** @brief
                 Convert Cartesian real-space coordinates to fractional coordinates.
@@ -89,7 +71,7 @@ class Cell {
             This effectively computes the dot products of the Cartesian vector with the
             reciprocal cell vectors.
          */
-        void to_frac(double* cart, double* frac) const;
+        virtual void to_frac(const double* cart, double* frac) const = 0;
 
         /** @brief
                 Convert fractional coordinates to Cartesian real-space coordinates.
@@ -103,7 +85,7 @@ class Cell {
 
             This effectively computes a linear combination of real-space cell vectors.
          */
-        void to_cart(double* frac, double* cart) const;
+        virtual void to_cart(const double* frac, double* cart) const = 0;
 
         /** @brief
                 Construct a linear combination of reciprocal cell vectors.
@@ -115,7 +97,7 @@ class Cell {
             @param gvec
                 A pointer to 3 doubles to which the output is written
          */
-        void g_lincomb(double* coeffs, double* gvec) const;
+        virtual void g_lincomb(const double* coeffs, double* gvec) const = 0;
 
         /** @brief
                 Compute the dot products of fractional coordinates with each cell vector.
@@ -127,7 +109,7 @@ class Cell {
             @param dots
                 A pointer to 3 doubles to which the output is written.
          */
-        void dot_rvecs(double* frac, double* dots) const;
+        virtual void dot_rvecs(const double* frac, double* dots) const = 0;
 
         /** @brief
                 Add a linear combination of cell vectors to delta.
@@ -140,21 +122,21 @@ class Cell {
                 A pointer to 3 doubles with the coefficients of the linear
                 combination.
          */
-        void add_rvec(double* delta, long* coeffs) const;
+        virtual void add_rvec(double* delta, const long* coeffs) const = 0;
 
 
         //! Returns the number of periodic dimensions.
-        int get_nvec() const {return nvec;};
+        virtual int get_nvec() const = 0;
         //! Returns the volume (or area or length) of the cell.
-        double get_volume() const {return volume;};
+        virtual double get_volume() const = 0;
         //! Returns the spacing between the i-th real-space crystal plane
-        double get_rspacing(int i) const;
+        virtual double get_rspacing(int i) const = 0;
         //! Returns the spacing between the i-th reciprocal crystal plane
-        double get_gspacing(int i) const;
+        virtual double get_gspacing(int i) const = 0;
         //! Returns the length of the i-th real-space cell vector
-        double get_rlength(int i) const;
+        virtual double get_rlength(int i) const = 0;
         //! Returns the length of the i-th reciprocal cell vector
-        double get_glength(int i) const;
+        virtual double get_glength(int i) const = 0;
 
         /** @brief
                 Get the ranges of cells within a cutoff radius.
@@ -178,8 +160,8 @@ class Cell {
             This function effectively defines a supercell that is guaranteed to
             enclose the cutoff sphere.
          */
-        void set_ranges_rcut(double* center, double rcut, long* ranges_begin,
-            long* ranges_end) const;
+        virtual void set_ranges_rcut(const double* center, double rcut, long*
+            ranges_begin, long* ranges_end) const = 0;
 
         /** @brief
                 Selects a list of cells inside a cutoff sphere.
@@ -216,9 +198,55 @@ class Cell {
                 ranges_begin and ranges_end. The number of columns equals `nvec`.
                 The elements are stored in row-major order.
           */
-        long select_inside(double* origin, double* center, double rcut,
-            long* ranges_begin, long* ranges_end, long* shape,
-            long* pbc, long* indices) const;
+        virtual long select_inside(const double* origin, const double* center,
+            double rcut, const long* ranges_begin, const long* ranges_end, const long*
+            shape, const long* pbc, long* indices) const = 0;
+};
+
+
+/** @brief
+        3D/2D/1D (Tri)clinic cell and derived quantities.
+ */
+class GeneralCell : public BaseCell {
+    private:
+        double rvecs[9], gvecs[9];
+        double rlengths[3], glengths[3];
+        double rspacings[3], gspacings[3];
+        double volume;
+        const int nvec;
+    public:
+        /** @brief
+                Construct a Cell object.
+
+            @param _rvecs
+                A pointer to `3*nvec` doubles that represent the real-space vectors in
+                row-major ordering.
+
+            @param _nvec
+                The number of cell vectors. This corresponds to the number of periodic
+                dimensions of a unit cell. `nvec` must be 0, 1, 2 or 3.
+        */
+        GeneralCell(const double* _rvecs, int _nvec);
+
+        void wrap(double* delta) const;
+        void to_frac(const double* cart, double* frac) const;
+        void to_cart(const double* frac, double* cart) const;
+        void g_lincomb(const double* coeffs, double* gvec) const;
+        void dot_rvecs(const double* frac, double* dots) const;
+        void add_rvec(double* delta, const long* coeffs) const;
+
+        int get_nvec() const {return nvec;};
+        double get_volume() const {return volume;};
+        double get_rspacing(int i) const;
+        double get_gspacing(int i) const;
+        double get_rlength(int i) const;
+        double get_glength(int i) const;
+
+        void set_ranges_rcut(const double* center, double rcut, long* ranges_begin,
+            long* ranges_end) const;
+        long select_inside(const double* origin, const double* center, double rcut,
+            const long* ranges_begin, const long* ranges_end, const long* shape,
+            const long* pbc, long* indices) const;
 };
 
 /**
