@@ -168,19 +168,24 @@ Cell::Cell(double* _rvecs, int _nvec) {
 
 
 void Cell::wrap(double* delta) const {
-    // Wrap the relative vector back into the cell in the range [-0.5, 0.5].
+    // Wrap the relative vector back into the cell in the range [-0.5, 0.5[.
     double x;
     if (nvec == 0) return;
+    // Compute the first fractional coordinates, subtract one half and ceil. The round
+    // founction is intentionally not used here! The half-ways case is always up instead
+    // of away from zero.
     x = ceil(gvecs[0]*delta[0] + gvecs[1]*delta[1] + gvecs[2]*delta[2] - 0.5);
     delta[0] -= x*rvecs[0];
     delta[1] -= x*rvecs[1];
     delta[2] -= x*rvecs[2];
     if (nvec == 1) return;
+    // Compute the second fractional coordinates, subtract one half and ceil.
     x = ceil(gvecs[3]*delta[0] + gvecs[4]*delta[1] + gvecs[5]*delta[2] - 0.5);
     delta[0] -= x*rvecs[3];
     delta[1] -= x*rvecs[4];
     delta[2] -= x*rvecs[5];
     if (nvec == 2) return;
+    // Compute the third fractional coordinates, subtract one half and ceil.
     x = ceil(gvecs[6]*delta[0] + gvecs[7]*delta[1] + gvecs[8]*delta[2] - 0.5);
     delta[0] -= x*rvecs[6];
     delta[1] -= x*rvecs[7];
@@ -211,11 +216,11 @@ void Cell::g_lincomb(double* coeffs, double* gvec) const {
 }
 
 
-void Cell::dot_rvecs(double* cart, double* dots) const {
+void Cell::dot_rvecs(double* frac, double* dots) const {
     // Take dot product with real cell vectors
-    dots[0] = rvecs[0]*cart[0] + rvecs[1]*cart[1] + rvecs[2]*cart[2];
-    dots[1] = rvecs[3]*cart[0] + rvecs[4]*cart[1] + rvecs[5]*cart[2];
-    dots[2] = rvecs[6]*cart[0] + rvecs[7]*cart[1] + rvecs[8]*cart[2];
+    dots[0] = rvecs[0]*frac[0] + rvecs[1]*frac[1] + rvecs[2]*frac[2];
+    dots[1] = rvecs[3]*frac[0] + rvecs[4]*frac[1] + rvecs[5]*frac[2];
+    dots[2] = rvecs[6]*frac[0] + rvecs[7]*frac[1] + rvecs[8]*frac[2];
 }
 
 
@@ -280,7 +285,7 @@ void Cell::set_ranges_rcut(double* center, double rcut,  long* ranges_begin,
 
 long Cell::select_inside(double* origin, double* center, double rcut,
     long* ranges_begin, long* ranges_end, long* shape, long* pbc,
-    long* indexes) const {
+    long* indices) const {
 
     if (nvec == 0)
         throw std::domain_error("The cell must be at least 1D periodic for select_inside.");
@@ -330,10 +335,10 @@ long Cell::select_inside(double* origin, double* center, double rcut,
 
                 // if the distance is below rcut add this grid point.
                 if (d < rcut) {
-                    indexes[0] = j0;
-                    if (nvec > 1) indexes[1] = j1;
-                    if (nvec > 2) indexes[2] = j2;
-                    indexes += nvec;
+                    indices[0] = j0;
+                    if (nvec > 1) indices[1] = j1;
+                    if (nvec > 2) indices[2] = j2;
+                    indices += nvec;
                     nselect++;
                 }
             }

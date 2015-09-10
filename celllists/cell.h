@@ -18,23 +18,25 @@
 //
 //--
 
+/** @file */
 
 #ifndef CELLLIST_CELL_H_
 #define CELLLIST_CELL_H_
 
 /** @brief
-        3D/2D/1D periodic boundary conditions and derived quantities.
+        3D/2D/1D (Tri)clinic cell and derived quantities.
 
-    Upon construction, an object of this class acts as a read-only
-    representation of the periodic boundary conditions. Reciprocal cell vectors,
-    vector lengths and spacings between planes are computed immediately. All
-    sorts of manipulations of fractional/Cartesian coordinates are supported.
+    Upon construction, an object of this class acts as a read-only representation of the
+    cell. Reciprocal cell vectors, vector lengths and spacings between planes are computed
+    immediately. All sorts of manipulations of fractional or Cartesian coordinates are
+    supported.
 
     Note that this implementation is specific for 3D systems, even though lower-
     dimensional periodic boundary conditions are supported. In case of 1D or 2D
-    PBC, the cell vectors are internally extended with orthogonal basis vectors
+    PBC, the cell vectors are internally extended with orthonormal basis vectors
     to guarantee an invertible transformation between Cartesian and fractional
-    coordinates.
+    coordinates. In that case, the fractional coordinates are actually also Cartesian
+    coordinates in directions orthogonal to the available cell vectors.
  */
 class Cell {
     private:
@@ -48,22 +50,24 @@ class Cell {
                 Construct a Cell object.
 
             @param _rvecs
-                A pointer to 3*nvec doubles that represent the real-space
-                vectors in row-major ordering.
+                A pointer to `3*nvec` doubles that represent the real-space vectors in
+                row-major ordering.
 
             @param _nvec
-                The number of cell vectors. This corresponds to the
-                dimensionality of the periodic boundary conditions.
+                The number of cell vectors. This corresponds to the number of periodic
+                dimensions of a unit cell. `nvec` must be 0, 1, 2 or 3.
         */
         Cell(double* _rvecs, int _nvec);
 
         /** @brief
-                Wrap a (relative) vector back into the cell in the [-0.5, 0.5] range in
-                fractional coordinates.
+                Wrap a (relative) vector back into the cell [-0.5, 0.5[.
 
             @param delta
                 A pointer to 3 doubles with the (relative) vector. It will be
                 modified in-place.
+
+            After calling the wrap method, the fractional coordinates of delta will be
+            in the range [-0.5, 0.5[.
 
             This is an approximate implementation of the minimum image convention that
             sometimes fails in very skewed cells, i.e. the wrapped vector is not always
@@ -74,20 +78,21 @@ class Cell {
         void wrap(double* delta) const;
 
         /** @brief
-                Convert a real-space vector to fractional coordinates.
+                Convert Cartesian real-space coordinates to fractional coordinates.
 
             @param cart
                 A pointer to 3 doubles containing the input real-space vector.
 
             @param frac
                 A pointer to 3 doubles in which the output is written.
+
+            This effectively computes the dot products of the Cartesian vector with the
+            reciprocal cell vectors.
          */
         void to_frac(double* cart, double* frac) const;
 
         /** @brief
-                Convert a fractional coordinates vector to real-space
-                coordinates. This can also be interpreted as making a linear
-                combination of real-space cell vectors.
+                Convert fractional coordinates to Cartesian real-space coordinates.
 
             @param frac
                 A pointer to 3 doubles containing the input fractional
@@ -95,6 +100,8 @@ class Cell {
 
             @param cart
                 A pointer to 3 doubles to which the output is written
+
+            This effectively computes a linear combination of real-space cell vectors.
          */
         void to_cart(double* frac, double* cart) const;
 
@@ -111,17 +118,16 @@ class Cell {
         void g_lincomb(double* coeffs, double* gvec) const;
 
         /** @brief
-                Compute a dot-product of a real-space vector with each cell
-                vector.
+                Compute the dot products of fractional coordinates with each cell vector.
 
-            @param cart
+            @param frac
                 A pointer to 3 doubles containing the input fractional
                 coordinates.
 
             @param dots
                 A pointer to 3 doubles to which the output is written.
          */
-        void dot_rvecs(double* cart, double* dots) const;
+        void dot_rvecs(double* frac, double* dots) const;
 
         /** @brief
                 Add a linear combination of cell vectors to delta.
@@ -137,35 +143,35 @@ class Cell {
         void add_rvec(double* delta, long* coeffs) const;
 
 
-        /** Returns the dimensionality of the periodic boundary conditions. */
+        //! Returns the number of periodic dimensions.
         int get_nvec() const {return nvec;};
-        /** Return the volume (or area or length) of the cell. */
+        //! Returns the volume (or area or length) of the cell.
         double get_volume() const {return volume;};
-        /** Return the spacing between the i-th real-space crystal plane */
+        //! Returns the spacing between the i-th real-space crystal plane
         double get_rspacing(int i) const;
-        /** Return the spacing between the i-th reciprocal crystal plane */
+        //! Returns the spacing between the i-th reciprocal crystal plane
         double get_gspacing(int i) const;
-        /** Return the length of the i-th real-space cell vector */
+        //! Returns the length of the i-th real-space cell vector
         double get_rlength(int i) const;
-        /** Return the length of the i-th reciprocal cell vector */
+        //! Returns the length of the i-th reciprocal cell vector
         double get_glength(int i) const;
 
         /** @brief
-                Get ranges of periodic images within a cutoff radius.
+                Get the ranges of cells within a cutoff radius.
 
             @param center
-                A pointer to three doubles that specify the center of the cutoff
+                A pointer to 3 doubles that specify the center of the cutoff
                 sphere in real-space.
 
             @param rcut
                 The cutoff radius.
 
             @param ranges_begin
-                A pointer to nvec longs to which the begin of each range of
+                A pointer to `nvec` longs to which the begin of each range of
                 periodic images along a periodic boundary condition is written.
 
             @param ranges_end
-                A pointer to nvec longs to which the end of each range of
+                A pointer to `nvec` longs to which the end of each range of
                 periodic images along a periodic boundary condition is written.
                 Then end values are non-inclusive as in Python ranges.
 
@@ -176,51 +182,61 @@ class Cell {
             long* ranges_end) const;
 
         /** @brief
-                Selects a list of periodic images inside a cutoff sphere.
+                Selects a list of cells inside a cutoff sphere.
 
             @return
                 The number of periodic images inside the cutoff sphere.
 
             @param origin
-                A pointer of three doubles with the origin of a supercell.
+                A pointer of 3 doubles with the origin of a supercell.
 
             @param center
-                The center of the cutoff sphere.
+                A pointer of 3 doubles with the center of the cutoff sphere.
 
             @param rcut
                 The cutoff radius.
 
             @param ranges_begin
-                As obtained with set_ranges_rcut.
+                As obtained with set_ranges_rcut().
 
             @param ranges_end
-                As obtained with set_ranges_rcut.
+                As obtained with set_ranges_rcut().
 
             @param shape
-                A pointer of three longs with the shape of the supercell.
+                A pointer of 3 longs with the shape of the supercell.
 
             @param pbc
                 A pointer to integer flags indicating the periodicity of the
-                supercell along each periodic boundary condition.
+                supercell along each cell vector.
 
-            @param indexes
+            @param indices
                 A sufficiently large pre-allocated output array to which the
                 indexes of the selected periodic images are written. The number
                 of rows is the product of the lengths of the ranges specified by
-                ranges_begin and ranges_end. The number of columns equals nvec.
+                ranges_begin and ranges_end. The number of columns equals `nvec`.
                 The elements are stored in row-major order.
           */
         long select_inside(double* origin, double* center, double rcut,
             long* ranges_begin, long* ranges_end, long* shape,
-            long* pbc, long* indexes) const;
+            long* pbc, long* indices) const;
 };
 
 /**
     @brief
         A standardized modulo operation that works across all compilers.
 
+    @param i
+        The numerator of the integer division.
+
+    @param shape
+        The denominator of the integer division.
+
+    @param pbc
+        Whether periodic boundary conditions apply.
+
     @return
-        i % shape if pbc is non-zero. -1 is returned otherwise.
+        `i % shape` (guaranteed to be positive) if pbc is non-zero. If pbc is zero, `-1`
+        is returned.
  */
 long smart_wrap(long i, long shape, long pbc);
 
