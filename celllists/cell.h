@@ -223,7 +223,7 @@ class GeneralCell : public BaseCell {
 
             @param _rvecs
                 A pointer to `3*nvec` doubles that represent the real-space vectors in
-                row-major ordering.
+                row-major ordering. The vectors may not have a linear dependency.
 
             @param _nvec
                 The number of cell vectors. This corresponds to the number of periodic

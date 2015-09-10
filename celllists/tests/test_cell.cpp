@@ -19,10 +19,36 @@
 //--
 
 
+#include <stdexcept>
 #include <gtest/gtest.h>
 #include "celllists/cell.h"
 
-TEST(GeneralCellTest, Volume) {
+TEST(general_cell_test, constructor_singular1) {
+    double rvecs[3] = {0, 0, 0};
+    ASSERT_THROW(GeneralCell cell(rvecs, 1), std::domain_error);
+}
+
+TEST(general_cell_test, constructor_singular2) {
+    double rvecs[6] = {1, 0, 0, 1, 0, 0};
+    ASSERT_THROW(GeneralCell cell(rvecs, 2), std::domain_error);
+}
+
+TEST(general_cell_test, constructor_singular3) {
+    double rvecs[9] = {1, 0, 0, 0, 1, 0, 0.5, 0.5, 0};
+    ASSERT_THROW(GeneralCell cell(rvecs, 3), std::domain_error);
+}
+
+TEST(general_cell_test, constructor_nvec_negative) {
+    double rvecs[9] = {1, 0, 1, 0, 1, 0, 0.5, 0.5, 0};
+    ASSERT_THROW(GeneralCell cell(rvecs, -1), std::domain_error);
+}
+
+TEST(general_cell_test, constructor_nvec_too_large) {
+    double rvecs[9] = {1, 0, 1, 0, 1, 0, 0.5, 0.5, 0};
+    ASSERT_THROW(GeneralCell cell(rvecs, 4), std::domain_error);
+}
+
+TEST(general_cell_test, volume) {
     double rvecs[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
     GeneralCell cell(rvecs, 3);
     EXPECT_EQ(cell.get_volume(), 1.0);
