@@ -326,9 +326,12 @@ void Cell::set_ranges_rcut(const double* center, double rcut, long* ranges_begin
     double frac[3];
     to_frac(center, frac);
     for (int i=nvec-1; i>=0; i--) {
-        double step = rcut/rspacings[i];
-        ranges_begin[i] = floor(frac[i]-step);
-        ranges_end[i] = ceil(frac[i]+step);
+        // Use spacings between planes to find first plane before cutoff sphere and last
+        // plane after cutoff sphere. To this end, we must divide rcut by the spacing
+        // between planes.
+        double frac_rcut = rcut/rspacings[i];
+        ranges_begin[i] = floor(frac[i]-frac_rcut);
+        ranges_end[i] = ceil(frac[i]+frac_rcut);
     }
 }
 
