@@ -18,11 +18,19 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 #--
+
+# Make sure the header files are found
+include_directories(${GTEST_INCLUDE_DIRS})
+
 # The testing executable
-add_executable(celllists_tests test_cell.cpp)
+add_executable(celllists_tests EXCLUDE_FROM_ALL test_cell.cpp)
 
 # How the testing executable has to be linked...
 target_link_libraries(celllists_tests celllists gtest gtest_main)
 
-# Define it as a test
-add_test(celllists_tests celllists_tests)
+# Use our own test target because ctest hides relevant output.
+add_custom_target(check
+                  COMMAND celllists_tests
+                  DEPENDS celllists_tests
+                  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                  COMMENT "Running test")
