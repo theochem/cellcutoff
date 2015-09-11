@@ -42,12 +42,12 @@ void fill_random_int(int* array, size_t size, unsigned int seed, int range) {
         array[i] = (rand() % (2*range+1))-range;
 }
 
-Cell create_random_cell(int nvec, unsigned int seed, double scale=1) {
+Cell* create_random_cell_nvec(int nvec, unsigned int seed, double scale=1) {
     double rvecs[nvec*3];
     while (true) {
         try {
             fill_random_double(rvecs, nvec*3, seed, scale);
-            return Cell(rvecs, nvec);
+            return new Cell(rvecs, nvec);
         }
         catch (singular_cell_vectors) {}
     }
@@ -57,12 +57,21 @@ Cell create_random_cell(int nvec, unsigned int seed, double scale=1) {
 // Fixtures
 // ========
 
-class CellTest1 : public ::testing::Test {
+class CellTest : public ::testing::Test {
+    public:
+        int nvec;
+        Cell* create_random_cell(unsigned int seed, double scale=1) {
+            Cell* cell = create_random_cell_nvec(nvec, seed, scale);
+        }
+};
+
+class CellTest1 : public CellTest {
     public:
         Cell* mycell;
         virtual void SetUp() {
+            nvec = 1;
             double rvecs[3] = {2, 0, 0};
-            mycell = new Cell(rvecs, 1);
+            mycell = new Cell(rvecs, nvec);
         }
         virtual void TearDown() {
             delete mycell;
@@ -70,12 +79,13 @@ class CellTest1 : public ::testing::Test {
 };
 
 
-class CellTest2 : public ::testing::Test {
+class CellTest2 : public CellTest {
     public:
         Cell* mycell;
         virtual void SetUp() {
+            nvec = 2;
             double rvecs[6] = {2, 0, 0, 0, 0, 4};
-            mycell = new Cell(rvecs, 2);
+            mycell = new Cell(rvecs, nvec);
         }
         virtual void TearDown() {
             delete mycell;
@@ -83,12 +93,13 @@ class CellTest2 : public ::testing::Test {
 };
 
 
-class CellTest3 : public ::testing::Test {
+class CellTest3 : public CellTest {
     public:
         Cell* mycell;
         virtual void SetUp() {
+            nvec = 3;
             double rvecs[9] = {2, 0, 0, 0, 1, 0, 0, 0, 4};
-            mycell = new Cell(rvecs, 3);
+            mycell = new Cell(rvecs, nvec);
         }
         virtual void TearDown() {
             delete mycell;
@@ -102,32 +113,32 @@ class CellTest3 : public ::testing::Test {
 // Constructor
 // -----------
 
-TEST(CellTest, constructor_singular1) {
+TEST_F(CellTest1, constructor_singular1) {
     double rvecs[3] = {0, 0, 0};
     EXPECT_THROW(Cell cell(rvecs, 1), singular_cell_vectors);
 }
 
-TEST(CellTest, constructor_singular2) {
+TEST_F(CellTest2, constructor_singular2) {
     double rvecs[6] = {1, 0, 0, 1, 0, 0};
     EXPECT_THROW(Cell cell(rvecs, 2), singular_cell_vectors);
 }
 
-TEST(CellTest, constructor_singular3) {
+TEST_F(CellTest3, constructor_singular3) {
     double rvecs[9] = {1, 0, 0, 0, 1, 0, 0.5, 0.5, 0};
     EXPECT_THROW(Cell cell(rvecs, 3), singular_cell_vectors);
 }
 
-TEST(CellTest, constructor_nvec_negative) {
+TEST_F(CellTest, constructor_nvec_negative) {
     double rvecs[9] = {1, 0, 1, 0, 1, 0, 0.5, 0.5, 0};
     EXPECT_THROW(Cell cell(rvecs, -1), std::domain_error);
 }
 
-TEST(CellTest, constructor_nvec_too_large) {
+TEST_F(CellTest, constructor_nvec_too_large) {
     double rvecs[9] = {1, 0, 1, 0, 1, 0, 0.5, 0.5, 0};
     EXPECT_THROW(Cell cell(rvecs, 4), std::domain_error);
 }
 
-TEST(CellTest, constructor_simple) {
+TEST_F(CellTest, constructor_simple) {
     double rvecs[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
     for(int nvec=0; nvec <=3; nvec++) {
         Cell cell(rvecs, nvec);
@@ -215,105 +226,111 @@ TEST_F(CellTest3, wrap_edges) {
     EXPECT_EQ(delta[2], 2.0);
 }
 
-TEST(CellTest, wrap_random1) {
+TEST_F(CellTest1, wrap_random) {
     for (int irep=0; irep < 100; irep++) {
-        Cell cell = create_random_cell(1, irep);
+        Cell* cell = create_random_cell(irep);
         double delta[3];
         fill_random_double(delta, 3, 11, 5.0);
         double frac[3];
-        cell.wrap(delta);
-        cell.to_frac(delta, frac);
+        cell->wrap(delta);
+        cell->to_frac(delta, frac);
         EXPECT_LT(frac[0], 0.5);
         EXPECT_GE(frac[0], -0.5);
+        delete cell;
     }
 }
 
-TEST(CellTest, wrap_random2) {
+TEST_F(CellTest2, wrap_random) {
     for (int irep=0; irep < 100; irep++) {
-        Cell cell = create_random_cell(2, irep);
+        Cell* cell = create_random_cell(irep);
         double delta[3];
         fill_random_double(delta, 3, 11, 5.0);
         double frac[3];
-        cell.wrap(delta);
-        cell.to_frac(delta, frac);
+        cell->wrap(delta);
+        cell->to_frac(delta, frac);
         EXPECT_LT(frac[0], 0.5);
         EXPECT_LT(frac[1], 0.5);
         EXPECT_GE(frac[0], -0.5);
         EXPECT_GE(frac[1], -0.5);
+        delete cell;
     }
 }
 
-TEST(CellTest, wrap_random3) {
+TEST_F(CellTest3, wrap_random) {
     for (int irep=0; irep < 100; irep++) {
-        Cell cell = create_random_cell(3, irep);
+        Cell* cell = create_random_cell(irep);
         double delta[3];
         fill_random_double(delta, 3, 11, 5.0);
         double frac[3];
-        cell.wrap(delta);
-        cell.to_frac(delta, frac);
+        cell->wrap(delta);
+        cell->to_frac(delta, frac);
         EXPECT_LT(frac[0], 0.5);
         EXPECT_LT(frac[1], 0.5);
         EXPECT_LT(frac[2], 0.5);
         EXPECT_GE(frac[0], -0.5);
         EXPECT_GE(frac[1], -0.5);
         EXPECT_GE(frac[2], -0.5);
+        delete cell;
     }
 }
 
-TEST(CellTest, wrap_consistency1) {
+TEST_F(CellTest1, wrap_consistency) {
     for (int irep=0; irep < 100; irep++) {
-        Cell cell = create_random_cell(1, irep);
+        Cell* cell = create_random_cell(irep);
         int coeffs[1];
         fill_random_int(coeffs, 1, irep, 5);
         double frac[3];
         double cart1[3];
         double cart2[3];
         fill_random_double(frac, 3, 11, 1.0);
-        cell.to_cart(frac, cart1);
-        cell.to_cart(frac, cart2);
-        cell.add_rvec(cart2, coeffs);
-        cell.wrap(cart2);
+        cell->to_cart(frac, cart1);
+        cell->to_cart(frac, cart2);
+        cell->add_rvec(cart2, coeffs);
+        cell->wrap(cart2);
         EXPECT_NEAR(cart1[0], cart2[0], 1e-10);
         EXPECT_NEAR(cart1[1], cart2[1], 1e-10);
         EXPECT_NEAR(cart1[2], cart2[2], 1e-10);
+        delete cell;
     }
 }
 
-TEST(CellTest, wrap_consistency2) {
+TEST_F(CellTest2, wrap_consistency) {
     for (int irep=0; irep < 100; irep++) {
-        Cell cell = create_random_cell(2, irep);
+        Cell* cell = create_random_cell(irep);
         int coeffs[2];
         fill_random_int(coeffs, 2, irep, 5);
         double frac[3];
         double cart1[3];
         double cart2[3];
         fill_random_double(frac, 3, 11, 1.0);
-        cell.to_cart(frac, cart1);
-        cell.to_cart(frac, cart2);
-        cell.add_rvec(cart2, coeffs);
-        cell.wrap(cart2);
+        cell->to_cart(frac, cart1);
+        cell->to_cart(frac, cart2);
+        cell->add_rvec(cart2, coeffs);
+        cell->wrap(cart2);
         EXPECT_NEAR(cart1[0], cart2[0], 1e-10);
         EXPECT_NEAR(cart1[1], cart2[1], 1e-10);
         EXPECT_NEAR(cart1[2], cart2[2], 1e-10);
+        delete cell;
     }
 }
 
-TEST(CellTest, wrap_consistency3) {
+TEST_F(CellTest3, wrap_consistency) {
     for (int irep=0; irep < 100; irep++) {
-        Cell cell = create_random_cell(3, irep);
+        Cell* cell = create_random_cell(irep);
         int coeffs[3];
         fill_random_int(coeffs, 3, irep, 5);
         double frac[3];
         double cart1[3];
         double cart2[3];
         fill_random_double(frac, 3, 11, 1.0);
-        cell.to_cart(frac, cart1);
-        cell.to_cart(frac, cart2);
-        cell.add_rvec(cart2, coeffs);
-        cell.wrap(cart2);
+        cell->to_cart(frac, cart1);
+        cell->to_cart(frac, cart2);
+        cell->add_rvec(cart2, coeffs);
+        cell->wrap(cart2);
         EXPECT_NEAR(cart1[0], cart2[0], 1e-10);
         EXPECT_NEAR(cart1[1], cart2[1], 1e-10);
         EXPECT_NEAR(cart1[2], cart2[2], 1e-10);
+        delete cell;
     }
 }
 
@@ -374,48 +391,51 @@ TEST_F(CellTest3, to_cart_example) {
     EXPECT_NEAR(cart[2], -6.0, 1e-10);
 }
 
-TEST(CellTest, to_cart_to_frac_consistency1) {
+TEST_F(CellTest1, to_cart_to_frac_consistency) {
     for (int irep=0; irep < 100; irep++) {
-        Cell cell = create_random_cell(1, irep);
+        Cell* cell = create_random_cell(irep);
         double frac[3];
         double cart1[3];
         double cart2[3];
         fill_random_double(cart1, 3, 11, 5.0);
-        cell.to_frac(cart1, frac);
-        cell.to_cart(frac, cart2);
+        cell->to_frac(cart1, frac);
+        cell->to_cart(frac, cart2);
         EXPECT_NEAR(cart1[0], cart2[0], 1e-10);
         EXPECT_NEAR(cart1[1], cart2[1], 1e-10);
         EXPECT_NEAR(cart1[2], cart2[2], 1e-10);
+        delete cell;
     }
 }
 
-TEST(CellTest, to_cart_to_frac_consistency2) {
+TEST_F(CellTest2, to_cart_to_frac_consistency) {
     for (int irep=0; irep < 100; irep++) {
-        Cell cell = create_random_cell(2, irep);
+        Cell* cell = create_random_cell(irep);
         double frac[3];
         double cart1[3];
         double cart2[3];
         fill_random_double(cart1, 3, 11, 5.0);
-        cell.to_frac(cart1, frac);
-        cell.to_cart(frac, cart2);
+        cell->to_frac(cart1, frac);
+        cell->to_cart(frac, cart2);
         EXPECT_NEAR(cart1[0], cart2[0], 1e-10);
         EXPECT_NEAR(cart1[1], cart2[1], 1e-10);
         EXPECT_NEAR(cart1[2], cart2[2], 1e-10);
+        delete cell;
     }
 }
 
-TEST(CellTest, to_cart_to_frac_consistency3) {
+TEST_F(CellTest3, to_cart_to_frac_consistency) {
     for (int irep=0; irep < 100; irep++) {
-        Cell cell = create_random_cell(3, irep);
+        Cell* cell = create_random_cell(irep);
         double frac[3];
         double cart1[3];
         double cart2[3];
         fill_random_double(cart1, 3, 11, 5.0);
-        cell.to_frac(cart1, frac);
-        cell.to_cart(frac, cart2);
+        cell->to_frac(cart1, frac);
+        cell->to_cart(frac, cart2);
         EXPECT_NEAR(cart1[0], cart2[0], 1e-10);
         EXPECT_NEAR(cart1[1], cart2[1], 1e-10);
         EXPECT_NEAR(cart1[2], cart2[2], 1e-10);
+        delete cell;
     }
 }
 
@@ -476,48 +496,51 @@ TEST_F(CellTest3, dot_rvecs_example) {
     EXPECT_NEAR(dots[2], -6.0, 1e-10);
 }
 
-TEST(CellTest, g_lincomb_dot_rvecs_consistency1) {
+TEST_F(CellTest1, g_lincomb_dot_rvecs_consistency) {
     for (int irep=0; irep < 100; irep++) {
-        Cell cell = create_random_cell(1, irep);
+        Cell* cell = create_random_cell(irep);
         double coeffs[3];
         double gvec[3];
         double dots[3];
         fill_random_double(coeffs, 3, 11, 5.0);
-        cell.g_lincomb(coeffs, gvec);
-        cell.dot_rvecs(gvec, dots);
+        cell->g_lincomb(coeffs, gvec);
+        cell->dot_rvecs(gvec, dots);
         EXPECT_NEAR(coeffs[0], dots[0], 1e-10);
         EXPECT_NEAR(coeffs[1], dots[1], 1e-10);
         EXPECT_NEAR(coeffs[2], dots[2], 1e-10);
+        delete cell;
     }
 }
 
-TEST(CellTest, g_lincomb_dot_rvecs_consistency2) {
+TEST_F(CellTest2, g_lincomb_dot_rvecs_consistency) {
     for (int irep=0; irep < 100; irep++) {
-        Cell cell = create_random_cell(2, irep);
+        Cell* cell = create_random_cell(irep);
         double coeffs[3];
         double gvec[3];
         double dots[3];
         fill_random_double(coeffs, 3, 11, 5.0);
-        cell.g_lincomb(coeffs, gvec);
-        cell.dot_rvecs(gvec, dots);
+        cell->g_lincomb(coeffs, gvec);
+        cell->dot_rvecs(gvec, dots);
         EXPECT_NEAR(coeffs[0], dots[0], 1e-10);
         EXPECT_NEAR(coeffs[1], dots[1], 1e-10);
         EXPECT_NEAR(coeffs[2], dots[2], 1e-10);
+        delete cell;
     }
 }
 
-TEST(CellTest, g_lincomb_dot_rvecs_consistency3) {
+TEST_F(CellTest3, g_lincomb_dot_rvecs_consistency) {
     for (int irep=0; irep < 100; irep++) {
-        Cell cell = create_random_cell(3, irep);
+        Cell* cell = create_random_cell(irep);
         double coeffs[3];
         double gvec[3];
         double dots[3];
         fill_random_double(coeffs, 3, 11, 5.0);
-        cell.g_lincomb(coeffs, gvec);
-        cell.dot_rvecs(gvec, dots);
+        cell->g_lincomb(coeffs, gvec);
+        cell->dot_rvecs(gvec, dots);
         EXPECT_NEAR(coeffs[0], dots[0], 1e-10);
         EXPECT_NEAR(coeffs[1], dots[1], 1e-10);
         EXPECT_NEAR(coeffs[2], dots[2], 1e-10);
+        delete cell;
     }
 }
 
@@ -525,9 +548,9 @@ TEST(CellTest, g_lincomb_dot_rvecs_consistency3) {
 // add_rvec
 // --------
 
-TEST(CellTest, add_rvec_consistency1) {
+TEST_F(CellTest1, add_rvec_consistency) {
     for (int irep=0; irep < 100; irep++) {
-        Cell cell = create_random_cell(1, irep);
+        Cell* cell = create_random_cell(irep);
         int coeffs[1];
         fill_random_int(coeffs, 1, irep, 5);
         double cart1[3];
@@ -538,18 +561,19 @@ TEST(CellTest, add_rvec_consistency1) {
         cart2[0] = cart1[0];
         cart2[1] = cart1[1];
         cart2[2] = cart1[2];
-        cell.add_rvec(cart2, coeffs);
-        cell.to_frac(cart1, frac1);
-        cell.to_frac(cart2, frac2);
+        cell->add_rvec(cart2, coeffs);
+        cell->to_frac(cart1, frac1);
+        cell->to_frac(cart2, frac2);
         EXPECT_NEAR(frac2[0] - frac1[0], (double)coeffs[0], 1e-10);
         EXPECT_NEAR(frac2[1] - frac1[1], 0.0, 1e-10);
         EXPECT_NEAR(frac2[2] - frac1[2], 0.0, 1e-10);
+        delete cell;
     }
 }
 
-TEST(CellTest, add_rvec_consistency2) {
+TEST_F(CellTest2, add_rvec_consistency) {
     for (int irep=0; irep < 100; irep++) {
-        Cell cell = create_random_cell(2, irep);
+        Cell* cell = create_random_cell(irep);
         int coeffs[2];
         fill_random_int(coeffs, 2, irep, 5);
         double cart1[3];
@@ -560,18 +584,19 @@ TEST(CellTest, add_rvec_consistency2) {
         cart2[0] = cart1[0];
         cart2[1] = cart1[1];
         cart2[2] = cart1[2];
-        cell.add_rvec(cart2, coeffs);
-        cell.to_frac(cart1, frac1);
-        cell.to_frac(cart2, frac2);
+        cell->add_rvec(cart2, coeffs);
+        cell->to_frac(cart1, frac1);
+        cell->to_frac(cart2, frac2);
         EXPECT_NEAR(frac2[0] - frac1[0], (double)coeffs[0], 1e-10);
         EXPECT_NEAR(frac2[1] - frac1[1], (double)coeffs[1], 1e-10);
         EXPECT_NEAR(frac2[2] - frac1[2], 0.0, 1e-10);
+        delete cell;
     }
 }
 
-TEST(CellTest, add_rvec_consistency3) {
+TEST_F(CellTest3, add_rvec_consistency) {
     for (int irep=0; irep < 100; irep++) {
-        Cell cell = create_random_cell(3, irep);
+        Cell* cell = create_random_cell(irep);
         int coeffs[3];
         fill_random_int(coeffs, 3, irep, 5);
         double cart1[3];
@@ -582,12 +607,13 @@ TEST(CellTest, add_rvec_consistency3) {
         cart2[0] = cart1[0];
         cart2[1] = cart1[1];
         cart2[2] = cart1[2];
-        cell.add_rvec(cart2, coeffs);
-        cell.to_frac(cart1, frac1);
-        cell.to_frac(cart2, frac2);
+        cell->add_rvec(cart2, coeffs);
+        cell->to_frac(cart1, frac1);
+        cell->to_frac(cart2, frac2);
         EXPECT_NEAR(frac2[0] - frac1[0], (double)coeffs[0], 1e-10);
         EXPECT_NEAR(frac2[1] - frac1[1], (double)coeffs[1], 1e-10);
         EXPECT_NEAR(frac2[2] - frac1[2], (double)coeffs[2], 1e-10);
+        delete cell;
     }
 }
 
@@ -597,51 +623,51 @@ TEST(CellTest, add_rvec_consistency3) {
 
 // get_nvec() is already tested above
 
-TEST(CellTest, get_rvec) {
+TEST_F(CellTest, get_rvec) {
     for (int nvec=1; nvec<=3; nvec++) {
         double rvecs[nvec*3];
         SCOPED_TRACE(nvec);
         Cell* cell = NULL;
         fill_random_double(rvecs, nvec*3, 1487, 2.0);
         cell = new Cell(rvecs, nvec);
-        EXPECT_EQ(mycell->get_rvec(0, 0), rvecs[0]);
-        EXPECT_EQ(mycell->get_rvec(0, 1), rvecs[1]);
-        EXPECT_EQ(mycell->get_rvec(0, 2), rvecs[2]);
+        EXPECT_EQ(cell->get_rvec(0, 0), rvecs[0]);
+        EXPECT_EQ(cell->get_rvec(0, 1), rvecs[1]);
+        EXPECT_EQ(cell->get_rvec(0, 2), rvecs[2]);
         if (nvec < 2) continue;
-        EXPECT_EQ(mycell->get_rvec(1, 0), rvecs[3]);
-        EXPECT_EQ(mycell->get_rvec(1, 1), rvecs[4]);
-        EXPECT_EQ(mycell->get_rvec(1, 2), rvecs[5]);
+        EXPECT_EQ(cell->get_rvec(1, 0), rvecs[3]);
+        EXPECT_EQ(cell->get_rvec(1, 1), rvecs[4]);
+        EXPECT_EQ(cell->get_rvec(1, 2), rvecs[5]);
         if (nvec < 3) continue;
-        EXPECT_EQ(mycell->get_rvec(2, 0), rvecs[6]);
-        EXPECT_EQ(mycell->get_rvec(2, 1), rvecs[7]);
-        EXPECT_EQ(mycell->get_rvec(2, 2), rvecs[8]);
+        EXPECT_EQ(cell->get_rvec(2, 0), rvecs[6]);
+        EXPECT_EQ(cell->get_rvec(2, 1), rvecs[7]);
+        EXPECT_EQ(cell->get_rvec(2, 2), rvecs[8]);
         delete cell;
     }
 }
 
-TEST(CellTest, get_domain) {
+TEST_F(CellTest, get_domain) {
     for (int nvec=1; nvec<=3; nvec++) {
         double rvecs[nvec*3];
         SCOPED_TRACE(nvec);
         Cell* cell = NULL;
         fill_random_double(rvecs, nvec*3, 1487, 2.0);
         cell = new Cell(rvecs, nvec);
-        EXPECT_THROW(mycell->get_rvec(-1, 0), std::domain_error);
-        EXPECT_THROW(mycell->get_rvec(3, 0), std::domain_error);
-        EXPECT_THROW(mycell->get_rvec(0, -1), std::domain_error);
-        EXPECT_THROW(mycell->get_rvec(0, 3), std::domain_error);
-        EXPECT_THROW(mycell->get_gvec(-1, 0), std::domain_error);
-        EXPECT_THROW(mycell->get_gvec(3, 0), std::domain_error);
-        EXPECT_THROW(mycell->get_gvec(0, -1), std::domain_error);
-        EXPECT_THROW(mycell->get_gvec(0, 3), std::domain_error);
-        EXPECT_THROW(mycell->get_rlength(-1), std::domain_error);
-        EXPECT_THROW(mycell->get_rlength(3), std::domain_error);
-        EXPECT_THROW(mycell->get_glength(-1), std::domain_error);
-        EXPECT_THROW(mycell->get_glength(3), std::domain_error);
-        EXPECT_THROW(mycell->get_rspacing(-1), std::domain_error);
-        EXPECT_THROW(mycell->get_rspacing(3), std::domain_error);
-        EXPECT_THROW(mycell->get_gspacing(-1), std::domain_error);
-        EXPECT_THROW(mycell->get_gspacing(3), std::domain_error);
+        EXPECT_THROW(cell->get_rvec(-1, 0), std::domain_error);
+        EXPECT_THROW(cell->get_rvec(3, 0), std::domain_error);
+        EXPECT_THROW(cell->get_rvec(0, -1), std::domain_error);
+        EXPECT_THROW(cell->get_rvec(0, 3), std::domain_error);
+        EXPECT_THROW(cell->get_gvec(-1, 0), std::domain_error);
+        EXPECT_THROW(cell->get_gvec(3, 0), std::domain_error);
+        EXPECT_THROW(cell->get_gvec(0, -1), std::domain_error);
+        EXPECT_THROW(cell->get_gvec(0, 3), std::domain_error);
+        EXPECT_THROW(cell->get_rlength(-1), std::domain_error);
+        EXPECT_THROW(cell->get_rlength(3), std::domain_error);
+        EXPECT_THROW(cell->get_glength(-1), std::domain_error);
+        EXPECT_THROW(cell->get_glength(3), std::domain_error);
+        EXPECT_THROW(cell->get_rspacing(-1), std::domain_error);
+        EXPECT_THROW(cell->get_rspacing(3), std::domain_error);
+        EXPECT_THROW(cell->get_gspacing(-1), std::domain_error);
+        EXPECT_THROW(cell->get_gspacing(3), std::domain_error);
         delete cell;
     }
 }
@@ -724,11 +750,30 @@ TEST_F(CellTest3, get_example) {
 // is_cubic and is_cuboid
 // ----------------------
 
-TEST(CellTest, cubic_cuboid_random) {
+TEST_F(CellTest1, cubic_cuboid_random) {
     for (int irep=0; irep < 100; irep++) {
-        Cell cell = create_random_cell(1, irep);
-        EXPECT_FALSE(cell.is_cubic());
-        EXPECT_FALSE(cell.is_cuboid());
+        Cell* cell = create_random_cell(irep);
+        EXPECT_FALSE(cell->is_cubic());
+        EXPECT_FALSE(cell->is_cuboid());
+        delete cell;
+    }
+}
+
+TEST_F(CellTest2, cubic_cuboid_random) {
+    for (int irep=0; irep < 100; irep++) {
+        Cell* cell = create_random_cell(irep);
+        EXPECT_FALSE(cell->is_cubic());
+        EXPECT_FALSE(cell->is_cuboid());
+        delete cell;
+    }
+}
+
+TEST_F(CellTest3, cubic_cuboid_random) {
+    for (int irep=0; irep < 100; irep++) {
+        Cell* cell = create_random_cell(irep);
+        EXPECT_FALSE(cell->is_cubic());
+        EXPECT_FALSE(cell->is_cuboid());
+        delete cell;
     }
 }
 
@@ -836,15 +881,15 @@ TEST_F(CellTest3, set_ranges_rcut_domain) {
     EXPECT_THROW(mycell->set_ranges_rcut(center, 0.0, ranges_begin, ranges_end), std::domain_error);
 }
 
-TEST(CellTest, set_ranges_rcut_random1) {
+TEST_F(CellTest1, set_ranges_rcut_random) {
     for (int icell=0; icell < 100; icell++) {
-        Cell cell = create_random_cell(1, icell);
+        Cell* cell = create_random_cell(icell);
         double center[3];
         int ranges_begin[1];
         int ranges_end[1];
         double rcut = 0.3*(icell+1);
         fill_random_double(center, 3, icell+2, 5.0);
-        cell.set_ranges_rcut(center, rcut, ranges_begin, ranges_end);
+        cell->set_ranges_rcut(center, rcut, ranges_begin, ranges_end);
         for (int ipoint=0; ipoint < 1000; ipoint++) {
             // Make a random point that is uniformly distributed within a sphere, but
             // that has a high probability of setting on the edge.
@@ -861,22 +906,23 @@ TEST(CellTest, set_ranges_rcut_random1) {
             point[0] = center[0] + rcut*point[0];
             point[1] = center[1] + rcut*point[1];
             point[2] = center[2] + rcut*point[2];
-            cell.to_frac(point, frac);
+            cell->to_frac(point, frac);
             EXPECT_LE(ranges_begin[0], frac[0]);
             EXPECT_GE(ranges_end[0], frac[0]);
         }
+        delete cell;
     }
 }
 
-TEST(CellTest, set_ranges_rcut_random2) {
+TEST_F(CellTest2, set_ranges_rcut_random) {
     for (int icell=0; icell < 100; icell++) {
-        Cell cell = create_random_cell(2, icell);
+        Cell* cell = create_random_cell(icell);
         double center[3];
         int ranges_begin[2];
         int ranges_end[2];
         double rcut = 0.3*(icell+1);
         fill_random_double(center, 3, icell+3, 5.0);
-        cell.set_ranges_rcut(center, rcut, ranges_begin, ranges_end);
+        cell->set_ranges_rcut(center, rcut, ranges_begin, ranges_end);
         for (int ipoint=0; ipoint < 1000; ipoint++) {
             // Make a random point that is uniformly distributed within a sphere, but
             // that has a high probability of setting on the edge.
@@ -893,24 +939,25 @@ TEST(CellTest, set_ranges_rcut_random2) {
             point[0] = center[0] + rcut*point[0];
             point[1] = center[1] + rcut*point[1];
             point[2] = center[2] + rcut*point[2];
-            cell.to_frac(point, frac);
+            cell->to_frac(point, frac);
             EXPECT_LE(ranges_begin[0], frac[0]);
             EXPECT_LE(ranges_begin[1], frac[1]);
             EXPECT_GE(ranges_end[0], frac[0]);
             EXPECT_GE(ranges_end[1], frac[1]);
         }
+        delete cell;
     }
 }
 
-TEST(CellTest, set_ranges_rcut_random3) {
+TEST_F(CellTest3, set_ranges_rcut_random) {
     for (int icell=0; icell < 100; icell++) {
-        Cell cell = create_random_cell(3, icell);
+        Cell* cell = create_random_cell(icell);
         double center[3];
         int ranges_begin[3];
         int ranges_end[3];
         double rcut = 0.3*(icell+1);
         fill_random_double(center, 3, icell+5, 5.0);
-        cell.set_ranges_rcut(center, rcut, ranges_begin, ranges_end);
+        cell->set_ranges_rcut(center, rcut, ranges_begin, ranges_end);
         for (int ipoint=0; ipoint < 1000; ipoint++) {
             // Make a random point that is uniformly distributed within a sphere, but
             // that has a high probability of setting on the edge.
@@ -927,7 +974,7 @@ TEST(CellTest, set_ranges_rcut_random3) {
             point[0] = center[0] + rcut*point[0];
             point[1] = center[1] + rcut*point[1];
             point[2] = center[2] + rcut*point[2];
-            cell.to_frac(point, frac);
+            cell->to_frac(point, frac);
             EXPECT_LE(ranges_begin[0], frac[0]);
             EXPECT_LE(ranges_begin[1], frac[1]);
             EXPECT_LE(ranges_begin[2], frac[2]);
@@ -935,6 +982,7 @@ TEST(CellTest, set_ranges_rcut_random3) {
             EXPECT_GE(ranges_end[1], frac[1]);
             EXPECT_GE(ranges_end[2], frac[2]);
         }
+        delete cell;
     }
 }
 
