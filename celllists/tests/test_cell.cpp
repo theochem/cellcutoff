@@ -739,7 +739,7 @@ TEST_P(CellTestP, set_ranges_rcut_random) {
 // select_inside
 // -------------
 
-TEST_F(CellTest1, select_inside_example) {
+TEST_F(CellTest1, select_inside_rcut_example) {
     // All the parameters
     double rcut = 5.0;
     double center[3] = {2.5, 3.4, -0.6};
@@ -761,7 +761,7 @@ TEST_F(CellTest1, select_inside_example) {
 }
 
 
-TEST_F(CellTest2, select_inside_example) {
+TEST_F(CellTest2, select_inside_rcut_example) {
     // All the parameters
     double rcut = 5.0;
     double center[3] = {2.5, 3.4, -0.6};
@@ -787,7 +787,7 @@ TEST_F(CellTest2, select_inside_example) {
     }
 }
 
-TEST_P(CellTestP, select_inside_random) {
+TEST_P(CellTestP, select_inside_rcut_random) {
     for (int irep=0; irep < 100; irep++) {
         // Test parameters:
         // - Random cell
