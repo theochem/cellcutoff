@@ -213,7 +213,7 @@ class Cell {
             This function effectively defines a supercell that is guaranteed to
             enclose the cutoff sphere.
          */
-        void set_ranges_rcut(const double* center, double rcut, int* ranges_begin,
+        int set_ranges_rcut(const double* center, double rcut, int* ranges_begin,
             int* ranges_end) const;
 
         /** @brief

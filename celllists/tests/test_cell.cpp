@@ -603,13 +603,17 @@ TEST_F(CellTest1, set_ranges_rcut_example) {
     double center[3] = {6.3, 0.2, -0.8};
     int ranges_begin[1];
     int ranges_end[1];
-    mycell->set_ranges_rcut(center, 1.0, ranges_begin, ranges_end);
+    int ncell = 0;
+    ncell = mycell->set_ranges_rcut(center, 1.0, ranges_begin, ranges_end);
+    EXPECT_EQ(ncell, 2);
     EXPECT_EQ(ranges_begin[0], 2);
     EXPECT_EQ(ranges_end[0], 4);
-    mycell->set_ranges_rcut(center, 2.0, ranges_begin, ranges_end);
+    ncell = mycell->set_ranges_rcut(center, 2.0, ranges_begin, ranges_end);
+    EXPECT_EQ(ncell, 3);
     EXPECT_EQ(ranges_begin[0], 2);
     EXPECT_EQ(ranges_end[0], 5);
-    mycell->set_ranges_rcut(center, 3.0, ranges_begin, ranges_end);
+    ncell = mycell->set_ranges_rcut(center, 3.0, ranges_begin, ranges_end);
+    EXPECT_EQ(ncell, 4);
     EXPECT_EQ(ranges_begin[0], 1);
     EXPECT_EQ(ranges_end[0], 5);
 }
@@ -618,13 +622,17 @@ TEST_F(CellTest1, set_ranges_rcut_edge) {
     double center[3] = {2.0, 0.2, -0.8};
     int ranges_begin[1];
     int ranges_end[1];
-    mycell->set_ranges_rcut(center, 1.0, ranges_begin, ranges_end);
+    int ncell = 0;
+    ncell = mycell->set_ranges_rcut(center, 1.0, ranges_begin, ranges_end);
+    EXPECT_EQ(ncell, 2);
     EXPECT_EQ(ranges_begin[0], 0);
     EXPECT_EQ(ranges_end[0], 2);
-    mycell->set_ranges_rcut(center, 2.0, ranges_begin, ranges_end);
+    ncell = mycell->set_ranges_rcut(center, 2.0, ranges_begin, ranges_end);
+    EXPECT_EQ(ncell, 2);
     EXPECT_EQ(ranges_begin[0], 0);
     EXPECT_EQ(ranges_end[0], 2);
-    mycell->set_ranges_rcut(center, 3.0, ranges_begin, ranges_end);
+    ncell = mycell->set_ranges_rcut(center, 3.0, ranges_begin, ranges_end);
+    EXPECT_EQ(ncell, 4);
     EXPECT_EQ(ranges_begin[0], -1);
     EXPECT_EQ(ranges_end[0], 3);
 }
@@ -633,7 +641,9 @@ TEST_F(CellTest2, set_ranges_rcut_example) {
     double center[3] = {6.3, 0.2, -5.0};
     int ranges_begin[2];
     int ranges_end[2];
-    mycell->set_ranges_rcut(center, 1.1, ranges_begin, ranges_end);
+    int ncell = 0;
+    ncell = mycell->set_ranges_rcut(center, 1.1, ranges_begin, ranges_end);
+    EXPECT_EQ(ncell, 2*2);
     EXPECT_EQ(ranges_begin[0], 2);
     EXPECT_EQ(ranges_begin[1], -2);
     EXPECT_EQ(ranges_end[0], 4);
@@ -644,7 +654,9 @@ TEST_F(CellTest2, set_ranges_rcut_edge) {
     double center[3] = {4.0, 0.2, -2.0};
     int ranges_begin[2];
     int ranges_end[2];
-    mycell->set_ranges_rcut(center, 2.0, ranges_begin, ranges_end);
+    int ncell = 0;
+    ncell = mycell->set_ranges_rcut(center, 2.0, ranges_begin, ranges_end);
+    EXPECT_EQ(ncell, 2);
     EXPECT_EQ(ranges_begin[0], 1);
     EXPECT_EQ(ranges_begin[1], -1);
     EXPECT_EQ(ranges_end[0], 3);
@@ -655,7 +667,9 @@ TEST_F(CellTest3, set_ranges_rcut_example) {
     double center[3] = {6.3, 2.2, -5.8};
     int ranges_begin[3];
     int ranges_end[3];
-    mycell->set_ranges_rcut(center, 1.0, ranges_begin, ranges_end);
+    int ncell = 0;
+    ncell = mycell->set_ranges_rcut(center, 1.0, ranges_begin, ranges_end);
+    EXPECT_EQ(ncell, 2*3*1);
     EXPECT_EQ(ranges_begin[0], 2);
     EXPECT_EQ(ranges_begin[1], 1);
     EXPECT_EQ(ranges_begin[2], -2);
@@ -668,7 +682,9 @@ TEST_F(CellTest3, set_ranges_rcut_edge) {
     double center[3] = {10.0, -2.0, -6.0};
     int ranges_begin[3];
     int ranges_end[3];
-    mycell->set_ranges_rcut(center, 2.0, ranges_begin, ranges_end);
+    int ncell = 0;
+    ncell = mycell->set_ranges_rcut(center, 2.0, ranges_begin, ranges_end);
+    EXPECT_EQ(ncell, 2*4*1);
     EXPECT_EQ(ranges_begin[0], 4);
     EXPECT_EQ(ranges_begin[1], -4);
     EXPECT_EQ(ranges_begin[2], -2);
@@ -725,11 +741,7 @@ TEST_P(CellTestP, set_ranges_rcut_random) {
 
 /* TODO
 
-- Allocate a bunch of 3D vectors in the fixtures that are commonly used:
-  frac, frac1, frac2, cart, cart1, cart2, delta, coeffs, ... Even if most tests
-  don't use all of them, it is still a major convenience.
-- Let set_ranges_rcut return the total number of cells contained in the computed
-  ranges => convenient for memory allocation.
+- Get rid of meaningless loop variables like `i`.
 
 - select_inside would become easier if it calls set_ranges_rcut itself. Is this
   a good idea, i.e. it forces us to do allocation of indices inside the

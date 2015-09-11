@@ -318,21 +318,24 @@ bool Cell::is_cuboid() const {
 }
 
 
-void Cell::set_ranges_rcut(const double* center, double rcut, int* ranges_begin,
+int Cell::set_ranges_rcut(const double* center, double rcut, int* ranges_begin,
     int* ranges_end) const {
     if (rcut <= 0) {
         throw std::domain_error("rcut must be strictly positive.");
     }
     double frac[3];
+    int ncell = 1;
     to_frac(center, frac);
-    for (int i=nvec-1; i>=0; i--) {
+    for (int ivec=nvec-1; ivec>=0; ivec--) {
         // Use spacings between planes to find first plane before cutoff sphere and last
         // plane after cutoff sphere. To this end, we must divide rcut by the spacing
         // between planes.
-        double frac_rcut = rcut/rspacings[i];
-        ranges_begin[i] = floor(frac[i]-frac_rcut);
-        ranges_end[i] = ceil(frac[i]+frac_rcut);
+        double frac_rcut = rcut/rspacings[ivec];
+        ranges_begin[ivec] = floor(frac[ivec]-frac_rcut);
+        ranges_end[ivec] = ceil(frac[ivec]+frac_rcut);
+        ncell *= (ranges_end[ivec] - ranges_begin[ivec]);
     }
+    return ncell;
 }
 
 
