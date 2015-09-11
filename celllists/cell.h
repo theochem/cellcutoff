@@ -219,9 +219,6 @@ class Cell {
         /** @brief
                 Selects a list of cells inside a cutoff sphere.
 
-            @return
-                The number of periodic images inside the cutoff sphere.
-
             @param origin
                 A pointer of 3 doubles with the origin of a supercell.
 
@@ -250,8 +247,11 @@ class Cell {
                 of rows is the product of the lengths of the ranges specified by
                 ranges_begin and ranges_end. The number of columns equals `nvec`.
                 The elements are stored in row-major order.
+
+            @return
+                The number of periodic images inside the cutoff sphere.
           */
-        int select_inside(const double* origin, const double* center, double rcut,
+        int select_inside(const double* center, double rcut,
             const int* ranges_begin, const int* ranges_end, const int* shape,
             const bool* pbc, int* indices) const;
 };

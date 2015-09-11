@@ -336,9 +336,9 @@ void Cell::set_ranges_rcut(const double* center, double rcut, int* ranges_begin,
 }
 
 
-int Cell::select_inside(const double* origin, const double* center, double rcut,
-    const int* ranges_begin, const int* ranges_end, const int* shape, const bool* pbc,
-    int* indices) const {
+int Cell::select_inside(const double* center, double rcut,
+    const int* ranges_begin, const int* ranges_end, const int* shape,
+    const bool* pbc, int* indices) const {
 
     if (nvec == 0)
         throw std::domain_error("The cell must be at least 1D periodic for select_inside.");
@@ -381,9 +381,9 @@ int Cell::select_inside(const double* origin, const double* center, double rcut,
                 frac[1] = i1;
                 frac[2] = i2;
                 to_cart(frac, cart);
-                double x = cart[0] + origin[0] - center[0];
-                double y = cart[1] + origin[1] - center[1];
-                double z = cart[2] + origin[2] - center[2];
+                double x = cart[0] - center[0];
+                double y = cart[1] - center[1];
+                double z = cart[2] - center[2];
                 double d = sqrt(x*x+y*y+z*z);
 
                 // if the distance is below rcut add this grid point.
