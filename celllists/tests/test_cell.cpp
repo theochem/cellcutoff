@@ -741,24 +741,30 @@ TEST_P(CellTestP, set_ranges_rcut_random) {
 
 /* TODO
 
-- select_inside would become easier if it calls set_ranges_rcut itself. Is this
-  a good idea, i.e. it forces us to do allocation of indices inside the
-  function. This may not be desirable in all cases. Better solution: provide
-  convenience function that does everything in one go but also provide API
-  for the separate parts.
-- Rename: select_inside => select_inside_rcut
-
-TEST_F(CellTest1, select_inside_example) {
-    double rcut = 5.0
-    double center[3] = {2.5, 3.4, -0.6}
-    int ranges_begin[1];
-    int ranges_end[1];
-    mycell->set_ranges_rcut(center, rcut, ranges_begin, ranges_end);
-
-    mycell->select_inside(center, rcut, ranges_begin, ranges_end)
-}
+- Unit tests for different variants: shape, pbc
+- rename longs -> ints
+- change order of first two arguments of all EXPECT and ASSERT calls.
 
 */
+
+TEST_F(CellTest1, select_inside_example) {
+    // All the parameters
+    double rcut = 5.0;
+    double center[3] = {2.5, 3.4, -0.6};
+    int shape[1] = {10};
+    bool pbc[1] = {true};
+    int indices[2];
+
+    // Call
+    int nselect = mycell->select_inside_rcut(center, rcut, shape, pbc, indices);
+
+    // Check results
+    // lower end: -2.5 (-2 #> 8)
+    // upper end:  7.5 ( 8 #> 4) non-inclusive
+    EXPECT_EQ(nselect, 1);
+    EXPECT_EQ(indices[0], -2);
+    EXPECT_EQ(indices[1], 4);
+}
 
 
 // Instantiation of parameterized tests

@@ -61,6 +61,13 @@ class Cell {
         double glengths[3];    //!< reciprocal-space vector lengths
         double rspacings[3];   //!< spacing between real-space crystal planes
         double gspacings[3];   //!< spacing between reciprocal-space crystal planes
+
+        /** @brief
+                TODO
+         */
+        void select_inside_low(const double* frac, double rcut,
+            const int* shape, const bool* pbc, int* &indices, int* prefix,
+            int ivec, int &nselect) const;
     public:
         /** @brief
                 Construct a Cell object.
@@ -204,11 +211,15 @@ class Cell {
             @param ranges_begin
                 A pointer to `nvec` longs to which the begin of each range of
                 periodic images along a periodic boundary condition is written.
+                These integers are the highest indices of the crystal planes
+                before/below the cutoff sphere.
 
             @param ranges_end
                 A pointer to `nvec` longs to which the end of each range of
                 periodic images along a periodic boundary condition is written.
                 Then end values are non-inclusive as in Python ranges.
+                These integers are the lowest indices of the crystal planes
+                after/above the cutoff sphere.
 
             This function effectively defines a supercell that is guaranteed to
             enclose the cutoff sphere.
@@ -228,12 +239,6 @@ class Cell {
             @param rcut
                 The cutoff radius.
 
-            @param ranges_begin
-                As obtained with set_ranges_rcut().
-
-            @param ranges_end
-                As obtained with set_ranges_rcut().
-
             @param shape
                 A pointer of 3 longs with the shape of the supercell.
 
@@ -243,17 +248,17 @@ class Cell {
 
             @param indices
                 A sufficiently large pre-allocated output array to which the
-                indexes of the selected periodic images are written. The number
-                of rows is the product of the lengths of the ranges specified by
-                ranges_begin and ranges_end. The number of columns equals `nvec`.
-                The elements are stored in row-major order.
+                indexes of the selected periodic images are written. Each set of
+                integers corresponds to the intersection of crystal planes at
+                the lower end corner of the cell. A safe number of rows is given
+                by the return value of set_ranges_rcut. The number of columns
+                equals `nvec`. The elements are stored in row-major order.
 
             @return
-                The number of periodic images inside the cutoff sphere.
+                The number rows in the
           */
-        int select_inside(const double* center, double rcut,
-            const int* ranges_begin, const int* ranges_end, const int* shape,
-            const bool* pbc, int* indices) const;
+        int select_inside_rcut(const double* center, double rcut,
+            const int* shape, const bool* pbc, int* indices) const;
 };
 
 /**

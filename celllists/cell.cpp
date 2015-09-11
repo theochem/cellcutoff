@@ -343,69 +343,55 @@ int Cell::set_ranges_rcut(const double* center, double rcut, int* ranges_begin,
 }
 
 
-int Cell::select_inside(const double* center, double rcut,
-    const int* ranges_begin, const int* ranges_end, const int* shape,
-    const bool* pbc, int* indices) const {
+void Cell::select_inside_low(const double* frac, double rcut, const int* shape,
+    const bool* pbc, int* &indices, int* prefix, int ivec, int &nselect) const {
 
-    if (nvec == 0)
-        throw std::domain_error("The cell must be at least 1D periodic for select_inside.");
-
-    int my_ranges_begin[3];
-    int my_ranges_end[3];
-    bool my_pbc[3];
-    int my_shape[3];
-
-    for (int ivec=nvec-1; ivec>=0; ivec--) {
-        my_ranges_begin[ivec] = ranges_begin[ivec];
-        my_ranges_end[ivec] = ranges_end[ivec];
-        my_shape[ivec] = shape[ivec];
-        my_pbc[ivec] = pbc[ivec];
+    if (rcut <= 0) {
+        throw std::domain_error("rcut must be strictly positive.");
     }
-    for (int ivec=nvec; ivec<3; ivec++) {
-        my_ranges_begin[ivec] = 0;
-        my_ranges_end[ivec] = 1;
-        my_shape[ivec] = 1;
-        my_pbc[ivec] = 0;
-    }
+    double frac_rcut = rcut/rspacings[ivec];
+    int begin = floor(frac[ivec]-frac_rcut);
+    int end = ceil(frac[ivec]+frac_rcut);
+    if (!pbc && begin < 0) begin = 0;
+    if (!pbc && end > shape[1]) end = shape[1];
 
-    int nselect = 0;
-
-    for (int i0 = my_ranges_begin[0]; i0 < my_ranges_end[0]; i0++) {
-        int j0 = smart_wrap(i0, my_shape[0], my_pbc[0]);
-        if (j0 == -1) continue;
-
-        for (int i1 = my_ranges_begin[1]; i1 < my_ranges_end[1]; i1++) {
-            int j1 = smart_wrap(i1, my_shape[1], my_pbc[1]);
-            if (j1 == -1) continue;
-
-            for (int i2 = my_ranges_begin[2]; i2 < my_ranges_end[2]; i2++) {
-                int j2 = smart_wrap(i2, my_shape[2], my_pbc[2]);
-                if (j2 == -1) continue;
-
-                // Compute the distance between the point and the image of the center
-                double frac[3], cart[3];
-                frac[0] = i0;
-                frac[1] = i1;
-                frac[2] = i2;
-                to_cart(frac, cart);
-                double x = cart[0] - center[0];
-                double y = cart[1] - center[1];
-                double z = cart[2] - center[2];
-                double d = sqrt(x*x+y*y+z*z);
-
-                // if the distance is below rcut add this grid point.
-                if (d < rcut) {
-                    indices[0] = j0;
-                    if (nvec > 1) indices[1] = j1;
-                    if (nvec > 2) indices[2] = j2;
-                    indices += nvec;
-                    nselect++;
-                }
+    if (ivec == nvec - 1) {
+        if (indices != NULL) {
+            std::copy(prefix, prefix+ivec, indices);
+            indices[ivec] = begin;
+            indices[ivec+1] = end;
+            indices += ivec + 2;
+        }
+        nselect += 1;
+    } else {
+        for (int i = begin; i < end; i++) {
+            prefix[ivec] = i;
+            double rcut_new = -1.0;
+            if (i + 1 < frac[ivec]) {
+                rcut_new = sqrt(rcut*rcut - (i + 1 - frac[ivec])*(i + 1 - frac[ivec]));
+            } else if (i > frac[ivec]) {
+                rcut_new = sqrt(rcut*rcut - (i - frac[ivec])*(i - frac[ivec]));
+            } else {
+                rcut_new = rcut;
             }
+            select_inside_low(frac, rcut_new, shape, pbc, indices, prefix, ivec+1, nselect);
         }
     }
+}
 
-    return nselect;
+
+int Cell::select_inside_rcut(const double* center, double rcut,
+    const int* shape, const bool* pbc, int* indices) const {
+    if (nvec == 0) {
+        throw std::domain_error("The cell must be at least 1D periodic for select_inside_rcut.");
+    } else {
+        double frac[3];
+        int prefix[nvec-1];
+        int nselect = 0;
+        to_frac(center, frac);
+        select_inside_low(frac, rcut, shape, pbc, indices, prefix, 0, nselect);
+        return nselect;
+    }
 }
 
 
