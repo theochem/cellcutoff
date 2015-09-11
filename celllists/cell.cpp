@@ -31,8 +31,8 @@ Cell::Cell(const double* _rvecs, int _nvec): nvec(_nvec) {
     }
 
     // copy the given _rvecs and _nvec:
-    for (int i=nvec*3-1; i>=0; i--) {
-        rvecs[i] = _rvecs[i];
+    for (int ivec=nvec*3-1; ivec>=0; ivec--) {
+        rvecs[ivec] = _rvecs[ivec];
     }
 
     // compute the volume
@@ -157,11 +157,15 @@ Cell::Cell(const double* _rvecs, int _nvec): nvec(_nvec) {
     gvecs[8] /= det;
 
     // compute the spacings and the lengths of the cell vectors
-    for (int i=2; i>=0; i--) {
-        rlengths[i] = sqrt(rvecs[3*i]*rvecs[3*i] + rvecs[3*i+1]*rvecs[3*i+1] + rvecs[3*i+2]*rvecs[3*i+2]);
-        glengths[i] = sqrt(gvecs[3*i]*gvecs[3*i] + gvecs[3*i+1]*gvecs[3*i+1] + gvecs[3*i+2]*gvecs[3*i+2]);
-        rspacings[i] = 1.0/glengths[i];
-        gspacings[i] = 1.0/rlengths[i];
+    for (int ivec=2; ivec>=0; ivec--) {
+        rlengths[ivec] = sqrt(rvecs[3*ivec]*rvecs[3*ivec] +
+                              rvecs[3*ivec+1]*rvecs[3*ivec+1] +
+                              rvecs[3*ivec+2]*rvecs[3*ivec+2]);
+        glengths[ivec] = sqrt(gvecs[3*ivec]*gvecs[3*ivec] +
+                              gvecs[3*ivec+1]*gvecs[3*ivec+1] +
+                              gvecs[3*ivec+2]*gvecs[3*ivec+2]);
+        rspacings[ivec] = 1.0/glengths[ivec];
+        gspacings[ivec] = 1.0/rlengths[ivec];
     }
 }
 
@@ -351,17 +355,17 @@ int Cell::select_inside(const double* center, double rcut,
     bool my_pbc[3];
     int my_shape[3];
 
-    for (int i=nvec-1; i>=0; i--) {
-        my_ranges_begin[i] = ranges_begin[i];
-        my_ranges_end[i] = ranges_end[i];
-        my_shape[i] = shape[i];
-        my_pbc[i] = pbc[i];
+    for (int ivec=nvec-1; ivec>=0; ivec--) {
+        my_ranges_begin[ivec] = ranges_begin[ivec];
+        my_ranges_end[ivec] = ranges_end[ivec];
+        my_shape[ivec] = shape[ivec];
+        my_pbc[ivec] = pbc[ivec];
     }
-    for (int i=nvec; i<3; i++) {
-        my_ranges_begin[i] = 0;
-        my_ranges_end[i] = 1;
-        my_shape[i] = 1;
-        my_pbc[i] = 0;
+    for (int ivec=nvec; ivec<3; ivec++) {
+        my_ranges_begin[ivec] = 0;
+        my_ranges_end[ivec] = 1;
+        my_shape[ivec] = 1;
+        my_pbc[ivec] = 0;
     }
 
     int nselect = 0;

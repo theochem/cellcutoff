@@ -741,8 +741,6 @@ TEST_P(CellTestP, set_ranges_rcut_random) {
 
 /* TODO
 
-- Get rid of meaningless loop variables like `i`.
-
 - select_inside would become easier if it calls set_ranges_rcut itself. Is this
   a good idea, i.e. it forces us to do allocation of indices inside the
   function. This may not be desirable in all cases. Better solution: provide
