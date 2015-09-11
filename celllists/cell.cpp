@@ -344,7 +344,7 @@ int Cell::set_ranges_rcut(const double* center, double rcut, int* ranges_begin,
 
 
 void Cell::select_inside_low(const double* frac, double rcut, const int* shape,
-    const bool* pbc, int* &bars, int* prefix, int ivec, int &nselect) const {
+    const bool* pbc, int* &bars, int* prefix, int ivec, int &nbar) const {
 
     if (rcut <= 0) {
         throw std::domain_error("rcut must be strictly positive.");
@@ -362,7 +362,7 @@ void Cell::select_inside_low(const double* frac, double rcut, const int* shape,
             bars[ivec+1] = end;
             bars += ivec + 2;
         }
-        nselect += 1;
+        nbar += 1;
     } else {
         for (int i = begin; i < end; i++) {
             prefix[ivec] = i;
@@ -374,7 +374,7 @@ void Cell::select_inside_low(const double* frac, double rcut, const int* shape,
             } else {
                 rcut_new = rcut;
             }
-            select_inside_low(frac, rcut_new, shape, pbc, bars, prefix, ivec+1, nselect);
+            select_inside_low(frac, rcut_new, shape, pbc, bars, prefix, ivec+1, nbar);
         }
     }
 }
@@ -385,12 +385,12 @@ int Cell::select_inside_rcut(const double* center, double rcut,
     if (nvec == 0) {
         throw std::domain_error("The cell must be at least 1D periodic for select_inside_rcut.");
     } else {
-        double frac[3];
         int prefix[nvec-1];
-        int nselect = 0;
+        int nbar = 0;
+        double frac[3];
         to_frac(center, frac);
-        select_inside_low(frac, rcut, shape, pbc, bars, prefix, 0, nselect);
-        return nselect;
+        select_inside_low(frac, rcut, shape, pbc, bars, prefix, 0, nbar);
+        return nbar;
     }
 }
 
