@@ -739,29 +739,140 @@ TEST_P(CellTestP, set_ranges_rcut_random) {
 // select_inside
 // -------------
 
-/* TODO
-
-- Unit tests for different variants: shape, pbc
-
-*/
-
 TEST_F(CellTest1, select_inside_example) {
     // All the parameters
     double rcut = 5.0;
     double center[3] = {2.5, 3.4, -0.6};
     int shape[1] = {10};
     bool pbc[1] = {true};
-    int indices[2];
 
     // Call
-    int nselect = mycell->select_inside_rcut(center, rcut, shape, pbc, indices);
+    int nbar = mycell->select_inside_rcut(center, rcut, shape, pbc, NULL);
+    ASSERT_EQ(1, nbar);
+    int bars[2*nbar];
+    nbar = mycell->select_inside_rcut(center, rcut, shape, pbc, bars);
 
     // Check results
     // lower end: -2.5 (-2 #> 8)
     // upper end:  7.5 (8 #> 4) non-inclusive
-    EXPECT_EQ(1, nselect);
-    EXPECT_EQ(-2, indices[0]);
-    EXPECT_EQ(4, indices[1]);
+    EXPECT_EQ(1, nbar);
+    EXPECT_EQ(-2, bars[0]);
+    EXPECT_EQ(4, bars[1]);
+}
+
+
+TEST_F(CellTest2, select_inside_example) {
+    // All the parameters
+    double rcut = 5.0;
+    double center[3] = {2.5, 3.4, -0.6};
+    int shape[2] = {10, 5};
+    bool pbc[2] = {true, false};
+
+    // Call
+    int nbar = mycell->select_inside_rcut(center, rcut, shape, pbc, NULL);
+    ASSERT_EQ(6, nbar);
+    int bars[3*nbar];
+    nbar = mycell->select_inside_rcut(center, rcut, shape, pbc, bars);
+    EXPECT_EQ(6, nbar);
+
+    // Test
+    for (int ibar=0; ibar<nbar; ibar++) {
+        EXPECT_EQ(ibar-2, bars[3*ibar]);
+        EXPECT_EQ(0, bars[3*ibar+1]);
+        if (ibar == 0) {
+            EXPECT_EQ(1, bars[3*ibar+2]);
+        } else {
+            EXPECT_EQ(2, bars[3*ibar+2]);
+        }
+    }
+}
+
+TEST_P(CellTestP, select_inside_random) {
+    for (int irep=0; irep < 100; irep++) {
+        // Test parameters:
+        // - Random cell
+        Cell* cell = create_random_cell(2*irep);
+        // - Increasing rcut
+        double rcut = (irep+1)*0.1;
+        // - Random center        
+        double center[3];
+        fill_random_double(center, 3, 47332+irep, 2.0);
+        // - Alternating values for shape and pbc
+        int shape[nvec];
+        bool pbc[nvec];
+        for (int ivec=0; ivec < nvec; ivec++) {
+            shape[ivec] = ((irep*(ivec+1)) % 5) + 1;
+            pbc[ivec] = (irep >> ivec) % 2;
+        }
+        
+        // Compute the bars.
+        int nbar1 = cell->select_inside_rcut(center, rcut, shape, pbc, NULL);
+        int bars[(nvec+2)*nbar1];
+        int nbar2 = cell->select_inside_rcut(center, rcut, shape, pbc, bars);
+        EXPECT_EQ(nbar1, nbar2);
+
+        // Construct a random vector in a cubic box around the cutoff sphere.
+        double cart[3];
+        fill_random_double(cart, 3, 123+irep, rcut*1.1);
+        double norm = sqrt(cart[0]*cart[0] + cart[1]*cart[1] + cart[2]*cart[2]);
+        double other[3];
+        // Center of the box must coincide with center of the sphere.
+        cart[0] += center[0];
+        cart[1] += center[1];
+        cart[2] += center[2];
+        // For the rest of the test, we need this random vector in fractional coordinates.
+        double frac[3];
+        cell->to_frac(cart, frac);
+        
+        // Does the fractional coordinate fit in one of the bars?
+        int index[3] = {floor(frac[0]), floor(frac[1]), floor(frac[2])};
+        bool in_bar = false;
+        for (int ibar=0; ibar < nbar1; ibar++) {
+            int* bar = bars + (nvec+2)*ibar;
+            if (nvec > 1) {
+                if (bar[0] != index[0])
+                    continue;
+            }
+            if (nvec > 2) {
+                if (bar[1] != index[1])
+                    continue;
+            }
+            if (index[nvec-1] < bar[nvec-1])
+                continue;
+            if (index[nvec-1] >= bar[nvec])
+                continue;
+            in_bar = true;
+            break;
+        }
+        
+        // Does the relative vector sit in the cutoff sphere, taking into account
+        // non-periodic boundaries that truncate the cutoff sphere.
+        bool in_sphere = (norm < rcut);
+        if (in_sphere) {
+            for (int ivec=0; ivec < nvec; ivec++) {
+                if (!pbc[ivec]) {
+                    if (frac[ivec] < 0) {
+                        in_sphere = false;
+                        break;
+                    }
+                    if (frac[ivec] >= shape[ivec]) {
+                        in_sphere = false;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // First test: if the vector is in the cutoff and non-periodic boundaries, the
+        //             point must be in a bar.
+        if (in_sphere)
+            EXPECT_TRUE(in_bar);
+            
+        // Second test: if not in a bar, the norm must be larger than the cutoff, or the
+        //              point is outside a non-periodic boundary.
+        if (!in_bar)
+            EXPECT_FALSE(in_sphere);
+    }
 }
 
 

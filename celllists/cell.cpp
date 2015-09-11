@@ -344,7 +344,7 @@ int Cell::set_ranges_rcut(const double* center, double rcut, int* ranges_begin,
 
 
 void Cell::select_inside_low(const double* frac, double rcut, const int* shape,
-    const bool* pbc, int* &indices, int* prefix, int ivec, int &nselect) const {
+    const bool* pbc, int* &bars, int* prefix, int ivec, int &nselect) const {
 
     if (rcut <= 0) {
         throw std::domain_error("rcut must be strictly positive.");
@@ -352,15 +352,15 @@ void Cell::select_inside_low(const double* frac, double rcut, const int* shape,
     double frac_rcut = rcut/rspacings[ivec];
     int begin = floor(frac[ivec]-frac_rcut);
     int end = ceil(frac[ivec]+frac_rcut);
-    if (!pbc && begin < 0) begin = 0;
-    if (!pbc && end > shape[1]) end = shape[1];
+    if ((!pbc[ivec]) && begin < 0) begin = 0;
+    if ((!pbc[ivec]) && end > shape[ivec]) end = shape[ivec];
 
     if (ivec == nvec - 1) {
-        if (indices != NULL) {
-            std::copy(prefix, prefix+ivec, indices);
-            indices[ivec] = begin;
-            indices[ivec+1] = end;
-            indices += ivec + 2;
+        if (bars != NULL) {
+            std::copy(prefix, prefix+ivec, bars);
+            bars[ivec] = begin;
+            bars[ivec+1] = end;
+            bars += ivec + 2;
         }
         nselect += 1;
     } else {
@@ -374,14 +374,14 @@ void Cell::select_inside_low(const double* frac, double rcut, const int* shape,
             } else {
                 rcut_new = rcut;
             }
-            select_inside_low(frac, rcut_new, shape, pbc, indices, prefix, ivec+1, nselect);
+            select_inside_low(frac, rcut_new, shape, pbc, bars, prefix, ivec+1, nselect);
         }
     }
 }
 
 
 int Cell::select_inside_rcut(const double* center, double rcut,
-    const int* shape, const bool* pbc, int* indices) const {
+    const int* shape, const bool* pbc, int* bars) const {
     if (nvec == 0) {
         throw std::domain_error("The cell must be at least 1D periodic for select_inside_rcut.");
     } else {
@@ -389,7 +389,7 @@ int Cell::select_inside_rcut(const double* center, double rcut,
         int prefix[nvec-1];
         int nselect = 0;
         to_frac(center, frac);
-        select_inside_low(frac, rcut, shape, pbc, indices, prefix, 0, nselect);
+        select_inside_low(frac, rcut, shape, pbc, bars, prefix, 0, nselect);
         return nselect;
     }
 }

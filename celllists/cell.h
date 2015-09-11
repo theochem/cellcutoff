@@ -66,7 +66,7 @@ class Cell {
                 TODO
          */
         void select_inside_low(const double* frac, double rcut,
-            const int* shape, const bool* pbc, int* &indices, int* prefix,
+            const int* shape, const bool* pbc, int* &bars, int* prefix,
             int ivec, int &nselect) const;
     public:
         /** @brief
@@ -258,7 +258,7 @@ class Cell {
                 The number rows in the
           */
         int select_inside_rcut(const double* center, double rcut,
-            const int* shape, const bool* pbc, int* indices) const;
+            const int* shape, const bool* pbc, int* bars) const;
 };
 
 /**
