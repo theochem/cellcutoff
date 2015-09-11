@@ -65,10 +65,7 @@ class CellTest : public ::testing::Test {
         Cell* create_random_cell(unsigned int seed, double scale=1) {
             Cell* cell = create_random_cell_nvec(nvec, seed, scale);
         }
-        virtual void SetUp() {
-            nvec = 0;
-            set_up_data();
-        }
+        virtual void SetUp() = 0;
         void set_up_data() {
             // Example tests
             std::fill(myrvecs, myrvecs+9, 0);
@@ -144,12 +141,12 @@ TEST_P(CellTestP, constructor_singular) {
     EXPECT_THROW(Cell cell(singrvecs, GetParam()), singular_cell_vectors);
 }
 
-TEST_F(CellTest, constructor_nvec_negative) {
+TEST_F(CellTest3, constructor_nvec_negative) {
     double rvecs[9] = {1, 0, 1, 0, 1, 0, 0.5, 0.5, 0};
     EXPECT_THROW(Cell cell(rvecs, -1), std::domain_error);
 }
 
-TEST_F(CellTest, constructor_nvec_too_large) {
+TEST_F(CellTest3, constructor_nvec_too_large) {
     double rvecs[9] = {1, 0, 1, 0, 1, 0, 0.5, 0.5, 0};
     EXPECT_THROW(Cell cell(rvecs, 4), std::domain_error);
 }
