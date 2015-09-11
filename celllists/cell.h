@@ -209,13 +209,13 @@ class Cell {
                 The cutoff radius.
 
             @param ranges_begin
-                A pointer to `nvec` longs to which the begin of each range of
+                A pointer to `nvec` ints to which the begin of each range of
                 periodic images along a periodic boundary condition is written.
                 These integers are the highest indices of the crystal planes
                 before/below the cutoff sphere.
 
             @param ranges_end
-                A pointer to `nvec` longs to which the end of each range of
+                A pointer to `nvec` ints to which the end of each range of
                 periodic images along a periodic boundary condition is written.
                 Then end values are non-inclusive as in Python ranges.
                 These integers are the lowest indices of the crystal planes
@@ -240,7 +240,7 @@ class Cell {
                 The cutoff radius.
 
             @param shape
-                A pointer of 3 longs with the shape of the supercell.
+                A pointer of 3 ints with the shape of the supercell.
 
             @param pbc
                 A pointer to integer flags indicating the periodicity of the

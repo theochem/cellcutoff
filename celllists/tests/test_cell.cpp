@@ -742,7 +742,6 @@ TEST_P(CellTestP, set_ranges_rcut_random) {
 /* TODO
 
 - Unit tests for different variants: shape, pbc
-- rename longs -> ints
 
 */
 
