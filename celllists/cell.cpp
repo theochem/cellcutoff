@@ -349,7 +349,7 @@ void Cell::select_inside_low(SphereSlice* slice, const int* shape,
     double begin_exact = 0.0;
     double end_exact = 0.0;
     // Solve the hard problem elsewhere.
-    slice->solve_range(ivec, gvecs + 3*ivec, begin_exact, end_exact);
+    slice->solve_range(ivec, begin_exact, end_exact);
     int begin = floor(begin_exact);
     int end = ceil(end_exact);
     // Truncate this range if there are non-periodic bounds
@@ -374,7 +374,7 @@ void Cell::select_inside_low(SphereSlice* slice, const int* shape,
             // Make sure the following recursion knows the indices of the current bar.
             prefix[ivec] = i;
             // Make a new cut in the spere slice.
-            slice->set_begin_end(ivec, i, i+1);
+            slice->set_cut_begin_end(ivec, i, i+1);
             // Make recursion
             select_inside_low(slice, shape, pbc, bars, prefix, nbar, ivec+1);
         }

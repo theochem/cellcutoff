@@ -22,53 +22,163 @@
 #include <cmath>
 #include <stdexcept>
 #include "celllists/sphere_slice.h"
+#include "celllists/common.h"
 
 
-SphereSlice::SphereSlice(const double* center, const double* gvecs, double rcut) :
-    center(center), normals(normals), rcut(rcut) {
+SphereSlice::SphereSlice(const double* center, const double* normals, double radius) :
+    center(center), normals(normals), radius(radius) {
 
-    //norms[0] = sqrt(normals[0]*normals[0] + normals[1]*normals[1] + normals[2]*normals[2]);
-    //norms[1] = sqrt(normals[3]*normals[3] + normals[4]*normals[4] + normals[5]*normals[5]);
-    begin[0] = 0.0;
-    begin[1] = 0.0;
-    end[0] = 0.0;
-    end[1] = 0.0;
+    if (radius <= 0) {
+        throw std::domain_error("radius must be strictly positive.");
+    }
+
+    cut_begin[0] = 0.0;
+    cut_begin[1] = 0.0;
+    cut_end[0] = 0.0;
+    cut_end[1] = 0.0;
 
 }
 
 
-void SphereSlice::solve_range_0(const double* normal, double &begin, double &end) const {
-    double norm = sqrt(normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2]);
-    // Convert cutoff to fractional coordinates
-    double frac_rcut = rcut*norm;
-    // Convert the center to fractional coordinates
-    double frac_center = center[0]*normal[0] + center[1]*normal[1] + center[2]*normal[2];
+void SphereSlice::solve_sphere(const double* axis, double &begin,
+    double &end, double* point_begin, double* point_end) const {
+
+    // Convert the radius to reduced coordinates
+    double axis_norm = vec3::norm(axis);
+    double proj_radius = radius*axis_norm;
+    // Convert the center to reduced coordinates
+    double proj_center = vec3::dot(center, axis);
     // Find the ranges in fractional coordinates that encloses the cutoff
-    begin = frac_center - frac_rcut;
-    end = frac_center + frac_rcut;
+    begin = proj_center - proj_radius;
+    end = proj_center + proj_radius;
+
+    if (point_begin != NULL) {
+        point_begin[0] = center[0] - radius*axis[0]/axis_norm;
+        point_begin[1] = center[1] - radius*axis[1]/axis_norm;
+        point_begin[2] = center[2] - radius*axis[2]/axis_norm;
+    }
+    if (point_end != NULL) {
+        point_end[0] = center[0] + radius*axis[0]/axis_norm;
+        point_end[1] = center[1] + radius*axis[1]/axis_norm;
+        point_end[2] = center[2] + radius*axis[2]/axis_norm;
+    }
+}
+
+bool SphereSlice::solve_circle(const double* axis, const double* cut_normal,
+    double cut, double &begin, double &end, double* point_begin,
+    double* point_end) const {
+
+    // Compute the circle radius
+    double delta_cut = cut - vec3::dot(center, cut_normal);
+    double cut_normal_sq = vec3::normsq(cut_normal);
+    double lost_radius_sq = delta_cut*delta_cut/cut_normal_sq;
+    double circle_radius_sq = radius*radius - lost_radius_sq;
+    // Check if an intersection circle exists, if not return false;
+    if (circle_radius_sq < 0) return false;
+    double circle_radius = sqrt(circle_radius_sq);
+
+    // Compute the center of the circle
+    double circle_center[3];
+    vec3::copy(center, circle_center);
+    vec3::iadd(circle_center, cut_normal, delta_cut/cut_normal_sq);
+
+    // Then add a vector orthogonal to normal, in the plane of axis and normal
+    // that brings us to the surface of the sphere
+    double ortho[3];
+    vec3::copy(axis, ortho);
+    vec3::iadd(ortho, cut_normal, -vec3::dot(axis, cut_normal)/cut_normal_sq);
+    vec3::iscale(ortho, circle_radius/vec3::norm(ortho));
+
+    // Compute projection on axis, optionally compute points;
+    if (point_begin==NULL) {
+        begin = (circle_center[0] - ortho[0])*axis[0] +
+                (circle_center[1] - ortho[1])*axis[1] +
+                (circle_center[2] - ortho[2])*axis[2];
+    } else {
+        vec3::copy(circle_center, point_begin);
+        vec3::iadd(point_begin, ortho, -1);
+        begin = vec3::dot(point_begin, axis);
+    }
+    if (point_end==NULL) {
+        end = (circle_center[0] + ortho[0])*axis[0] +
+              (circle_center[1] + ortho[1])*axis[1] +
+              (circle_center[2] + ortho[2])*axis[2];
+    } else {
+        vec3::copy(circle_center, point_end);
+        vec3::iadd(point_end, ortho, +1);
+        end = vec3::dot(point_end, axis);
+    }
+
+    return true;
+}
+
+void SphereSlice::solve_range_0(double &begin, double &end) const {
+    // The first normal serves as axis on which begin and end is defined.
+    solve_sphere(normals, begin, end, NULL, NULL);
 }
 
 
-void SphereSlice::solve_range_1(const double* normal, double &begin, double &end) const {
+#define UPDATE_BEGIN(found, work, dest) if (found) {if (work < dest) dest = work;} else {dest = work; found = true;}
+#define UPDATE_END(found, work, dest)   if (found) {if (work > dest) dest = work;} else {dest = work; found = true;}
+
+
+void SphereSlice::solve_range_1(double &begin, double &end) const {
+    // The first normal is used to define the slice.
+    const double* cut_normal = normals;
+    // The second normal serves as axis on which begin and end is defined.
+    const double* axis = normals + 3;
+    // work
+    double work_begin;
+    double work_end;
+    double cut_tmp;
+    double point_begin[3];
+    double point_end[3];
+    bool found_begin = false;
+    bool found_end = false;
+
+    // Whole-sphere solution
+    solve_sphere(axis, work_begin, work_end, point_begin, point_end);
+    cut_tmp = vec3::dot(point_begin, cut_normal);
+    if ((cut_tmp > cut_begin[0]) && (cut_tmp < cut_end[0])) {
+        UPDATE_BEGIN(found_begin, work_begin, begin);
+    }
+    cut_tmp = vec3::dot(point_end, cut_normal);
+    if ((cut_tmp > cut_begin[0]) && (cut_tmp < cut_end[0])) {
+        UPDATE_END(found_end, work_end, end);
+    }
+
+    // Cut begin
+    if (solve_circle(axis, cut_normal, cut_begin[0], work_begin, work_end, NULL, NULL)) {
+        UPDATE_BEGIN(found_begin, work_begin, begin);
+        UPDATE_END(found_end, work_end, end);
+    }
+
+    // Cut end
+    if (solve_circle(axis, cut_normal, cut_end[0], work_begin, work_end, NULL, NULL)) {
+        UPDATE_BEGIN(found_begin, work_begin, begin);
+        UPDATE_END(found_end, work_end, end);
+    }
+
+    if (!(found_end && found_begin))
+        throw std::logic_error("No solution found");
+}
+
+
+void SphereSlice::solve_range_2(double &begin, double &end) const{
     throw std::logic_error("TODO");
 }
 
 
-void SphereSlice::solve_range_2(const double* normal, double &begin, double &end) const{
-    throw std::logic_error("TODO");
-}
-
-
-void SphereSlice::solve_range(int ncut, const double* normal, double &begin, double &end) const {
+void SphereSlice::solve_range(int ncut, double &begin, double &end) const {
     switch (ncut) {
         case 0:
-            solve_range_0(normal, begin, end);
+            solve_range_0(begin, end);
             break;
         case 1:
-            solve_range_1(normal, begin, end);
+            solve_range_1(begin, end);
             break;
         case 2:
-            solve_range_2(normal, begin, end);
+            solve_range_2(begin, end);
             break;
         default:
             throw std::domain_error("ncut must be 0, 1, or 2.");
@@ -77,10 +187,12 @@ void SphereSlice::solve_range(int ncut, const double* normal, double &begin, dou
 }
 
 
-void SphereSlice::set_begin_end(int icut, double new_begin, double new_end) {
+void SphereSlice::set_cut_begin_end(int icut, double new_begin, double new_end) {
     if ((icut < 0) || (icut >= 2))
         throw std::domain_error("icut must be 0 or 1.");
+    if (new_begin >= new_end)
+        throw std::domain_error("begin must be strictly smaller than end.");
 
-    begin[icut] = new_begin;
-    end[icut] = new_end;
+    cut_begin[icut] = new_begin;
+    cut_end[icut] = new_end;
 }

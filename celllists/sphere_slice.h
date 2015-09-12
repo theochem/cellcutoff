@@ -27,19 +27,24 @@ class SphereSlice {
     private:
         const double* center;
         const double* normals;
-        double rcut;
+        double radius;
         //double norms[2];
-        double begin[2];
-        double end[2];
+        double cut_begin[2];
+        double cut_end[2];
 
-        void solve_range_0(const double* normal, double &begin, double &end) const;
-        void solve_range_1(const double* normal, double &begin, double &end) const;
-        void solve_range_2(const double* normal, double &begin, double &end) const;
     public:
-        SphereSlice(const double* center, const double* normals, double rcut);
-        void solve_range(int ncut, const double* normal, double &begin, double &end) const;
-        void set_begin_end(int icut, double new_begin, double new_end);
+        SphereSlice(const double* center, const double* normals, double radius);
+        void solve_range(int ncut, double &begin, double &end) const;
+        void set_cut_begin_end(int icut, double new_begin, double new_end);
 
+        void solve_sphere(const double* axis, double &begin,
+            double &end, double* point_begin, double* point_end) const;
+        bool solve_circle(const double* axis, const double* cut_normal,
+            double cut, double &begin, double &end, double* point_begin,
+            double* point_end) const;
+        void solve_range_0(double &begin, double &end) const;
+        void solve_range_1(double &begin, double &end) const;
+        void solve_range_2(double &begin, double &end) const;
 };
 
 #endif
