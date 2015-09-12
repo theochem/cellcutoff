@@ -343,28 +343,19 @@ int Cell::set_ranges_rcut(const double* center, double rcut, int* ranges_begin,
 }
 
 
-void Cell::select_inside_low(const double* center, double rcut, const int* shape,
-    const bool* pbc, int* &bars, const Cell** lcells, int* prefix, int ivec, int &nbar) const {
+void Cell::select_inside_low(SphereSlice* slice, const int* shape,
+    const bool* pbc, int* &bars, int* prefix, int &nbar, int ivec) const {
 
-    if (rcut <= 0) {
-        throw std::domain_error("rcut must be strictly positive.");
-    }
-
-    // Select the current cell
-    const Cell* cell = lcells[0];
-    // Convert cutoff to fractional coordinates
-    double frac_rcut = rcut/cell->get_rspacing(0);
-    // Convert the center to fractional coordinates
-    double frac_0 = center[0]*cell->get_gvec(0, 0) +
-                    center[1]*cell->get_gvec(0, 1) +
-                    center[2]*cell->get_gvec(0, 2);
-    // Find the ranges of real-space units that encloses the cutoff
-    int begin = floor(frac_0 - frac_rcut);
-    int end = ceil(frac_0 + frac_rcut);
+    double begin_exact = 0.0;
+    double end_exact = 0.0;
+    // Solve the hard problem elsewhere.
+    slice->solve_range(ivec, gvecs + 3*ivec, begin_exact, end_exact);
+    int begin = floor(begin_exact);
+    int end = ceil(end_exact);
     // Truncate this range if there are non-periodic bounds
-    if (!pbc[0]) {
+    if (!pbc[ivec]) {
         if (begin < 0) begin = 0;
-        if (end > shape[0]) end = shape[0];
+        if (end > shape[ivec]) end = shape[ivec];
     }
 
     if (ivec == nvec - 1) {
@@ -377,59 +368,15 @@ void Cell::select_inside_low(const double* center, double rcut, const int* shape
         }
         nbar += 1;
     } else {
-        // If this is not yet the last recursion, iterate over all real-space units and
-        // go one reursion deeper.
+        // If this is not yet the last recursion, iterate over the range of integer
+        // fractional coordinates, and go one recursion deeper in each iteration.
         for (int i = begin; i < end; i++) {
-            // Make sure the following recursion knows all relevant information of the
-            // current bar.
+            // Make sure the following recursion knows the indices of the current bar.
             prefix[ivec] = i;
-            // Find the fractional coordinate of the nearest side of the bar. Last option
-            // is the situation where the center is in the current bar.
-            double delta_frac_0;
-            if (i + 1 < frac_0) {
-                delta_frac_0 = i + 1 - frac_0;
-            } else if (i > frac_0) {
-                delta_frac_0 = i - frac_0;
-            } else {
-                delta_frac_0 = 0.0;
-            }
-            // Compute the distance to the nearest bar.
-            double signed_distance = delta_frac_0*cell->get_rspacing(0);
-            // Compute the remaining cutoff for the reduced dimension
-            double new_rcut = sqrt(rcut*rcut - signed_distance*signed_distance);
-            // Compute the new center. This is the point on the nearest side of the bar
-            // that is closest to the current center, i.e. the vector (new_center-center)
-            // is orthogonal to the side of the bar.
-            double scale = signed_distance/cell->get_glength(0);
-            double new_center[3] = {
-                center[0] + scale*cell->get_gvec(0, 0),
-                center[1] + scale*cell->get_gvec(0, 1),
-                center[2] + scale*cell->get_gvec(0, 2),
-            };
-            // Internal consistency check: distance between center and new center is
-            // signed_distance.
-            double dist_check = sqrt(
-                (new_center[0] - center[0])*(new_center[0] - center[0]) +
-                (new_center[1] - center[1])*(new_center[1] - center[1]) +
-                (new_center[2] - center[2])*(new_center[2] - center[2])
-            );
-            if (fabs(dist_check - fabs(signed_distance)) > 1e-10) {
-                throw std::logic_error("internal inconsistency 1");
-            }
-            // Subtract, from the new center, the origin of the following lower-
-            // dimensional grid.
-            new_center[0] -= (frac_0 + delta_frac_0)*cell->get_rvec(0, 0);
-            new_center[1] -= (frac_0 + delta_frac_0)*cell->get_rvec(0, 1);
-            new_center[2] -= (frac_0 + delta_frac_0)*cell->get_rvec(0, 2);
-            // Internal validation: the first fractional coordinate of the new cell
-            // has to be zero
-            double tmp[3];
-            cell->to_frac(new_center, tmp);
-            if (fabs(tmp[0]) > 1e-10) {
-                throw std::logic_error("internal inconsistency 2");
-            }
+            // Make a new cut in the spere slice.
+            slice->set_begin_end(ivec, i, i+1);
             // Make recursion
-            select_inside_low(new_center, new_rcut, shape+1, pbc+1, bars, lcells+1, prefix, ivec+1, nbar);
+            select_inside_low(slice, shape, pbc, bars, prefix, nbar, ivec+1);
         }
     }
 }
@@ -440,27 +387,18 @@ int Cell::select_inside_rcut(const double* center, double rcut,
     if (nvec == 0) {
         throw std::domain_error("The cell must be at least 1D periodic for select_inside_rcut.");
     }
+    if (rcut <= 0) {
+        throw std::domain_error("rcut must be strictly positive.");
+    }
 
-    // Construct lower-dimensional cells. First the original cell, then with the first
-    // cell vector removed (if 2D or 3D), then with the first and the second removed (if
-    // 3D).
-    const Cell* lcells[nvec];
-    lcells[0] = this;
-    for (int ivec=1; ivec < nvec; ivec++)
-        lcells[ivec] = new Cell(rvecs + 3*ivec, nvec-ivec);
+    SphereSlice sphere_slice = SphereSlice(center, gvecs, rcut);
 
-    // Prefix is used to keep track of current bar indices will going into recursion.
+    // Prefix is used to keep track of current bar indices while going into recursion.
     int prefix[nvec-1];
     // The total number of bars collected.
     // TODO: use std::vector for bars and convert to dense array afterwards.
     int nbar = 0;
-    select_inside_low(center, rcut, shape, pbc, bars, lcells, prefix, 0, nbar);
-
-    // Deallocate the lower-dimensional cells. No need for try-finally block as we don't
-    // expect exceptions to be thrown. (TODO: what about out of memory?)
-    for (int ivec=1; ivec < nvec; ivec++)
-        delete lcells[ivec];
-
+    select_inside_low(&sphere_slice, shape, pbc, bars, prefix, nbar, 0);
     return nbar;
 }
 

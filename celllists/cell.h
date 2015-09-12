@@ -25,6 +25,7 @@
 
 #include <exception>
 #include <string>
+#include "celllists/sphere_slice.h"
 
 /** @brief
         An exception for singular cell vectors
@@ -65,9 +66,8 @@ class Cell {
         /** @brief
                 TODO
          */
-        void select_inside_low(const double* center, double rcut,
-            const int* shape, const bool* pbc, int* &bars, const Cell** lcells, int* prefix,
-            int ivec, int &nselect) const;
+        void select_inside_low(SphereSlice *slice, const int* shape, const bool* pbc,
+            int* &bars, int* prefix, int &nbar, int ivec) const;
     public:
         /** @brief
                 Construct a Cell object.
