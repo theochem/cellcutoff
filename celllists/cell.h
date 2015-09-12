@@ -66,7 +66,7 @@ class Cell {
                 TODO
          */
         void select_inside_low(const double* center, double rcut,
-            const int* shape, const bool* pbc, int* &bars, int* prefix,
+            const int* shape, const bool* pbc, int* &bars, const Cell** lcells, int* prefix,
             int ivec, int &nselect) const;
     public:
         /** @brief

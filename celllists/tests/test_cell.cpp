@@ -45,10 +45,25 @@ int fill_random_int(int* array, size_t size, unsigned int seed, int range) {
 }
 
 //! Random cell with a volume larger than 0.01
-Cell* create_random_cell_nvec(int nvec, unsigned int seed, double scale=1) {
+Cell* create_random_cell_nvec(int nvec, unsigned int seed, double scale=1, bool cuboid=false) {
+    if (nvec == 0) {
+        throw std::domain_error("A random cell must be at least 1D periodic.");
+    }
     double rvecs[nvec*3];
     while (true) {
         seed = fill_random_double(rvecs, nvec*3, seed, scale);
+        if (cuboid) {
+            rvecs[1] = 0.0;
+            rvecs[2] = 0.0;
+            if (nvec > 1) {
+                rvecs[3] = 0.0;
+                rvecs[5] = 0.0;
+            }
+            if (nvec > 2) {
+                rvecs[6] = 0.0;
+                rvecs[7] = 0.0;
+            }
+        }
         try {
             Cell* cell = new Cell(rvecs, nvec);
             if (cell->get_volume() > 0.01)
@@ -56,6 +71,20 @@ Cell* create_random_cell_nvec(int nvec, unsigned int seed, double scale=1) {
             delete cell;
         } catch (singular_cell_vectors) { }
     }
+}
+
+//! Computes the norm of a vector
+double compute_norm(double* vec) {
+    return sqrt(vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2]);
+}
+
+//! Computes the distance between two vectors
+double compute_distance(double* vec1, double* vec2) {
+    double vec[3];
+    vec[0] = vec1[0] - vec2[0];
+    vec[1] = vec1[1] - vec2[1];
+    vec[2] = vec1[2] - vec2[2];
+    return compute_norm(vec);
 }
 
 
@@ -68,10 +97,13 @@ class CellTest : public ::testing::Test {
         Cell* mycell;
         double myrvecs[9];
         double singrvecs[9];
-        Cell* create_random_cell(unsigned int seed, double scale=1) {
-            Cell* cell = create_random_cell_nvec(nvec, seed, scale);
+
+        Cell* create_random_cell(unsigned int seed, double scale=1.0, bool cuboid=false) {
+            Cell* cell = create_random_cell_nvec(nvec, seed, scale, cuboid);
         }
+
         virtual void SetUp() = 0;
+
         void set_up_data() {
             // Example tests
             std::fill(myrvecs, myrvecs+9, 0);
@@ -824,7 +856,7 @@ TEST_P(CellTestP, select_inside_rcut_random) {
     for (int irep=0; irep < 10; irep++) {
         // Test parameters:
         // - Random cell
-        Cell* cell = create_random_cell(2*irep);
+        Cell* cell = create_random_cell(2*irep, 1.0, false);
         // - Increasing rcut
         double rcut = (irep+1)*0.1;
         // - Random center
@@ -848,7 +880,7 @@ TEST_P(CellTestP, select_inside_rcut_random) {
         // Construct a random vector in a cubic box around the cutoff sphere.
         double cart[3];
         fill_random_double(cart, 3, 123+irep, rcut*1.1);
-        double norm = sqrt(cart[0]*cart[0] + cart[1]*cart[1] + cart[2]*cart[2]);
+        double norm = compute_norm(cart);
         double other[3];
         // Center of the box must coincide with center of the sphere.
         cart[0] += center[0];
@@ -862,7 +894,7 @@ TEST_P(CellTestP, select_inside_rcut_random) {
         int index[3] = {floor(frac[0]), floor(frac[1]), floor(frac[2])};
         bool in_bar = false;
         for (int ibar=0; ibar < nbar2; ibar++) {
-            int* bar = bars + (nvec+2)*ibar;
+            int* bar = bars + (nvec+1)*ibar;
             if (nvec > 1) {
                 if (bar[0] != index[0])
                     continue;
@@ -912,6 +944,89 @@ TEST_P(CellTestP, select_inside_rcut_random) {
     }
 }
 
+
+TEST_P(CellTestP, select_inside_rcut_corners) {
+    for (int irep=0; irep < 10; irep++) {
+        // Test parameters:
+        // - Random cell
+        Cell* cell = create_random_cell(2*irep, 1.0, false);
+        // - Increasing rcut
+        double rcut = (irep+1)*0.1;
+        // - Random center
+        double center[3];
+        fill_random_double(center, 3, 47332+irep, 2.0);
+        // - Alternating values for shape and pbc
+        int shape[nvec];
+        bool pbc[nvec];
+        for (int ivec=0; ivec < nvec; ivec++) {
+            shape[ivec] = ((irep*(ivec+1)) % 5) + 1;
+            pbc[ivec] = true;//(irep >> ivec) % 2;
+        }
+
+        // Compute the bars.
+        int nbar1 = cell->select_inside_rcut(center, rcut, shape, pbc, NULL);
+        //if (nbar1 > 1000) {delete cell; continue;}
+        int bars[(nvec+2)*nbar1];
+        int nbar2 = cell->select_inside_rcut(center, rcut, shape, pbc, bars);
+        EXPECT_EQ(nbar1, nbar2);
+
+        // Test if the corners of each bar fall outside of the sphere
+        for (int ibar=0; ibar < nbar2; ibar++) {
+            int* bar = bars + (nvec+1)*ibar;
+
+            double frac_corner[3] = {0, 0, 0};
+            double cart_corner[3] = {0, 0, 0};
+            double dist;
+
+            // loop of begin and end of the bar (last two integers in the bar).
+            cell->to_frac(center, frac_corner);
+            for (int ilast=0; ilast < 2; ilast++) {
+                frac_corner[nvec-1] = bar[nvec-ilast];
+                if (nvec==1) {
+                    cell->to_cart(frac_corner, cart_corner);
+                    dist = compute_distance(cart_corner, center);
+                    EXPECT_GT(dist, rcut);
+                } else if (nvec==2) {
+                    //
+                    frac_corner[0] = bar[0];
+                    cell->to_cart(frac_corner, cart_corner);
+                    dist = compute_distance(cart_corner, center);
+                    EXPECT_GT(dist, rcut);
+                    //
+                    frac_corner[0] = bar[0]+1;
+                    cell->to_cart(frac_corner, cart_corner);
+                    dist = compute_distance(cart_corner, center);
+                    EXPECT_GT(dist, rcut);
+                } else if (nvec==3) {
+                    //
+                    frac_corner[0] = bar[0];
+                    frac_corner[1] = bar[1];
+                    cell->to_cart(frac_corner, cart_corner);
+                    dist = compute_distance(cart_corner, center);
+                    EXPECT_GT(dist, rcut);
+                    //
+                    frac_corner[0] = bar[0]+1;
+                    frac_corner[1] = bar[1];
+                    cell->to_cart(frac_corner, cart_corner);
+                    dist = compute_distance(cart_corner, center);
+                    EXPECT_GT(dist, rcut);
+                    //
+                    frac_corner[0] = bar[0];
+                    frac_corner[1] = bar[1]+1;
+                    cell->to_cart(frac_corner, cart_corner);
+                    dist = compute_distance(cart_corner, center);
+                    EXPECT_GT(dist, rcut);
+                    //
+                    frac_corner[0] = bar[0]+1;
+                    frac_corner[1] = bar[1]+1;
+                    cell->to_cart(frac_corner, cart_corner);
+                    dist = compute_distance(cart_corner, center);
+                    EXPECT_GT(dist, rcut);
+                }
+            }
+        }
+    }
+}
 
 // Instantiation of parameterized tests
 // ------------------------------------
