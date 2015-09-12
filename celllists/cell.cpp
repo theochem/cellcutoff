@@ -343,12 +343,16 @@ int Cell::set_ranges_rcut(const double* center, double rcut, int* ranges_begin,
 }
 
 
-void Cell::select_inside_low(const double* frac, double rcut, const int* shape,
+void Cell::select_inside_low(const double* center, double rcut, const int* shape,
     const bool* pbc, int* &bars, int* prefix, int ivec, int &nbar) const {
 
     if (rcut <= 0) {
         throw std::domain_error("rcut must be strictly positive.");
     }
+
+    // Convert cutoff to fractional coordinates
+    double frac[3];
+    to_frac(center, frac);
     double frac_rcut = rcut/rspacings[ivec];
     int begin = floor(frac[ivec]-frac_rcut);
     int end = ceil(frac[ivec]+frac_rcut);
@@ -366,15 +370,26 @@ void Cell::select_inside_low(const double* frac, double rcut, const int* shape,
     } else {
         for (int i = begin; i < end; i++) {
             prefix[ivec] = i;
-            double rcut_new = -1.0;
+            double delta_frac_ivec;
             if (i + 1 < frac[ivec]) {
-                rcut_new = sqrt(rcut*rcut - (i + 1 - frac[ivec])*(i + 1 - frac[ivec]));
+                delta_frac_ivec = i + 1 - frac[ivec];
             } else if (i > frac[ivec]) {
-                rcut_new = sqrt(rcut*rcut - (i - frac[ivec])*(i - frac[ivec]));
+                delta_frac_ivec = i - frac[ivec];
             } else {
-                rcut_new = rcut;
+                delta_frac_ivec = 0.0;
             }
-            select_inside_low(frac, rcut_new, shape, pbc, bars, prefix, ivec+1, nbar);
+            // Compute the distance to the plane
+            double signed_distance = delta_frac_ivec*rspacings[ivec];
+            // Compute the remaining cutoff for the reduced dimension
+            double new_rcut = sqrt(rcut*rcut - signed_distance*signed_distance);
+            // Compute the relative vector to plane i. This is along rvec i.
+            double scale = signed_distance/rlengths[ivec];
+            double new_center[3] = {
+                center[0] + delta_frac_ivec*rvecs[3*ivec],
+                center[1] + delta_frac_ivec*rvecs[3*ivec+1],
+                center[2] + delta_frac_ivec*rvecs[3*ivec+2],
+            };
+            select_inside_low(new_center, new_rcut, shape, pbc, bars, prefix, ivec+1, nbar);
         }
     }
 }
@@ -384,14 +399,12 @@ int Cell::select_inside_rcut(const double* center, double rcut,
     const int* shape, const bool* pbc, int* bars) const {
     if (nvec == 0) {
         throw std::domain_error("The cell must be at least 1D periodic for select_inside_rcut.");
-    } else {
-        int prefix[nvec-1];
-        int nbar = 0;
-        double frac[3];
-        to_frac(center, frac);
-        select_inside_low(frac, rcut, shape, pbc, bars, prefix, 0, nbar);
-        return nbar;
     }
+
+    int prefix[nvec-1];
+    int nbar = 0;
+    select_inside_low(center, rcut, shape, pbc, bars, prefix, 0, nbar);
+    return nbar;
 }
 
 
