@@ -20,7 +20,7 @@
 
 
 #include <cmath>
-#include "celllists/common.h"
+#include "celllists/vec3.h"
 
 namespace vec3 {
 

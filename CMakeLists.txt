@@ -47,14 +47,14 @@ include_directories(${PROJECT_SOURCE_DIR})
 set(SOURCE_FILES
   ${PROJECT_SOURCE_DIR}/celllists/cell.cpp
   ${PROJECT_SOURCE_DIR}/celllists/sphere_slice.cpp
-  ${PROJECT_SOURCE_DIR}/celllists/common.cpp
+  ${PROJECT_SOURCE_DIR}/celllists/vec3.cpp
 )
 
 # Define header files
 set(HEADER_FILES
   ${PROJECT_SOURCE_DIR}/celllists/cell.h
   ${PROJECT_SOURCE_DIR}/celllists/sphere_slice.h
-  ${PROJECT_SOURCE_DIR}/celllists/common.h
+  ${PROJECT_SOURCE_DIR}/celllists/vec3.h
   ${PROJECT_BINARY_DIR}/celllists/config.h
 )
 

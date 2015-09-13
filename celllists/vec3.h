@@ -19,8 +19,8 @@
 //--
 
 
-#ifndef CELLLIST_COMMON_H_
-#define CELLLIST_COMMON_H_
+#ifndef CELLLIST_VEC3_H_
+#define CELLLIST_VEC3_H_
 
 namespace vec3 {
 

@@ -22,7 +22,7 @@
 #include <cmath>
 #include <stdexcept>
 #include "celllists/sphere_slice.h"
-#include "celllists/common.h"
+#include "celllists/vec3.h"
 
 
 SphereSlice::SphereSlice(const double* center, const double* normals, double radius) :

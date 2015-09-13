@@ -24,7 +24,7 @@
 #include <gtest/gtest.h>
 #include <cmath>
 #include "celllists/sphere_slice.h"
-#include "celllists/common.h"
+#include "celllists/vec3.h"
 #include "common.h"
 
 
