@@ -36,7 +36,6 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
     cut_begin[1] = 0.0;
     cut_end[0] = 0.0;
     cut_end[1] = 0.0;
-
 }
 
 
@@ -68,13 +67,22 @@ bool SphereSlice::solve_circle(const double* axis, const double* cut_normal,
     double cut, double &begin, double &end, double* point_begin,
     double* point_end) const {
 
-    // Compute the circle radius
+    /* Define the parameters of a circle that is the intersection of
+         - the sphere
+         - the plane defined by cut_normal and cut: dot(r, cut_normal) = cut
+     */
+    // The difference in reduced coordinate between the center of the sphere
+    // and the center of the circle.
     double delta_cut = cut - vec3::dot(center, cut_normal);
+    // The norm squared of the cut normal.
     double cut_normal_sq = vec3::normsq(cut_normal);
+    // The amount lost from the total radius squared.
     double lost_radius_sq = delta_cut*delta_cut/cut_normal_sq;
+    // The rest of the radius squared is for the size of the circle.
     double circle_radius_sq = radius*radius - lost_radius_sq;
     // Check if an intersection circle exists, if not return false;
     if (circle_radius_sq < 0) return false;
+    // Compute the circle radius
     double circle_radius = sqrt(circle_radius_sq);
 
     // Compute the center of the circle
@@ -82,11 +90,18 @@ bool SphereSlice::solve_circle(const double* axis, const double* cut_normal,
     vec3::copy(center, circle_center);
     vec3::iadd(circle_center, cut_normal, delta_cut/cut_normal_sq);
 
-    // Then add a vector orthogonal to normal, in the plane of axis and normal
-    // that brings us to the surface of the sphere
+    /* Define a vector orthogonal to cut_normal, in the plane of axis and
+       cut_normal. The length of the vector is such that, when added to the
+       center of the circle, it just ends on the circle edge. The direction
+       is chosen to either minimize or maximise the projection on axis. */
     double ortho[3];
+    // Copy of axis -> in plane of axis
     vec3::copy(axis, ortho);
+    // Subtract projection on cut_normal
+    //  -> in plane of axis and cut_normal
+    //  -> orthogonal to cut_normal
     vec3::iadd(ortho, cut_normal, -vec3::dot(axis, cut_normal)/cut_normal_sq);
+    // Normalize to circle_radius
     vec3::iscale(ortho, circle_radius/vec3::norm(ortho));
 
     // Compute projection on axis, optionally compute points;
