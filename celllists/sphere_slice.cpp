@@ -25,47 +25,69 @@
 #include "celllists/vec3.h"
 
 
+#define CHECK_ID(arg) if ((arg < 0) || (arg >= 3)) throw std::domain_error("arg must be 0, 1 or 2.")
+#define UPDATE_BEGIN(found, work, dest) if (found) {if (work < dest) dest = work;} else {dest = work; found = true;}
+#define UPDATE_END(found, work, dest)   if (found) {if (work > dest) dest = work;} else {dest = work; found = true;}
+
+
 SphereSlice::SphereSlice(const double* center, const double* normals, double radius) :
     center(center), normals(normals), radius(radius) {
 
     if (radius <= 0) {
         throw std::domain_error("radius must be strictly positive.");
     }
-
+    // Initialize variable data members
     cut_begin[0] = 0.0;
     cut_begin[1] = 0.0;
     cut_end[0] = 0.0;
     cut_end[1] = 0.0;
+    // Compute from derived data members
+    radius_sq = radius*radius;
+    norms[0] = vec3::norm(normals);
+    norms[1] = vec3::norm(normals+3);
+    norms[2] = vec3::norm(normals+6);
 }
 
 
-void SphereSlice::solve_sphere(const double* axis, double &begin,
+void SphereSlice::solve_sphere(int id_axis, double &begin,
     double &end, double* point_begin, double* point_end) const {
 
-    // Convert the radius to reduced coordinates
-    double axis_norm = vec3::norm(axis);
-    double proj_radius = radius*axis_norm;
-    // Convert the center to reduced coordinates
-    double proj_center = vec3::dot(center, axis);
+    // Get the axis
+    CHECK_ID(id_axis);
+    const double* axis = normals + 3*id_axis;
+    double axis_norm = norms[id_axis];
+    // Convert the radius to fractional coordinates
+    double frac_radius = radius*norms[id_axis]; // TODO: precompute
+    // Convert the center to fractional coordinates
+    double frac_center = vec3::dot(center, axis); // TODO: precompute
     // Find the ranges in fractional coordinates that encloses the cutoff
-    begin = proj_center - proj_radius;
-    end = proj_center + proj_radius;
+    begin = frac_center - frac_radius;
+    end = frac_center + frac_radius;
 
+    // TODO: precompute normalized axis (times radius?)
     if (point_begin != NULL) {
-        point_begin[0] = center[0] - radius*axis[0]/axis_norm;
-        point_begin[1] = center[1] - radius*axis[1]/axis_norm;
-        point_begin[2] = center[2] - radius*axis[2]/axis_norm;
+        point_begin[0] = center[0] - radius*axis[0]/norms[id_axis];
+        point_begin[1] = center[1] - radius*axis[1]/norms[id_axis];
+        point_begin[2] = center[2] - radius*axis[2]/norms[id_axis];
     }
     if (point_end != NULL) {
-        point_end[0] = center[0] + radius*axis[0]/axis_norm;
-        point_end[1] = center[1] + radius*axis[1]/axis_norm;
-        point_end[2] = center[2] + radius*axis[2]/axis_norm;
+        point_end[0] = center[0] + radius*axis[0]/norms[id_axis];
+        point_end[1] = center[1] + radius*axis[1]/norms[id_axis];
+        point_end[2] = center[2] + radius*axis[2]/norms[id_axis];
     }
 }
 
-bool SphereSlice::solve_circle(const double* axis, const double* cut_normal,
-    double cut, double &begin, double &end, double* point_begin,
-    double* point_end) const {
+bool SphereSlice::solve_circle(int id_axis, int id_cut, double frac_cut,
+    double &begin, double &end, double* point_begin, double* point_end) const {
+
+    // Get the axis
+    CHECK_ID(id_axis);
+    const double* axis = normals + 3*id_axis;
+    double axis_norm = norms[id_axis];
+    // Get the cut_normal
+    CHECK_ID(id_cut);
+    const double* cut_normal = normals + 3*id_cut;
+    double cut_norm = norms[id_cut];
 
     /* Define the parameters of a circle that is the intersection of
          - the sphere
@@ -73,14 +95,12 @@ bool SphereSlice::solve_circle(const double* axis, const double* cut_normal,
      */
     // The difference in reduced coordinate between the center of the sphere
     // and the center of the circle.
-    double delta_cut = cut - vec3::dot(center, cut_normal);
-    // The norm squared of the cut normal.
-    double cut_normal_sq = vec3::normsq(cut_normal);
+    double delta_cut = frac_cut - vec3::dot(center, cut_normal); // TODO: precompute center in fractional coordinates
     // The amount lost from the total radius squared.
-    double lost_radius_sq = delta_cut*delta_cut/cut_normal_sq;
+    double lost_radius_sq = delta_cut*delta_cut/norms[id_cut]/norms[id_cut]; // TODO also precompute squared norms
     // The rest of the radius squared is for the size of the circle.
-    double circle_radius_sq = radius*radius - lost_radius_sq;
-    // Check if an intersection circle exists, if not return false;
+    double circle_radius_sq = radius_sq - lost_radius_sq;
+    // Check if an intersecting circle exists, if not return false;
     if (circle_radius_sq < 0) return false;
     // Compute the circle radius
     double circle_radius = sqrt(circle_radius_sq);
@@ -88,19 +108,19 @@ bool SphereSlice::solve_circle(const double* axis, const double* cut_normal,
     // Compute the center of the circle
     double circle_center[3];
     vec3::copy(center, circle_center);
-    vec3::iadd(circle_center, cut_normal, delta_cut/cut_normal_sq);
+    vec3::iadd(circle_center, cut_normal, delta_cut/norms[id_cut]/norms[id_cut]); // TODO: precompute squared norms
 
     /* Define a vector orthogonal to cut_normal, in the plane of axis and
        cut_normal. The length of the vector is such that, when added to the
        center of the circle, it just ends on the circle edge. The direction
        is chosen to either minimize or maximise the projection on axis. */
-    double ortho[3];
+    double ortho[3]; // TODO: maybe precompute six of such ortho vectors
     // Copy of axis -> in plane of axis
     vec3::copy(axis, ortho);
     // Subtract projection on cut_normal
     //  -> in plane of axis and cut_normal
     //  -> orthogonal to cut_normal
-    vec3::iadd(ortho, cut_normal, -vec3::dot(axis, cut_normal)/cut_normal_sq);
+    vec3::iadd(ortho, cut_normal, -vec3::dot(axis, cut_normal)/norms[id_cut]/norms[id_cut]); // TODO: precompute squared norms
     // Normalize to circle_radius
     vec3::iscale(ortho, circle_radius/vec3::norm(ortho));
 
@@ -129,47 +149,42 @@ bool SphereSlice::solve_circle(const double* axis, const double* cut_normal,
 
 void SphereSlice::solve_range_0(double &begin, double &end) const {
     // The first normal serves as axis on which begin and end is defined.
-    solve_sphere(normals, begin, end, NULL, NULL);
+    solve_sphere(0, begin, end, NULL, NULL);
 }
 
 
-#define UPDATE_BEGIN(found, work, dest) if (found) {if (work < dest) dest = work;} else {dest = work; found = true;}
-#define UPDATE_END(found, work, dest)   if (found) {if (work > dest) dest = work;} else {dest = work; found = true;}
-
-
 void SphereSlice::solve_range_1(double &begin, double &end) const {
-    // The first normal is used to define the slice.
-    const double* cut_normal = normals;
-    // The second normal serves as axis on which begin and end is defined.
-    const double* axis = normals + 3;
     // work
     double work_begin;
     double work_end;
-    double cut_tmp;
+    double frac_tmp;
     double point_begin[3];
     double point_end[3];
     bool found_begin = false;
     bool found_end = false;
 
+    // cut_normal
+    const double* cut_normal = normals;
+
     // Whole-sphere solution
-    solve_sphere(axis, work_begin, work_end, point_begin, point_end);
-    cut_tmp = vec3::dot(point_begin, cut_normal);
-    if ((cut_tmp > cut_begin[0]) && (cut_tmp < cut_end[0])) {
+    solve_sphere(1, work_begin, work_end, point_begin, point_end);
+    frac_tmp = vec3::dot(point_begin, cut_normal);
+    if ((frac_tmp > cut_begin[0]) && (frac_tmp < cut_end[0])) {
         UPDATE_BEGIN(found_begin, work_begin, begin);
     }
-    cut_tmp = vec3::dot(point_end, cut_normal);
-    if ((cut_tmp > cut_begin[0]) && (cut_tmp < cut_end[0])) {
+    frac_tmp = vec3::dot(point_end, cut_normal);
+    if ((frac_tmp > cut_begin[0]) && (frac_tmp < cut_end[0])) {
         UPDATE_END(found_end, work_end, end);
     }
 
     // Cut begin
-    if (solve_circle(axis, cut_normal, cut_begin[0], work_begin, work_end, NULL, NULL)) {
+    if (solve_circle(1, 0, cut_begin[0], work_begin, work_end, NULL, NULL)) {
         UPDATE_BEGIN(found_begin, work_begin, begin);
         UPDATE_END(found_end, work_end, end);
     }
 
     // Cut end
-    if (solve_circle(axis, cut_normal, cut_end[0], work_begin, work_end, NULL, NULL)) {
+    if (solve_circle(1, 0, cut_end[0], work_begin, work_end, NULL, NULL)) {
         UPDATE_BEGIN(found_begin, work_begin, begin);
         UPDATE_END(found_end, work_end, end);
     }

@@ -112,21 +112,16 @@ TEST_F(SphereSliceTest, disc_slice_example3) {
 TEST_F(SphereSliceTest, solve_circle_ortho) {
     SphereSlice slice = SphereSlice(my_center, easy_normals, 5.0);
     double begin, end;
-
-    double axis[3] = {0, 1, 0};
-    double normal[3] = {1, 0, 0};
-    slice.solve_circle(axis, normal, 3.4, begin, end, NULL, NULL);
+    slice.solve_circle(1, 0, 3.4, begin, end, NULL, NULL);
     EXPECT_DOUBLE_EQ(-6.0, begin);
     EXPECT_DOUBLE_EQ(2.0, end);
 }
 
 TEST_F(SphereSliceTest, solve_circle_angle) {
+    easy_normals[3] = 1.0;
     SphereSlice slice = SphereSlice(my_center, easy_normals, 5.0);
     double begin, end;
-
-    double axis[3] = {1, 1, 0};
-    double normal[3] = {1, 0, 0};
-    slice.solve_circle(axis, normal, 3.4, begin, end, NULL, NULL);
+    slice.solve_circle(1, 0, 3.4, begin, end, NULL, NULL);
     EXPECT_DOUBLE_EQ(-2.6, begin);
     EXPECT_DOUBLE_EQ(5.4, end);
 }
@@ -143,7 +138,7 @@ TEST_F(SphereSliceTest, solve_sphere_random) {
         double begin, end;
         double point_begin[3];
         double point_end[3];
-        slice->solve_sphere(normals, begin, end, point_begin, point_end);
+        slice->solve_sphere(0, begin, end, point_begin, point_end);
 
         // Check consistency begin, point_begin
         EXPECT_NEAR(begin, vec3::dot(point_begin, normals), 1e-10);
@@ -153,7 +148,7 @@ TEST_F(SphereSliceTest, solve_sphere_random) {
 
         // Check consistency when not using point_begin, point_end.
         double begin_bis, end_bis;
-        slice->solve_sphere(normals, begin_bis, end_bis, NULL, NULL);
+        slice->solve_sphere(0, begin_bis, end_bis, NULL, NULL);
         EXPECT_DOUBLE_EQ(begin, begin_bis);
         EXPECT_DOUBLE_EQ(end, end_bis);
 
@@ -184,7 +179,7 @@ TEST_F(SphereSliceTest, solve_range_0_random) {
 
         // Do a solve_sphere
         double begin, end;
-        slice->solve_sphere(normals, begin, end, NULL, NULL);
+        slice->solve_sphere(0, begin, end, NULL, NULL);
 
         // Do a solve_range_zero
         double begin_bis, end_bis;
@@ -218,7 +213,7 @@ TEST_F(SphereSliceTest, solve_circle_random) {
         double begin, end;
         double point_begin[3];
         double point_end[3];
-        bool exists = slice->solve_circle(axis, cut_normal, cut, begin, end, point_begin, point_end);
+        bool exists = slice->solve_circle(1, 0, cut, begin, end, point_begin, point_end);
 
         // It should have worked...
         ASSERT_TRUE(exists);
@@ -283,7 +278,7 @@ TEST_F(SphereSliceTest, solve_circle_random) {
 
         // Call without point_* arguments
         double begin_bis, end_bis;
-        exists = slice->solve_circle(axis, cut_normal, cut, begin_bis, end_bis, NULL, NULL);
+        exists = slice->solve_circle(1, 0, cut, begin_bis, end_bis, NULL, NULL);
 
         // It should have worked...
         ASSERT_TRUE(exists);
@@ -331,12 +326,12 @@ TEST_F(SphereSliceTest, solve_range_1_random) {
         // solutions of the separate parts
         double axis_begin0, axis_end0;
         double exists;
-        exists = slice->solve_circle(axis, cut_normal, cut_begin, axis_begin0, axis_end0, NULL, NULL);
+        exists = slice->solve_circle(1, 0, cut_begin, axis_begin0, axis_end0, NULL, NULL);
         EXPECT_TRUE(exists);
         EXPECT_LE(axis_begin, axis_begin0);
         EXPECT_GE(axis_end, axis_end0);
         double axis_begin1, axis_end1;
-        exists = slice->solve_circle(axis, cut_normal, cut_end, axis_begin1, axis_end1, NULL, NULL);
+        exists = slice->solve_circle(1, 0, cut_end, axis_begin1, axis_end1, NULL, NULL);
         EXPECT_TRUE(exists);
         EXPECT_LE(axis_begin, axis_begin1);
         EXPECT_GE(axis_end, axis_end1);
@@ -344,7 +339,7 @@ TEST_F(SphereSliceTest, solve_range_1_random) {
         double point_end[3];
         // If the sphere solution is in the proper range, it is the solution
         double axis_begin_sphere, axis_end_sphere;
-        slice->solve_sphere(axis, axis_begin_sphere, axis_end_sphere, point_begin, point_end);
+        slice->solve_sphere(1, axis_begin_sphere, axis_end_sphere, point_begin, point_end);
         double proj_begin = vec3::dot(cut_normal, point_begin);
         if ((proj_begin > cut_begin) && (proj_begin < cut_end)) {
             EXPECT_EQ(axis_begin, axis_begin_sphere);

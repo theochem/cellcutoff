@@ -46,11 +46,11 @@ class SphereSlice {
 
         // Auxiliary API, could also be useful and there is no need to really
         // make them private. Having them public also facilitates testing.
-        void solve_sphere(const double* axis, double &begin,
-            double &end, double* point_begin, double* point_end) const;
-        bool solve_circle(const double* axis, const double* cut_normal,
-            double cut, double &begin, double &end, double* point_begin,
-            double* point_end) const;
+        void solve_sphere(int id_axis, double &begin, double &end,
+            double* point_begin, double* point_end) const;
+        bool solve_circle(int id_axis, int id_cut, double frac_cut,
+            double &begin, double &end, double* point_begin, double* point_end)
+            const;
 
         void solve_range_0(double &begin, double &end) const;
         void solve_range_1(double &begin, double &end) const;
