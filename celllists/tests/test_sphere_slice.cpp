@@ -30,9 +30,10 @@
 
 /*
     TODO
-    - min and max arguments for fill_random_double, fill_random_long
     - randomize arguments of solve_circle(1, 0, ...) and solve_line(2, 0, 1,
       ...) in tests.
+    - check for rand without seed
+    - restore random pbc in tests
  */
 
 class SphereSliceTest : public ::testing::Test {
@@ -61,7 +62,7 @@ class SphereSliceTest : public ::testing::Test {
         void random_point(unsigned int seed, double rcut, const double* center,
             double* point, double &norm)
         {
-            fill_random_double(seed, point, 3, rcut);
+            fill_random_double(seed, point, 3, -rcut, rcut);
             norm = vec3::norm(point);
             point[0] += center[0];
             point[1] += center[1];
@@ -73,8 +74,8 @@ class SphereSliceTest : public ::testing::Test {
             // Do a solve_sphere, to know over which range we can cut
             slice->solve_sphere(id_cut, cut_min, cut_max, NULL, NULL);
             double x;
-            fill_random_double(seed, &x, 1);
-            cut = cut_min + (x+0.5)*(cut_max - cut_min);
+            fill_random_double(seed, &x, 1, 0.0, 1.0);
+            cut = cut_min + x*(cut_max - cut_min);
         }
 
         void random_slice(unsigned int seed, SphereSlice* slice, int id_cut,
@@ -85,14 +86,14 @@ class SphereSliceTest : public ::testing::Test {
             EXPECT_LT(cut_min, cut_max);
             // Select two cut positions between cut_min and cut_max
             double cuts[2];
-            fill_random_double(seed, cuts, 2);
+            fill_random_double(seed, cuts, 2, 0.0, 1.0);
             if (cuts[1] < cuts[0]) {
                 double tmp = cuts[0];
                 cuts[0] = cuts[1];
                 cuts[1] = tmp;
             }
-            cut_begin = (cuts[0] + 0.5)*(cut_max - cut_min) + cut_min;
-            cut_end = (cuts[1] + 0.5)*(cut_max - cut_min) + cut_min;
+            cut_begin = cuts[0]*(cut_max - cut_min) + cut_min;
+            cut_end = cuts[1]*(cut_max - cut_min) + cut_min;
         }
 
 };
@@ -556,7 +557,7 @@ TEST_F(SphereSliceTest, solve_line_random) {
             double other[3];
             double frac_axis;
             // Check end
-            fill_random_double(isample+irep, other, 3, rcut*1e-4);
+            fill_random_double(isample+irep, other, 3, -rcut*1e-4, rcut*1e-4);
             vec3::iadd(other, point_end);
             vec3::iadd(other, center, -1);
             vec3::iscale(other, 1.0/vec3::norm(other));
@@ -564,7 +565,7 @@ TEST_F(SphereSliceTest, solve_line_random) {
             frac_axis = vec3::dot(other, axis);
             EXPECT_GE(end+1e-10, frac_axis);
             // Check begin
-            fill_random_double(isample+irep, other, 3, rcut*1e-4);
+            fill_random_double(isample+irep, other, 3, -rcut*1e-4, rcut*1e-4);
             vec3::iadd(other, point_begin);
             vec3::iadd(other, center, -1);
             vec3::iscale(other, 1.0/vec3::norm(other));

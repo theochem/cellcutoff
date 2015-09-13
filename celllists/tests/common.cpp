@@ -25,18 +25,22 @@
 
 
 //! Fills an array of doubles with random numbers in range ]-0.5*scale, 0.5*scale]
-int fill_random_double(unsigned int seed, double* array, size_t size, double scale) {
+int fill_random_double(unsigned int seed, double* array, size_t size,
+    double low, double high) {
     srand(seed);
     for (int i=0; i<size; i++)
-        array[i] = (rand() + 1.0)/(RAND_MAX + 1.0) - 0.5;
+        array[i] = (rand() + 1.0)/(RAND_MAX + 1.0)*(high - low) + low;
     return rand();
 }
 
 //! Fills an array of int with random numbers in range [-range, range]
-int fill_random_int(unsigned int seed, int* array, size_t size, int range) {
+int fill_random_int(unsigned int seed, int* array, size_t size,
+    int begin, int end) {
+    if (begin > end)
+        throw std::domain_error("begin cannot be larger than end.");
     srand(seed);
     for (int i=0; i<size; i++)
-        array[i] = (rand() % (2*range+1))-range;
+        array[i] = (rand() % (end - begin)) + begin;
     return rand();
 }
 
@@ -47,7 +51,7 @@ Cell* create_random_cell_nvec(unsigned int seed, int nvec, double scale, bool cu
     }
     double rvecs[nvec*3];
     while (true) {
-        seed = fill_random_double(seed, rvecs, nvec*3, scale);
+        seed = fill_random_double(seed, rvecs, nvec*3, -scale, +scale);
         if (cuboid) {
             rvecs[1] = 0.0;
             rvecs[2] = 0.0;
