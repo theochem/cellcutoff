@@ -28,6 +28,7 @@ int fill_random_double(unsigned int seed, double* array, size_t size,
     double low=-0.5, double high=0.5);
 int fill_random_int(unsigned int seed, int* array, size_t size,
     int begin, int end);
+int fill_random_permutation(unsigned int seed, int* array, size_t size);
 Cell* create_random_cell_nvec(unsigned int seed, int nvec, double scale=1, bool cuboid=false);
 
 #endif

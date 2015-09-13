@@ -20,6 +20,7 @@
 
 
 #include <stdexcept>
+#include <algorithm>
 #include <cstdlib>
 #include "common.h"
 
@@ -27,6 +28,10 @@
 //! Fills an array of doubles with random numbers in range ]-0.5*scale, 0.5*scale]
 int fill_random_double(unsigned int seed, double* array, size_t size,
     double low, double high) {
+
+    if (size <= 0)
+        throw std::domain_error("Array size must be strictly positive.");
+
     srand(seed);
     for (int i=0; i<size; i++)
         array[i] = (rand() + 1.0)/(RAND_MAX + 1.0)*(high - low) + low;
@@ -36,18 +41,34 @@ int fill_random_double(unsigned int seed, double* array, size_t size,
 //! Fills an array of int with random numbers in range [-range, range]
 int fill_random_int(unsigned int seed, int* array, size_t size,
     int begin, int end) {
+
+    if (size <= 0)
+        throw std::domain_error("Array size must be strictly positive.");
     if (begin > end)
-        throw std::domain_error("begin cannot be larger than end.");
+        throw std::domain_error("Begin cannot be larger than end.");
     srand(seed);
     for (int i=0; i<size; i++)
         array[i] = (rand() % (end - begin)) + begin;
     return rand();
 }
 
+int myrandom(int i) { return rand()%i; }
+
+//! Fills and array of int with a random permutation
+int fill_random_permutation(unsigned int seed, int* array, size_t size) {
+
+    if (size <= 0)
+        throw std::domain_error("Array size must be strictly positive.");
+    for (size_t i=0; i < size; i++)
+        array[i] = i;
+    srand(seed);
+    std::random_shuffle(array, array+size, myrandom);
+}
+
 //! Random cell with a volume larger than 0.01
 Cell* create_random_cell_nvec(unsigned int seed, int nvec, double scale, bool cuboid) {
-    if (nvec == 0) {
-        throw std::domain_error("A random cell must be at least 1D periodic.");
+    if ((nvec <= 0) || (nvec > 3)) {
+        throw std::domain_error("A random cell must be 1D, 2D or 2D periodic.");
     }
     double rvecs[nvec*3];
     while (true) {

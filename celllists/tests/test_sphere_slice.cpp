@@ -28,12 +28,6 @@
 #include "common.h"
 
 
-/*
-    TODO
-    - randomize arguments of solve_circle(1, 0, ...) and solve_line(2, 0, 1,
-      ...) in tests.
- */
-
 class SphereSliceTest : public ::testing::Test {
     public:
         double my_center[3];
@@ -325,19 +319,25 @@ TEST_F(SphereSliceTest, solve_circle_random) {
         double normals[9];
         SphereSlice* slice = create_random_problem(irep, rcut, center, normals);
 
+        // Select the random ids for cut_normal and axis
+        int permutation[3];
+        fill_random_permutation(irep*5+123, permutation, 3);
+        int id_cut = permutation[0];
+        int id_axis = permutation[1];
+
         // Name some normals for convenience
-        double* cut_normal = normals;
-        double* axis = normals + 3;
+        double* cut_normal = normals + 3*id_cut;
+        double* axis = normals + 3*id_axis;
 
         // Select randomized place to cut the sphere
         double cut, cut_min, cut_max;
-        random_cut(irep+12345, slice, 0, cut, cut_min, cut_max);
+        random_cut(irep+12345, slice, id_cut, cut, cut_min, cut_max);
 
         // Actual computation
         double begin, end;
         double point_begin[3];
         double point_end[3];
-        bool exists = slice->solve_circle(1, 0, cut, begin, end, point_begin, point_end);
+        bool exists = slice->solve_circle(id_axis, id_cut, cut, begin, end, point_begin, point_end);
 
         // It should have worked...
         EXPECT_TRUE(exists);
@@ -400,7 +400,7 @@ TEST_F(SphereSliceTest, solve_circle_random) {
 
         // Call without point_* arguments
         double begin_bis, end_bis;
-        exists = slice->solve_circle(1, 0, cut, begin_bis, end_bis, NULL, NULL);
+        exists = slice->solve_circle(id_axis, id_cut, cut, begin_bis, end_bis, NULL, NULL);
 
         // It should have worked...
         EXPECT_TRUE(exists);
