@@ -764,7 +764,7 @@ TEST_F(CellTest2, select_inside_rcut_example) {
     }
 }
 
-TEST_F(CellTest3, DISABLED_select_inside_rcut_example) {
+TEST_F(CellTest3, select_inside_rcut_example) {
     // All the parameters
     double rcut = 1.9;
     double center[3] = {2.0, 2.0, 2.0};
