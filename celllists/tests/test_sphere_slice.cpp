@@ -498,22 +498,30 @@ TEST_F(SphereSliceTest, solve_line_random) {
         double normals[9];
         SphereSlice* slice = create_random_problem(irep, rcut, center, normals);
 
+        // Select the random ids for cut_normal and axis
+        int permutation[3];
+        fill_random_permutation(irep*5+123, permutation, 3);
+        int id_cut0 = permutation[0];
+        int id_cut1 = permutation[1];
+        int id_axis = permutation[2];
+
         // Name some normals for convenience
-        double* cut0_normal = normals;
-        double* cut1_normal = normals + 3;
-        double* axis = normals + 6;
+        double* cut0_normal = normals + 3*id_cut0;
+        double* cut1_normal = normals + 3*id_cut1;
+        double* axis = normals + 3*id_axis;
 
         // Select randomized places to cut the sphere
         double cut0, cut0_min, cut0_max;
         double cut1, cut1_min, cut1_max;
-        random_cut(irep+12345, slice, 0, cut0, cut0_min, cut0_max);
-        random_cut(irep*2+114, slice, 1, cut1, cut1_min, cut1_max);
+        random_cut(irep+12345, slice, id_cut0, cut0, cut0_min, cut0_max);
+        random_cut(irep*2+114, slice, id_cut1, cut1, cut1_min, cut1_max);
 
         // Actual computation
         double begin, end;
         double point_begin[3];
         double point_end[3];
-        bool exists = slice->solve_line(2, 0, 1, cut0, cut1, begin, end, point_begin, point_end);
+        bool exists = slice->solve_line(id_axis, id_cut0, id_cut1, cut0, cut1, begin, end,
+            point_begin, point_end);
 
         // It should have worked...
         EXPECT_TRUE(exists);
@@ -574,7 +582,8 @@ TEST_F(SphereSliceTest, solve_line_random) {
 
         // Call without point_* arguments
         double begin_bis, end_bis;
-        exists = slice->solve_line(2, 0, 1, cut0, cut1, begin_bis, end_bis, NULL, NULL);
+        exists = slice->solve_line(id_axis, id_cut0, id_cut1, cut0, cut1, begin_bis,
+            end_bis, NULL, NULL);
 
         // It should have worked...
         EXPECT_TRUE(exists);
