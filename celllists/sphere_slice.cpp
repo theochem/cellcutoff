@@ -145,6 +145,12 @@ bool SphereSlice::solve_circle(int id_axis, int id_cut, double frac_cut,
     return true;
 }
 
+bool SphereSlice::solve_line(int id_axis, int id_cut0, int id_cut1,
+    double frac_cut0, double frac_cut1, double &begin, double &end,
+    double* point_begin, double* point_end) const {
+    throw std::logic_error("TODO");
+}
+
 void SphereSlice::solve_range_0(double &begin, double &end) const {
     // The first normal serves as axis on which begin and end is defined.
     solve_sphere(0, begin, end, NULL, NULL);

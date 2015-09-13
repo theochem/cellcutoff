@@ -55,6 +55,9 @@ class SphereSlice {
         bool solve_circle(int id_axis, int id_cut, double frac_cut,
             double &begin, double &end, double* point_begin, double* point_end)
             const;
+        bool solve_line(int id_axis, int id_cut0, int id_cut1,
+            double frac_cut0, double frac_cut1, double &begin, double &end,
+            double* point_begin, double* point_end) const;
 
         void solve_range_0(double &begin, double &end) const;
         void solve_range_1(double &begin, double &end) const;
