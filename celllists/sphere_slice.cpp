@@ -43,9 +43,14 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
     cut_end[1] = 0.0;
     // Compute from derived data members
     radius_sq = radius*radius;
-    norms[0] = vec3::norm(normals);
-    norms[1] = vec3::norm(normals+3);
-    norms[2] = vec3::norm(normals+6);
+    for (int i=0; i < 3; i++) {
+        norms_sq[i] = vec3::normsq(normals + 3*i);
+        norms[i] = sqrt(norms_sq[i]);
+        frac_radii[i] = radius*norms[i];
+        frac_center[i] = vec3::dot(center, normals + 3*i);
+        vec3::copy(normals + 3*i, radius_normals + 3*i);
+        vec3::iscale(radius_normals + 3*i, radius/norms[i]);
+    }
 }
 
 
@@ -54,26 +59,21 @@ void SphereSlice::solve_sphere(int id_axis, double &begin,
 
     // Get the axis
     CHECK_ID(id_axis);
-    const double* axis = normals + 3*id_axis;
-    double axis_norm = norms[id_axis];
-    // Convert the radius to fractional coordinates
-    double frac_radius = radius*norms[id_axis]; // TODO: precompute
-    // Convert the center to fractional coordinates
-    double frac_center = vec3::dot(center, axis); // TODO: precompute
     // Find the ranges in fractional coordinates that encloses the cutoff
-    begin = frac_center - frac_radius;
-    end = frac_center + frac_radius;
+    begin = frac_center[id_axis] - frac_radii[id_axis];
+    end = frac_center[id_axis] + frac_radii[id_axis];
 
     // TODO: precompute normalized axis (times radius?)
+    const double* radius_normal = radius_normals + 3*id_axis;
     if (point_begin != NULL) {
-        point_begin[0] = center[0] - radius*axis[0]/norms[id_axis];
-        point_begin[1] = center[1] - radius*axis[1]/norms[id_axis];
-        point_begin[2] = center[2] - radius*axis[2]/norms[id_axis];
+        point_begin[0] = center[0] - radius_normal[0];
+        point_begin[1] = center[1] - radius_normal[1];
+        point_begin[2] = center[2] - radius_normal[2];
     }
     if (point_end != NULL) {
-        point_end[0] = center[0] + radius*axis[0]/norms[id_axis];
-        point_end[1] = center[1] + radius*axis[1]/norms[id_axis];
-        point_end[2] = center[2] + radius*axis[2]/norms[id_axis];
+        point_end[0] = center[0] + radius_normal[0];
+        point_end[1] = center[1] + radius_normal[1];
+        point_end[2] = center[2] + radius_normal[2];
     }
 }
 

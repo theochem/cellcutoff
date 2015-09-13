@@ -36,7 +36,11 @@ class SphereSlice {
 
         // Derived from constant data members upon construction
         double radius_sq;
+        double norms_sq[3];
         double norms[3];
+        double frac_radii[3];
+        double frac_center[3];
+        double radius_normals[9];
     public:
         SphereSlice(const double* center, const double* normals, double radius);
 
