@@ -25,7 +25,7 @@
 
 
 //! Fills an array of doubles with random numbers in range ]-0.5*scale, 0.5*scale]
-int fill_random_double(double* array, size_t size, unsigned int seed, double scale) {
+int fill_random_double(unsigned int seed, double* array, size_t size, double scale) {
     srand(seed);
     for (int i=0; i<size; i++)
         array[i] = (rand() + 1.0)/(RAND_MAX + 1.0) - 0.5;
@@ -33,7 +33,7 @@ int fill_random_double(double* array, size_t size, unsigned int seed, double sca
 }
 
 //! Fills an array of int with random numbers in range [-range, range]
-int fill_random_int(int* array, size_t size, unsigned int seed, int range) {
+int fill_random_int(unsigned int seed, int* array, size_t size, int range) {
     srand(seed);
     for (int i=0; i<size; i++)
         array[i] = (rand() % (2*range+1))-range;
@@ -41,13 +41,13 @@ int fill_random_int(int* array, size_t size, unsigned int seed, int range) {
 }
 
 //! Random cell with a volume larger than 0.01
-Cell* create_random_cell_nvec(int nvec, unsigned int seed, double scale, bool cuboid) {
+Cell* create_random_cell_nvec(unsigned int seed, int nvec, double scale, bool cuboid) {
     if (nvec == 0) {
         throw std::domain_error("A random cell must be at least 1D periodic.");
     }
     double rvecs[nvec*3];
     while (true) {
-        seed = fill_random_double(rvecs, nvec*3, seed, scale);
+        seed = fill_random_double(seed, rvecs, nvec*3, scale);
         if (cuboid) {
             rvecs[1] = 0.0;
             rvecs[2] = 0.0;

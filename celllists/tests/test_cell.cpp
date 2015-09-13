@@ -38,7 +38,7 @@ class CellTest : public ::testing::Test {
         double singrvecs[9];
 
         Cell* create_random_cell(unsigned int seed, double scale=1.0, bool cuboid=false) {
-            Cell* cell = create_random_cell_nvec(nvec, seed, scale, cuboid);
+            Cell* cell = create_random_cell_nvec(seed, nvec, scale, cuboid);
         }
 
         virtual void SetUp() = 0;
@@ -217,7 +217,7 @@ TEST_P(CellTestP, wrap_random) {
     for (int irep=0; irep < 100; irep++) {
         Cell* cell = create_random_cell(irep);
         double delta[3];
-        fill_random_double(delta, 3, 11, 5.0);
+        fill_random_double(irep, delta, 3, 5.0);
         double frac[3];
         cell->wrap(delta);
         cell->to_frac(delta, frac);
@@ -233,11 +233,11 @@ TEST_P(CellTestP, wrap_consistency) {
     for (int irep=0; irep < 100; irep++) {
         Cell* cell = create_random_cell(irep);
         int coeffs[nvec];
-        fill_random_int(coeffs, nvec, irep, 5);
+        fill_random_int(irep, coeffs, nvec, 5);
         double frac[3];
         double cart1[3];
         double cart2[3];
-        fill_random_double(frac, 3, 11, 1.0);
+        fill_random_double(irep, frac, 3, 1.0);
         cell->to_cart(frac, cart1);
         cell->to_cart(frac, cart2);
         cell->add_rvec(cart2, coeffs);
@@ -312,7 +312,7 @@ TEST_P(CellTestP, to_cart_to_frac_consistency) {
         double frac[3];
         double cart1[3];
         double cart2[3];
-        fill_random_double(cart1, 3, 11, 5.0);
+        fill_random_double(irep, cart1, 3, 5.0);
         cell->to_frac(cart1, frac);
         cell->to_cart(frac, cart2);
         EXPECT_NEAR(cart2[0], cart1[0], 1e-10);
@@ -385,7 +385,7 @@ TEST_P(CellTestP, g_lincomb_dot_rvecs_consistency) {
         double coeffs[3];
         double gvec[3];
         double dots[3];
-        fill_random_double(coeffs, 3, 11, 5.0);
+        fill_random_double(irep, coeffs, 3, 5.0);
         cell->g_lincomb(coeffs, gvec);
         cell->dot_rvecs(gvec, dots);
         EXPECT_NEAR(dots[0], coeffs[0], 1e-10);
@@ -402,12 +402,12 @@ TEST_P(CellTestP, add_rvec_consistency) {
     for (int irep=0; irep < 100; irep++) {
         Cell* cell = create_random_cell(irep);
         int coeffs[nvec];
-        fill_random_int(coeffs, nvec, irep, 5);
+        fill_random_int(irep, coeffs, nvec, 5);
         double cart1[3];
         double cart2[3];
         double frac1[3];
         double frac2[3];
-        fill_random_double(cart1, 3, 11, 10.0);
+        fill_random_double(irep, cart1, 3, 10.0);
         cart2[0] = cart1[0];
         cart2[1] = cart1[1];
         cart2[2] = cart1[2];
@@ -434,7 +434,7 @@ TEST_P(CellTestP, get_rvec) {
     Cell* cell = NULL;
     while (true) {
         try {
-            fill_random_double(rvecs, nvec*3, 1487, 2.0);
+            fill_random_double(1487, rvecs, nvec*3, 2.0);
             cell = new Cell(rvecs, nvec);
             break;
         } catch (singular_cell_vectors) {}
@@ -450,7 +450,7 @@ TEST_P(CellTestP, get_rvec) {
 TEST_P(CellTestP, get_domain) {
     double rvecs[nvec*3];
     Cell* cell = NULL;
-    fill_random_double(rvecs, nvec*3, 1487, 2.0);
+    fill_random_double(1487, rvecs, nvec*3, 2.0);
     cell = new Cell(rvecs, nvec);
     EXPECT_THROW(cell->get_rvec(-1, 0), std::domain_error);
     EXPECT_THROW(cell->get_rvec(3, 0), std::domain_error);
@@ -685,7 +685,7 @@ TEST_P(CellTestP, set_ranges_rcut_random) {
         int ranges_begin[nvec];
         int ranges_end[nvec];
         double rcut = 0.3*(icell+1);
-        fill_random_double(center, 3, icell+2, 5.0);
+        fill_random_double(icell+2, center, 3, 5.0);
         cell->set_ranges_rcut(center, rcut, ranges_begin, ranges_end);
         for (int ipoint=0; ipoint < 1000; ipoint++) {
             // Make a random point that is uniformly distributed within a sphere, but
@@ -693,7 +693,7 @@ TEST_P(CellTestP, set_ranges_rcut_random) {
             double point[3];
             double frac[3];
             double norm;
-            fill_random_double(point, 3, ipoint+icell*1000, 1.0);
+            fill_random_double(ipoint+icell*1000, point, 3, 1.0);
             norm = sqrt(point[0]*point[0] + point[1]*point[1] + point[2]*point[2]);
             if (norm > 1) {
                 point[0] /= norm;
@@ -797,7 +797,7 @@ TEST_P(CellTestP, select_inside_rcut_random) {
         double rcut = (irep+1)*0.1;
         // - Random center
         double center[3];
-        fill_random_double(center, 3, 47332+irep, 2.0);
+        fill_random_double(47332+irep, center, 3, 2.0);
         // - Alternating values for shape and pbc
         int shape[nvec];
         bool pbc[nvec];
@@ -815,7 +815,7 @@ TEST_P(CellTestP, select_inside_rcut_random) {
 
         // Construct a random vector in a cubic box around the cutoff sphere.
         double cart[3];
-        fill_random_double(cart, 3, 123+irep, rcut*1.1);
+        fill_random_double(123+irep, cart, 3, rcut*1.1);
         double norm = vec3::norm(cart);
         double other[3];
         // Center of the box must coincide with center of the sphere.
@@ -890,7 +890,7 @@ TEST_P(CellTestP, select_inside_rcut_corners) {
         double rcut = (irep+1)*0.1;
         // - Random center
         double center[3];
-        fill_random_double(center, 3, 47332+irep, 2.0);
+        fill_random_double(47332+irep, center, 3, 2.0);
         // - Alternating values for shape and pbc
         int shape[nvec];
         bool pbc[nvec];

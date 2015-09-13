@@ -24,8 +24,8 @@
 
 #include "celllists/cell.h"
 
-int fill_random_double(double* array, size_t size, unsigned int seed, double scale=1);
-int fill_random_int(int* array, size_t size, unsigned int seed, int range);
-Cell* create_random_cell_nvec(int nvec, unsigned int seed, double scale=1, bool cuboid=false);
+int fill_random_double(unsigned int seed, double* array, size_t size, double scale=1);
+int fill_random_int(unsigned int seed, int* array, size_t size, int range);
+Cell* create_random_cell_nvec(unsigned int seed, int nvec, double scale=1, bool cuboid=false);
 
 #endif
