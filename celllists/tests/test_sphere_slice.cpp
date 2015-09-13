@@ -32,8 +32,6 @@
     TODO
     - randomize arguments of solve_circle(1, 0, ...) and solve_line(2, 0, 1,
       ...) in tests.
-    - check for rand without seed
-    - restore random pbc in tests
  */
 
 class SphereSliceTest : public ::testing::Test {

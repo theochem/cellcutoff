@@ -801,7 +801,7 @@ TEST_P(CellTestP, select_inside_rcut_random) {
         bool pbc[nvec];
         for (int ivec=0; ivec < nvec; ivec++) {
             shape[ivec] = ((irep*(ivec+1)) % 5) + 1;
-            pbc[ivec] = true;//(irep >> ivec) % 2;
+            pbc[ivec] = (irep >> ivec) % 2;
         }
 
         // Compute the bars.
@@ -894,7 +894,7 @@ TEST_P(CellTestP, select_inside_rcut_corners) {
         bool pbc[nvec];
         for (int ivec=0; ivec < nvec; ivec++) {
             shape[ivec] = ((irep*(ivec+1)) % 5) + 1;
-            pbc[ivec] = true;//(irep >> ivec) % 2;
+            pbc[ivec] = true;
         }
 
         // Compute the bars.
