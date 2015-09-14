@@ -33,9 +33,12 @@
 SphereSlice::SphereSlice(const double* center, const double* normals, double radius) :
     center(center), normals(normals), radius(radius) {
 
-    if (radius <= 0) {
+    // Check sanity of arguments
+    if (radius <= 0)
         throw std::domain_error("radius must be strictly positive.");
-    }
+    if (vec3::triple_product(normals, normals+3, normals+6) == 0.0)
+        throw std::domain_error("The three normals must be linearly independent.");
+
     // Initialize variable data members
     cut_begin[0] = 0.0;
     cut_begin[1] = 0.0;

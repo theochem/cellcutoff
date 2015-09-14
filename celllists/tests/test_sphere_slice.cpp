@@ -96,6 +96,9 @@ class SphereSliceTest : public ::testing::Test {
 
 
 TEST_F(SphereSliceTest, domain) {
+    EXPECT_THROW(SphereSlice(my_center, easy_normals, 0.0), std::domain_error);
+    const double degenerate_normals[9] = {1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0};
+    EXPECT_THROW(SphereSlice(my_center, degenerate_normals, 5.0), std::domain_error);
     SphereSlice slice = SphereSlice(my_center, easy_normals, 5.0);
     double begin, end;
     EXPECT_THROW(slice.solve_range(-1, begin, end), std::domain_error);
