@@ -196,34 +196,35 @@ void Cell::wrap(double* delta) const {
 }
 
 
-void Cell::to_frac(const double* cart, double* frac) const {
-    // Transfroms to fractional coordinates
-    frac[0] = gvecs[0]*cart[0] + gvecs[1]*cart[1] + gvecs[2]*cart[2];
-    frac[1] = gvecs[3]*cart[0] + gvecs[4]*cart[1] + gvecs[5]*cart[2];
-    frac[2] = gvecs[6]*cart[0] + gvecs[7]*cart[1] + gvecs[8]*cart[2];
-}
-
-void Cell::to_cart(const double* frac, double* cart) const {
-    // Transfroms to Cartesian coordinates
-    cart[0] = rvecs[0]*frac[0] + rvecs[3]*frac[1] + rvecs[6]*frac[2];
-    cart[1] = rvecs[1]*frac[0] + rvecs[4]*frac[1] + rvecs[7]*frac[2];
-    cart[2] = rvecs[2]*frac[0] + rvecs[5]*frac[1] + rvecs[8]*frac[2];
+void Cell::to_rfrac(const double* rcart, double* rfrac) const {
+    // Transfrom to real-space fractional coordinates
+    rfrac[0] = gvecs[0]*rcart[0] + gvecs[1]*rcart[1] + gvecs[2]*rcart[2];
+    rfrac[1] = gvecs[3]*rcart[0] + gvecs[4]*rcart[1] + gvecs[5]*rcart[2];
+    rfrac[2] = gvecs[6]*rcart[0] + gvecs[7]*rcart[1] + gvecs[8]*rcart[2];
 }
 
 
-void Cell::g_lincomb(const double* coeffs, double* gvec) const {
-    // Make a linear combination of reciprocal cell vectors
-    gvec[0] = gvecs[0]*coeffs[0] + gvecs[3]*coeffs[1] + gvecs[6]*coeffs[2];
-    gvec[1] = gvecs[1]*coeffs[0] + gvecs[4]*coeffs[1] + gvecs[7]*coeffs[2];
-    gvec[2] = gvecs[2]*coeffs[0] + gvecs[5]*coeffs[1] + gvecs[8]*coeffs[2];
+void Cell::to_rcart(const double* rfrac, double* rcart) const {
+    // Transfrom to real-space Cartesian coordinates
+    rcart[0] = rvecs[0]*rfrac[0] + rvecs[3]*rfrac[1] + rvecs[6]*rfrac[2];
+    rcart[1] = rvecs[1]*rfrac[0] + rvecs[4]*rfrac[1] + rvecs[7]*rfrac[2];
+    rcart[2] = rvecs[2]*rfrac[0] + rvecs[5]*rfrac[1] + rvecs[8]*rfrac[2];
 }
 
 
-void Cell::dot_rvecs(const double* frac, double* dots) const {
-    // Take dot product with real cell vectors
-    dots[0] = rvecs[0]*frac[0] + rvecs[1]*frac[1] + rvecs[2]*frac[2];
-    dots[1] = rvecs[3]*frac[0] + rvecs[4]*frac[1] + rvecs[5]*frac[2];
-    dots[2] = rvecs[6]*frac[0] + rvecs[7]*frac[1] + rvecs[8]*frac[2];
+void Cell::to_gfrac(const double* gcart, double* gfrac) const {
+    // Transform to reciprocal space Cartesian coordinates
+    gfrac[0] = rvecs[0]*gcart[0] + rvecs[1]*gcart[1] + rvecs[2]*gcart[2];
+    gfrac[1] = rvecs[3]*gcart[0] + rvecs[4]*gcart[1] + rvecs[5]*gcart[2];
+    gfrac[2] = rvecs[6]*gcart[0] + rvecs[7]*gcart[1] + rvecs[8]*gcart[2];
+}
+
+
+void Cell::to_gcart(const double* gfrac, double* gcart) const {
+    // Transform to reciprocal-space Cartesian coordinates
+    gcart[0] = gvecs[0]*gfrac[0] + gvecs[3]*gfrac[1] + gvecs[6]*gfrac[2];
+    gcart[1] = gvecs[1]*gfrac[0] + gvecs[4]*gfrac[1] + gvecs[7]*gfrac[2];
+    gcart[2] = gvecs[2]*gfrac[0] + gvecs[5]*gfrac[1] + gvecs[8]*gfrac[2];
 }
 
 
@@ -329,7 +330,7 @@ int Cell::set_ranges_rcut(const double* center, double rcut, int* ranges_begin,
     }
     double frac[3];
     int ncell = 1;
-    to_frac(center, frac);
+    to_rfrac(center, frac);
     for (int ivec=nvec-1; ivec>=0; ivec--) {
         // Use spacings between planes to find first plane before cutoff sphere and last
         // plane after cutoff sphere. To this end, we must divide rcut by the spacing

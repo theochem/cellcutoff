@@ -101,7 +101,7 @@ class Cell {
         void wrap(double* delta) const;
 
         /** @brief
-                Convert Cartesian real-space coordinates to fractional coordinates.
+                Convert Cartesian real-space coordinates to fractional.
 
             @param cart
                 A pointer to 3 doubles containing the input real-space vector.
@@ -112,10 +112,10 @@ class Cell {
             This effectively computes the dot products of the Cartesian vector with the
             reciprocal cell vectors.
          */
-        void to_frac(const double* cart, double* frac) const;
+        void to_rfrac(const double* cart, double* frac) const;
 
         /** @brief
-                Convert fractional coordinates to Cartesian real-space coordinates.
+                Convert fractional real-space coordinates to Cartesian.
 
             @param frac
                 A pointer to 3 doubles containing the input fractional
@@ -126,22 +126,10 @@ class Cell {
 
             This effectively computes a linear combination of real-space cell vectors.
          */
-        void to_cart(const double* frac, double* cart) const;
+        void to_rcart(const double* frac, double* cart) const;
 
         /** @brief
-                Construct a linear combination of reciprocal cell vectors.
-
-            @param coeffs
-                A pointer to 3 doubles containing the coefficients for the
-                linear combination.
-
-            @param gvec
-                A pointer to 3 doubles to which the output is written
-         */
-        void g_lincomb(const double* coeffs, double* gvec) const;
-
-        /** @brief
-                Compute the dot products of fractional coordinates with each cell vector.
+                Convert fractional reciprocal-space coordinates to Cartesian.
 
             @param frac
                 A pointer to 3 doubles containing the input fractional
@@ -150,7 +138,19 @@ class Cell {
             @param dots
                 A pointer to 3 doubles to which the output is written.
          */
-        void dot_rvecs(const double* frac, double* dots) const;
+        void to_gfrac(const double* gcart, double* gfrac) const;
+
+        /** @brief
+                Convert fractional reciprocal-space coordinates to Cartesian.
+
+            @param coeffs
+                A pointer to 3 doubles containing the coefficients for the
+                linear combination.
+
+            @param gvec
+                A pointer to 3 doubles to which the output is written
+         */
+        void to_gcart(const double* gfrac, double* gcart) const;
 
         /** @brief
                 Add an integer linear combination of cell vectors to delta.
