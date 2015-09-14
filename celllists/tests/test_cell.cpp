@@ -214,7 +214,7 @@ TEST_F(CellTest3, wrap_edges) {
 }
 
 TEST_P(CellTestP, wrap_random) {
-    for (int irep=0; irep < 100; irep++) {
+    for (int irep=0; irep < NREP; irep++) {
         Cell* cell = create_random_cell(irep);
         double delta[3];
         fill_random_double(irep, delta, 3, -5.0, 5.0);
@@ -230,7 +230,7 @@ TEST_P(CellTestP, wrap_random) {
 }
 
 TEST_P(CellTestP, wrap_consistency) {
-    for (int irep=0; irep < 100; irep++) {
+    for (int irep=0; irep < NREP; irep++) {
         Cell* cell = create_random_cell(irep);
         int coeffs[nvec];
         fill_random_int(irep, coeffs, nvec, -5, 5);
@@ -307,7 +307,7 @@ TEST_F(CellTest3, to_cart_example) {
 }
 
 TEST_P(CellTestP, to_cart_to_frac_consistency) {
-    for (int irep=0; irep < 100; irep++) {
+    for (int irep=0; irep < NREP; irep++) {
         Cell* cell = create_random_cell(irep);
         double frac[3];
         double cart1[3];
@@ -380,7 +380,7 @@ TEST_F(CellTest3, dot_rvecs_example) {
 }
 
 TEST_P(CellTestP, g_lincomb_dot_rvecs_consistency) {
-    for (int irep=0; irep < 100; irep++) {
+    for (int irep=0; irep < NREP; irep++) {
         Cell* cell = create_random_cell(irep);
         double coeffs[3];
         double gvec[3];
@@ -399,7 +399,7 @@ TEST_P(CellTestP, g_lincomb_dot_rvecs_consistency) {
 // --------
 
 TEST_P(CellTestP, add_rvec_consistency) {
-    for (int irep=0; irep < 100; irep++) {
+    for (int irep=0; irep < NREP; irep++) {
         Cell* cell = create_random_cell(irep);
         int coeffs[nvec];
         fill_random_int(irep, coeffs, nvec, -5, 5);
@@ -550,7 +550,7 @@ TEST_F(CellTest3, get_example) {
 // ----------------------
 
 TEST_P(CellTestP, cubic_cuboid_random) {
-    for (int irep=0; irep < 100; irep++) {
+    for (int irep=0; irep < NREP; irep++) {
         Cell* cell = create_random_cell(irep);
         EXPECT_FALSE(cell->is_cubic());
         EXPECT_FALSE(cell->is_cuboid());
@@ -679,7 +679,7 @@ TEST_P(CellTestP, set_ranges_rcut_domain) {
 }
 
 TEST_P(CellTestP, set_ranges_rcut_random) {
-    for (int icell=0; icell < 100; icell++) {
+    for (int icell=0; icell < NREP; icell++) {
         Cell* cell = create_random_cell(icell);
         double center[3];
         int ranges_begin[nvec];
@@ -687,7 +687,7 @@ TEST_P(CellTestP, set_ranges_rcut_random) {
         double rcut = 0.3*(icell+1);
         fill_random_double(icell+2, center, 3, -5.0, 5.0);
         cell->set_ranges_rcut(center, rcut, ranges_begin, ranges_end);
-        for (int ipoint=0; ipoint < 1000; ipoint++) {
+        for (int ipoint=0; ipoint < NPOINT; ipoint++) {
             double point[3];
             double frac[3];
             double norm;
@@ -797,7 +797,7 @@ TEST_F(CellTest3, select_inside_rcut_example) {
 }
 
 TEST_P(CellTestP, select_inside_rcut_random) {
-    for (int irep=0; irep < 10; irep++) {
+    for (int irep=0; irep < NREP; irep++) {
         // Test parameters:
         // - Random cell
         Cell* cell = create_random_cell(2*irep, 1.0, false);
@@ -890,7 +890,7 @@ TEST_P(CellTestP, select_inside_rcut_random) {
 
 
 TEST_P(CellTestP, select_inside_rcut_corners) {
-    for (int irep=0; irep < 10; irep++) {
+    for (int irep=0; irep < NREP; irep++) {
         // Test parameters:
         // - Random cell
         Cell* cell = create_random_cell(2*irep, 1.0, true);

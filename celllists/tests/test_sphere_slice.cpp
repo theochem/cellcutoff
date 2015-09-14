@@ -332,7 +332,7 @@ TEST_F(SphereSliceTest, compute_plane_intersection_example1) {
 }
 
 TEST_F(SphereSliceTest, solve_sphere_random) {
-    for (int irep=0; irep < 100; irep++) {
+    for (int irep=0; irep < NREP; irep++) {
         // Test parameters
         double rcut = (irep+1)*0.1;
         double center[3];
@@ -360,7 +360,7 @@ TEST_F(SphereSliceTest, solve_sphere_random) {
         EXPECT_DOUBLE_EQ(begin, begin_bis);
         EXPECT_DOUBLE_EQ(end, end_bis);
 
-        for (int ipoint=0; ipoint < 1000; ipoint++) {
+        for (int ipoint=0; ipoint < NPOINT; ipoint++) {
             // Random point
             double point[3];
             double norm;
@@ -378,7 +378,7 @@ TEST_F(SphereSliceTest, solve_sphere_random) {
 }
 
 TEST_F(SphereSliceTest, solve_range_0_random) {
-    for (int irep=0; irep < 100; irep++) {
+    for (int irep=0; irep < NREP; irep++) {
         // Test parameters
         double rcut = (irep+1)*0.1;
         double center[3];
@@ -403,7 +403,7 @@ TEST_F(SphereSliceTest, solve_range_0_random) {
 }
 
 TEST_F(SphereSliceTest, solve_circle_random) {
-    for (int irep=0; irep < 100; irep++) {
+    for (int irep=0; irep < NREP; irep++) {
         // Test parameters
         double rcut = (irep+1)*0.1;
         double center[3];
@@ -509,7 +509,7 @@ TEST_F(SphereSliceTest, solve_circle_random) {
 }
 
 TEST_F(SphereSliceTest, solve_range_1_random) {
-    for (int irep=0; irep < 100; irep++) {
+    for (int irep=0; irep < NREP; irep++) {
         // Test parameters
         double rcut = (irep+1)*0.1;
         double center[3];
@@ -564,12 +564,12 @@ TEST_F(SphereSliceTest, solve_range_1_random) {
 
         // Test by generating lots of random points. If a point is in the disc,
         // its fractional coordinate should be between begin and end.
-        for (int ipoint=0; ipoint < 100; ipoint++) {
+        for (int ipoint=0; ipoint < NPOINT; ipoint++) {
             // Random point
             double point[3];
             double norm;
             random_point(ipoint, rcut, center, point, norm);
-            ASSERT_DOUBLE_EQ(norm, vec3::distance(point, center));
+            ASSERT_NEAR(norm, vec3::distance(point, center), 1e-10);
             if (norm < rcut) {
                 // Projection on axis should always be in the "sphere range"
                 double proj2 = vec3::dot(point, axis);
@@ -591,7 +591,7 @@ TEST_F(SphereSliceTest, solve_range_1_random) {
 
 
 TEST_F(SphereSliceTest, solve_line_random) {
-    for (int irep=0; irep < 100; irep++) {
+    for (int irep=0; irep < NREP; irep++) {
         // Test parameters
         double rcut = (irep+1)*0.1;
         double center[3];
@@ -690,7 +690,7 @@ TEST_F(SphereSliceTest, solve_line_random) {
 
 
 TEST_F(SphereSliceTest, solve_range_2_random) {
-    for (int irep=0; irep < 100; irep++) {
+    for (int irep=0; irep < NREP; irep++) {
         // Test parameters
         double rcut = (irep+1)*0.1;
         double center[3];
@@ -852,12 +852,12 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
 
         // Test by generating lots of random points. If a point is in the bar,
         // its fractional coordinate should be between begin and end.
-        for (int ipoint=0; ipoint < 100; ipoint++) {
+        for (int ipoint=0; ipoint < NPOINT; ipoint++) {
             // Random point
             double point[3];
             double norm;
             random_point(ipoint, rcut, center, point, norm);
-            ASSERT_DOUBLE_EQ(norm, vec3::distance(point, center));
+            ASSERT_NEAR(norm, vec3::distance(point, center), 1e-10);
             if (norm < rcut) {
                 // Projection on axis should always be in the "sphere range"
                 double frac_axis = vec3::dot(point, axis);
