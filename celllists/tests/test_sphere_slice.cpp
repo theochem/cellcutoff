@@ -194,6 +194,32 @@ TEST_F(SphereSliceTest, solve_range_1_example_nofound) {
     EXPECT_THROW(slice.solve_range(1, begin, end), std::logic_error);
 }
 
+TEST_F(SphereSliceTest, solve_line_example_ortho) {
+    SphereSlice slice = SphereSlice(my_center, easy_normals, sqrt(14));
+    double begin, end;
+    bool exists = slice.solve_line(2, 0, 1, 3.4, -1.0, begin, end, NULL, NULL);
+    EXPECT_TRUE(exists);
+    EXPECT_DOUBLE_EQ(-1.0, begin);
+    EXPECT_DOUBLE_EQ(3.0, end);
+}
+
+TEST_F(SphereSliceTest, solve_line_example_angle) {
+    easy_normals[1] = 1.0;
+    SphereSlice slice = SphereSlice(my_center, easy_normals, sqrt(14));
+    double begin, end;
+    bool exists = slice.solve_line(2, 0, 1, 1.4, 0.0, begin, end, NULL, NULL);
+    EXPECT_TRUE(exists);
+    EXPECT_DOUBLE_EQ(-2.0, begin);
+    EXPECT_DOUBLE_EQ(4.0, end);
+}
+
+TEST_F(SphereSliceTest, solve_line_example_nonexisting) {
+    SphereSlice slice = SphereSlice(my_center, easy_normals, sqrt(14));
+    double begin, end;
+    bool exists = slice.solve_line(2, 0, 1, 50.0, 30.0, begin, end, NULL, NULL);
+    EXPECT_FALSE(exists);
+}
+
 TEST_F(SphereSliceTest, solve_range_2_example1) {
     SphereSlice slice = SphereSlice(my_center, easy_normals, 5.0);
     double begin, end;
