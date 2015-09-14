@@ -32,10 +32,10 @@ int fill_random_double(unsigned int seed, double* array, size_t size,
     double low, double high) {
 
     if (size <= 0)
-        throw std::domain_error("Array size must be strictly positive.");
+        throw std::domain_error("Array size must be strictly positive."); // IGNORE_COVERAGE
 
     srand(seed);
-    for (int i=0; i<size; i++)
+    for (size_t i=0; i < size; i++)
         array[i] = (rand() + 1.0)/(RAND_MAX + 1.0)*(high - low) + low;
     return rand();
 }
@@ -45,11 +45,11 @@ int fill_random_int(unsigned int seed, int* array, size_t size,
     int begin, int end) {
 
     if (size <= 0)
-        throw std::domain_error("Array size must be strictly positive.");
+        throw std::domain_error("Array size must be strictly positive."); // IGNORE_COVERAGE
     if (begin > end)
-        throw std::domain_error("Begin cannot be larger than end.");
+        throw std::domain_error("Begin cannot be larger than end."); // IGNORE_COVERAGE
     srand(seed);
-    for (int i=0; i<size; i++)
+    for (size_t i=0; i < size; i++)
         array[i] = (rand() % (end - begin)) + begin;
     return rand();
 }
@@ -60,17 +60,18 @@ int myrandom(int i) { return rand()%i; }
 int fill_random_permutation(unsigned int seed, int* array, size_t size) {
 
     if (size <= 0)
-        throw std::domain_error("Array size must be strictly positive.");
+        throw std::domain_error("Array size must be strictly positive."); // IGNORE_COVERAGE
     for (size_t i=0; i < size; i++)
         array[i] = i;
     srand(seed);
     std::random_shuffle(array, array+size, myrandom);
+    return rand();
 }
 
 //! Random cell with a volume larger than 0.01
 Cell* create_random_cell_nvec(unsigned int seed, int nvec, double scale, bool cuboid) {
     if ((nvec <= 0) || (nvec > 3)) {
-        throw std::domain_error("A random cell must be 1D, 2D or 2D periodic.");
+        throw std::domain_error("A random cell must be 1D, 2D or 2D periodic."); // IGNORE_COVERAGE
     }
     double rvecs[nvec*3];
     while (true) {

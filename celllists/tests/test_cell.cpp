@@ -38,7 +38,7 @@ class CellTest : public ::testing::Test {
         double singrvecs[9];
 
         Cell* create_random_cell(unsigned int seed, double scale=1.0, bool cuboid=false) {
-            Cell* cell = create_random_cell_nvec(seed, nvec, scale, cuboid);
+            return create_random_cell_nvec(seed, nvec, scale, cuboid);
         }
 
         virtual void SetUp() = 0;
@@ -834,7 +834,6 @@ TEST_P(CellTestP, select_inside_rcut_random) {
         double cart[3];
         fill_random_double(123+irep, cart, 3, -rcut*1.1, rcut*1.1);
         double norm = vec3::norm(cart);
-        double other[3];
         // Center of the box must coincide with center of the sphere.
         cart[0] += center[0];
         cart[1] += center[1];
@@ -844,7 +843,11 @@ TEST_P(CellTestP, select_inside_rcut_random) {
         cell->to_frac(cart, frac);
 
         // Does the fractional coordinate fit in one of the bars?
-        int index[3] = {floor(frac[0]), floor(frac[1]), floor(frac[2])};
+        int index[3] = {
+            static_cast<int>(floor(frac[0])),
+            static_cast<int>(floor(frac[1])),
+            static_cast<int>(floor(frac[2]))
+        };
         bool in_bar = false;
         for (int ibar=0; ibar < nbar2; ibar++) {
             int* bar = bars + (nvec+1)*ibar;

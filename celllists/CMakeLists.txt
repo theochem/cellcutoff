@@ -50,6 +50,7 @@ set(HEADER_FILES
 add_library(celllists SHARED ${SOURCE_FILES})
 set_property(TARGET celllists PROPERTY VERSION ${CELLLISTS_VERSION})
 set_property(TARGET celllists PROPERTY SOVERSION ${CELLLISTS_SOVERSION})
+set_property(TARGET celllists PROPERTY CXX_STANDARD 11)
 
 # Install include files
 install (FILES ${HEADER_FILES} DESTINATION include/cellists)
@@ -59,4 +60,3 @@ install (TARGETS celllists DESTINATION lib)
 
 # Unit Tests with Google testing framework
 add_subdirectory(tests)
-

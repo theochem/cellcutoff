@@ -27,13 +27,35 @@ include_directories(${GTEST_INCLUDE_DIRS})
 
 # The testing executable
 add_executable(test_celllists EXCLUDE_FROM_ALL test_cell.cpp test_sphere_slice.cpp common.cpp)
+set_property(TARGET test_celllists PROPERTY CXX_STANDARD 11)
 
 # How the testing executable has to be linked...
-target_link_libraries(test_celllists celllists ${GTEST_BOTH_LIBRARIES})
+target_link_libraries(test_celllists celllists ${GTEST_BOTH_LIBRARIES} gcov pthread)
 
 # Use our own test target because ctest hides relevant output.
-add_custom_target(check
-                  COMMAND test_celllists
-                  DEPENDS test_celllists
-                  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-                  COMMENT "Running tests")
+IF(CELLLISTS_DO_COVERAGE)
+    add_custom_target(clean_coverage
+                      COMMAND ${PROJECT_SOURCE_DIR}/tools/coverage_clean.sh
+                      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+                      COMMENT "Removing old coverage statistics")
+
+    add_custom_target(check
+                      COMMAND test_celllists
+                      DEPENDS test_celllists clean_coverage
+                      COMMENT "Running tests")
+
+    add_custom_target(coverage
+                      COMMAND ${PROJECT_SOURCE_DIR}/tools/coverage_analyze.py
+                      DEPENDS check
+                      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+                      COMMENT "Coverage analysis")
+
+ELSE()
+    add_custom_target(check
+                      COMMAND test_celllists
+                      DEPENDS test_celllists
+                      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                      COMMENT "Running tests")
+
+
+ENDIF()

@@ -731,7 +731,6 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
 
         // * case A: cut0_begin  cut1_begin
         double axis_begin_a, axis_end_a;
-        double frac1_begin_a, frac1_end_a;
         double point_begin_a[3], point_end_a[3];
         exists = slice->solve_line(2, 0, 1, cut0_begin, cut1_begin, axis_begin_a, axis_end_a, point_begin_a, point_end_a);
         if (exists) {
@@ -742,7 +741,6 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
 
         // * case B: cut0_begin  cut1_end
         double axis_begin_b, axis_end_b;
-        double frac1_begin_b, frac1_end_b;
         double point_begin_b[3], point_end_b[3];
         exists = slice->solve_line(2, 0, 1, cut0_begin, cut1_end, axis_begin_b, axis_end_b, point_begin_b, point_end_b);
         if (exists) {
@@ -753,7 +751,6 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
 
         // * case C: cut0_end    cut1_begin
         double axis_begin_c, axis_end_c;
-        double frac1_begin_c, frac1_end_c;
         double point_begin_c[3], point_end_c[3];
         exists = slice->solve_line(2, 0, 1, cut0_end, cut1_begin, axis_begin_c, axis_end_c, point_begin_c, point_end_c);
         if (exists) {
@@ -764,7 +761,6 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
 
         // * case D: cut0_end    cut1_end
         double axis_begin_d, axis_end_d;
-        double frac1_begin_d, frac1_end_d;
         double point_begin_d[3], point_end_d[3];
         exists = slice->solve_line(2, 0, 1, cut0_end, cut1_end, axis_begin_d, axis_end_d, point_begin_d, point_end_d);
         if (exists) {
