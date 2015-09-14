@@ -80,6 +80,7 @@ void SphereSlice::solve_sphere(int id_axis, double &begin,
     }
 }
 
+
 bool SphereSlice::solve_circle(int id_axis, int id_cut, double frac_cut,
     double &begin, double &end, double* point_begin, double* point_end) const {
 
@@ -130,6 +131,7 @@ bool SphereSlice::solve_circle(int id_axis, int id_cut, double frac_cut,
     return true;
 }
 
+
 bool SphereSlice::solve_line(int id_axis, int id_cut0, int id_cut1,
     double frac_cut0, double frac_cut1, double &begin, double &end,
     double* point_begin, double* point_end) const {
@@ -148,21 +150,12 @@ bool SphereSlice::solve_line(int id_axis, int id_cut0, int id_cut1,
     double delta_cut0 = frac_cut0 - frac_center[id_cut0];
     double delta_cut1 = frac_cut1 - frac_center[id_cut1];
 
-    // Find the nearest point where the two planes cross
-    double dot00 = norms_sq[id_cut0];
-    double dot01 = vec3::dot(cut0_normal, cut1_normal); // TODO precompute
-    double dot11 = norms_sq[id_cut1];
-    double denom = dot01*dot01 - dot00*dot11; // TODO precompute
-    double ratio0 = (delta_cut1*dot01 - delta_cut0*dot11)/denom;
-    double ratio1 = (delta_cut0*dot01 - delta_cut1*dot00)/denom;
-    double line_center[3] = {
-        center[0] + cut0_normal[0]*ratio0 + cut1_normal[0]*ratio1,
-        center[1] + cut0_normal[1]*ratio0 + cut1_normal[1]*ratio1,
-        center[2] + cut0_normal[2]*ratio0 + cut1_normal[2]*ratio1,
-    };
+    double line_center[3];
+    double lost_radius_sq = compute_plane_intersection(id_cut0, id_cut1,
+        delta_cut0, delta_cut1, line_center);
+    vec3::iadd(line_center, center);
 
     // Compute the remaining line radius
-    double lost_radius_sq = ratio0*ratio0*dot00 + 2*ratio0*ratio1*dot01 + ratio1*ratio1*dot11;
     double line_radius_sq = radius_sq - lost_radius_sq;
     if (line_radius_sq < 0) return false;
     double line_radius = sqrt(line_radius_sq);
@@ -177,6 +170,34 @@ bool SphereSlice::solve_line(int id_axis, int id_cut0, int id_cut1,
     // Compute projection on axis, optionally compute points;
     compute_begin_end(line_center, basis, axis, begin, end, point_begin, point_end);
     return true;
+}
+
+double SphereSlice::compute_plane_intersection(int id_cut0, int id_cut1,
+    double cut0, double cut1, double* other_center) const {
+
+    CHECK_ID(id_cut0);
+    CHECK_ID(id_cut1);
+
+    // Select the vectors
+    const double* cut0_normal = normals + 3*id_cut0;
+    const double* cut1_normal = normals + 3*id_cut1;
+
+    // Find the nearest point where the two planes cross
+    double dot00 = norms_sq[id_cut0];
+    double dot01 = vec3::dot(cut0_normal, cut1_normal); // TODO precompute
+    double dot11 = norms_sq[id_cut1];
+    double denom = dot01*dot01 - dot00*dot11; // TODO precompute
+    double ratio0 = (cut1*dot01 - cut0*dot11)/denom;
+    double ratio1 = (cut0*dot01 - cut1*dot00)/denom;
+    if (other_center != NULL) {
+        other_center[0] = cut0_normal[0]*ratio0 + cut1_normal[0]*ratio1;
+        other_center[1] = cut0_normal[1]*ratio0 + cut1_normal[1]*ratio1;
+        other_center[2] = cut0_normal[2]*ratio0 + cut1_normal[2]*ratio1;
+    }
+
+    // Compute the distance squared from the origin to the nearest point on the
+    // intersection.
+    return ratio0*ratio0*dot00 + 2*ratio0*ratio1*dot01 + ratio1*ratio1*dot11;
 }
 
 void SphereSlice::solve_range_0(double &begin, double &end) const {

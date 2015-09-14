@@ -265,6 +265,17 @@ TEST_F(SphereSliceTest, bar_slice_example9) {
     EXPECT_DOUBLE_EQ(0.0, end);
 }
 
+TEST_F(SphereSliceTest, compute_plane_intersection_example1) {
+    SphereSlice slice = SphereSlice(my_center, easy_normals, sqrt(14.0));
+
+    double line_center[3];
+    double dist_sq = slice.compute_plane_intersection(0, 1, 3.0, 4.0, line_center);
+    EXPECT_DOUBLE_EQ(dist_sq, 25.0);
+    EXPECT_DOUBLE_EQ(line_center[0], 3.0);
+    EXPECT_DOUBLE_EQ(line_center[1], 4.0);
+    EXPECT_DOUBLE_EQ(line_center[2], 0.0);
+}
+
 TEST_F(SphereSliceTest, solve_sphere_random) {
     for (int irep=0; irep < 100; irep++) {
         // Test parameters
@@ -553,13 +564,8 @@ TEST_F(SphereSliceTest, solve_line_random) {
         // Compute the distance from the origin to the intersection
         double delta_cut0 = cut0 - vec3::dot(center, cut0_normal);
         double delta_cut1 = cut1 - vec3::dot(center, cut1_normal);
-        double dot00 = vec3::dot(cut0_normal, cut0_normal);
-        double dot01 = vec3::dot(cut0_normal, cut1_normal);
-        double dot11 = vec3::dot(cut1_normal, cut1_normal);
-        double denom = dot01*dot01 - dot00*dot11; // TODO precompute
-        double ratio0 = (delta_cut1*dot01 - delta_cut0*dot11)/denom;
-        double ratio1 = (delta_cut0*dot01 - delta_cut1*dot00)/denom;
-        double dist_line_center = sqrt(ratio0*ratio0*dot00 + 2*ratio0*ratio1*dot01 + ratio1*ratio1*dot11);
+        double dist_line_center = sqrt(slice->compute_plane_intersection(id_cut0, id_cut1,
+            delta_cut0, delta_cut1, NULL));
 
         // Actual computation
         double begin, end;
