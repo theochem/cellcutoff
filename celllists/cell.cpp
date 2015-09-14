@@ -21,6 +21,7 @@
 
 #include <cmath>
 #include <stdexcept>
+#include <vector>
 #include "celllists/cell.h"
 
 
@@ -345,7 +346,7 @@ int Cell::set_ranges_rcut(const double* center, double rcut, int* ranges_begin,
 
 
 void Cell::select_inside_low(SphereSlice* slice, const int* shape,
-    const bool* pbc, int* &bars, int* prefix, int &nbar, int ivec) const {
+    const bool* pbc, std::vector<int> &bars, int* prefix, int ivec) const {
 
     double begin_exact = 0.0;
     double end_exact = 0.0;
@@ -361,13 +362,10 @@ void Cell::select_inside_low(SphereSlice* slice, const int* shape,
 
     if (ivec == nvec - 1) {
         // If we are dealing with the last recursion, just store the bar.
-        if (bars != NULL) {
-            std::copy(prefix, prefix+ivec, bars);
-            bars[ivec] = begin;
-            bars[ivec+1] = end;
-            bars += ivec + 2;
-        }
-        nbar += 1;
+        for (int i=0; i<ivec; i++)
+            bars.push_back(prefix[i]);
+        bars.push_back(begin);
+        bars.push_back(end);
     } else {
         // If this is not yet the last recursion, iterate over the range of integer
         // fractional coordinates, and go one recursion deeper in each iteration.
@@ -377,14 +375,14 @@ void Cell::select_inside_low(SphereSlice* slice, const int* shape,
             // Make a new cut in the spere slice.
             slice->set_cut_begin_end(ivec, i, i+1);
             // Make recursion
-            select_inside_low(slice, shape, pbc, bars, prefix, nbar, ivec+1);
+            select_inside_low(slice, shape, pbc, bars, prefix, ivec+1);
         }
     }
 }
 
 
-int Cell::select_inside_rcut(const double* center, double rcut,
-    const int* shape, const bool* pbc, int* bars) const {
+size_t Cell::select_inside_rcut(const double* center, double rcut,
+    const int* shape, const bool* pbc, std::vector<int> &bars) const {
     if (nvec == 0) {
         throw std::domain_error("The cell must be at least 1D periodic for select_inside_rcut.");
     }
@@ -392,15 +390,14 @@ int Cell::select_inside_rcut(const double* center, double rcut,
         throw std::domain_error("rcut must be strictly positive.");
     }
 
+    // For all the heavy work, precomputes a lot.
     SphereSlice sphere_slice = SphereSlice(center, gvecs, rcut);
 
     // Prefix is used to keep track of current bar indices while going into recursion.
     int prefix[nvec-1];
-    // The total number of bars collected.
-    // TODO: use std::vector for bars and convert to dense array afterwards.
-    int nbar = 0;
-    select_inside_low(&sphere_slice, shape, pbc, bars, prefix, nbar, 0);
-    return nbar;
+    // Compute bars and return the number of bars
+    select_inside_low(&sphere_slice, shape, pbc, bars, prefix, 0);
+    return bars.size()/(nvec+1);
 }
 
 

@@ -66,8 +66,9 @@ class Cell {
         /** @brief
                 TODO
          */
-        void select_inside_low(SphereSlice *slice, const int* shape, const bool* pbc,
-            int* &bars, int* prefix, int &nbar, int ivec) const;
+        void select_inside_low(SphereSlice* slice, const int* shape,
+            const bool* pbc, std::vector<int> &bars, int* prefix, int ivec)
+            const;
     public:
         /** @brief
                 Construct a Cell object.
@@ -257,8 +258,8 @@ class Cell {
             @return
                 The number rows in the
           */
-        int select_inside_rcut(const double* center, double rcut,
-            const int* shape, const bool* pbc, int* bars) const;
+        size_t select_inside_rcut(const double* center, double rcut, const int* shape,
+            const bool* pbc, std::vector<int> &bars) const;
 };
 
 /**
