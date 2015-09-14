@@ -58,6 +58,5 @@ install (FILES ${HEADER_FILES} DESTINATION include/cellists)
 install (TARGETS celllists DESTINATION lib)
 
 # Unit Tests with Google testing framework
-find_package(GTest REQUIRED)
 add_subdirectory(tests)
 

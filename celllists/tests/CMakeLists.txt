@@ -19,6 +19,9 @@
 #
 #--
 
+# Make use of the GTest CMake module
+find_package(GTest REQUIRED)
+
 # Make sure the header files are found
 include_directories(${GTEST_INCLUDE_DIRS})
 
@@ -26,7 +29,7 @@ include_directories(${GTEST_INCLUDE_DIRS})
 add_executable(test_celllists EXCLUDE_FROM_ALL test_cell.cpp test_sphere_slice.cpp common.cpp)
 
 # How the testing executable has to be linked...
-target_link_libraries(test_celllists celllists gtest gtest_main)
+target_link_libraries(test_celllists celllists ${GTEST_BOTH_LIBRARIES})
 
 # Use our own test target because ctest hides relevant output.
 add_custom_target(check
