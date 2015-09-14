@@ -49,8 +49,14 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
         norms[i] = sqrt(norms_sq[i]);
         frac_radii[i] = radius*norms[i];
         frac_center[i] = vec3::dot(center, normals + 3*i);
+        sphere_frac_begin[i] = frac_center[i] - frac_radii[i];
+        sphere_frac_end[i] = frac_center[i] + frac_radii[i];
         vec3::copy(normals + 3*i, radius_normals + 3*i);
         vec3::iscale(radius_normals + 3*i, radius/norms[i]);
+        vec3::copy(center, sphere_point_begin + 3*i);
+        vec3::iadd(sphere_point_begin + 3*i, radius_normals + 3*i, -1);
+        vec3::copy(center, sphere_point_end + 3*i);
+        vec3::iadd(sphere_point_end + 3*i, radius_normals + 3*i);
     }
 }
 
@@ -68,23 +74,20 @@ bool SphereSlice::inside_cuts(int id_cut, double* point) const {
 void SphereSlice::solve_full_low(int id_axis, double &begin,
     double &end, double* point_begin, double* point_end) const {
 
-    // TODO: everything in this function can be precomputed
-    // Get the axis
+    // Check the axis
     CHECK_ID(id_axis);
-    // Find the ranges in fractional coordinates that encloses the cutoff
-    begin = frac_center[id_axis] - frac_radii[id_axis];
-    end = frac_center[id_axis] + frac_radii[id_axis];
-
-    const double* radius_normal = radius_normals + 3*id_axis;
+    // Everything is precomputed...
+    begin = sphere_frac_begin[id_axis];
+    end = sphere_frac_end[id_axis];
     if (point_begin != NULL) {
-        point_begin[0] = center[0] - radius_normal[0];
-        point_begin[1] = center[1] - radius_normal[1];
-        point_begin[2] = center[2] - radius_normal[2];
+        point_begin[0] = sphere_point_begin[3*id_axis];
+        point_begin[1] = sphere_point_begin[3*id_axis+1];
+        point_begin[2] = sphere_point_begin[3*id_axis+2];
     }
     if (point_end != NULL) {
-        point_end[0] = center[0] + radius_normal[0];
-        point_end[1] = center[1] + radius_normal[1];
-        point_end[2] = center[2] + radius_normal[2];
+        point_end[0] = sphere_point_end[3*id_axis];
+        point_end[1] = sphere_point_end[3*id_axis+1];
+        point_end[2] = sphere_point_end[3*id_axis+2];
     }
 }
 

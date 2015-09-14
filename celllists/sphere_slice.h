@@ -48,7 +48,11 @@ class SphereSlice {
         double norms[3];
         double frac_radii[3];
         double frac_center[3];
+        double sphere_frac_begin[3];
+        double sphere_frac_end[3];
         double radius_normals[9];
+        double sphere_point_begin[9];
+        double sphere_point_end[9];
     public:
         SphereSlice(const double* center, const double* normals, double radius);
 
