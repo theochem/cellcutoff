@@ -100,6 +100,18 @@ TEST_F(SphereSliceTest, domain) {
     EXPECT_THROW(slice.set_cut_begin_end(2, 1, 2), std::domain_error);
     EXPECT_THROW(slice.set_cut_begin_end(0, 1, -2), std::domain_error);
     EXPECT_THROW(slice.set_cut_begin_end(1, 2, 1), std::domain_error);
+    EXPECT_THROW(slice.solve_sphere(-1, begin, end, NULL, NULL), std::domain_error);
+    EXPECT_THROW(slice.solve_sphere(3, begin, end, NULL, NULL), std::domain_error);
+    EXPECT_THROW(slice.solve_circle(-1, 0, 0.0, begin, end, NULL, NULL), std::domain_error);
+    EXPECT_THROW(slice.solve_circle(3, 0, 0.0, begin, end, NULL, NULL), std::domain_error);
+    EXPECT_THROW(slice.solve_circle(0, -1, 0.0, begin, end, NULL, NULL), std::domain_error);
+    EXPECT_THROW(slice.solve_circle(0, 3, 0.0, begin, end, NULL, NULL), std::domain_error);
+    EXPECT_THROW(slice.solve_line(-1, 0, 1, 0.0, 0.0, begin, end, NULL, NULL), std::domain_error);
+    EXPECT_THROW(slice.solve_line(3, 0, 1, 0.0, 0.0, begin, end, NULL, NULL), std::domain_error);
+    EXPECT_THROW(slice.solve_line(0, -1, 1, 0.0, 0.0, begin, end, NULL, NULL), std::domain_error);
+    EXPECT_THROW(slice.solve_line(0, 3, 1, 0.0, 0.0, begin, end, NULL, NULL), std::domain_error);
+    EXPECT_THROW(slice.solve_line(0, 1, -1, 0.0, 0.0, begin, end, NULL, NULL), std::domain_error);
+    EXPECT_THROW(slice.solve_line(0, 1, 3, 0.0, 0.0, begin, end, NULL, NULL), std::domain_error);
 }
 
 TEST_F(SphereSliceTest, sphere_example1) {
