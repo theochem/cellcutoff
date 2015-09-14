@@ -47,7 +47,11 @@ class SphereSliceTest : public ::testing::Test {
             double* center, double* normals)
         {
             fill_random_double(seed, center, 3);
-            fill_random_double(1342+seed, normals, 9);
+            double vol;
+            do {
+                fill_random_double(1342+seed, normals, 9);
+                vol = fabs(vec3::triple_product(normals, normals+3, normals+6));
+            } while (vol < 0.001);
             return new SphereSlice(center, normals, rcut);
         }
 

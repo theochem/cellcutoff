@@ -22,6 +22,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <cstdlib>
+#include <cmath>
 #include "common.h"
 
 
@@ -87,7 +88,7 @@ Cell* create_random_cell_nvec(unsigned int seed, int nvec, double scale, bool cu
         }
         try {
             Cell* cell = new Cell(rvecs, nvec);
-            if (cell->get_volume() > 0.01)
+            if (cell->get_volume() > pow(0.1*scale, nvec))
                 return cell;
             delete cell;
         } catch (singular_cell_vectors) { }
