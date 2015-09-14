@@ -65,7 +65,7 @@ bool SphereSlice::inside_cuts(int id_cut, double* point) const {
 }
 
 
-void SphereSlice::solve_sphere(int id_axis, double &begin,
+void SphereSlice::solve_full_low(int id_axis, double &begin,
     double &end, double* point_begin, double* point_end) const {
 
     // TODO: everything in this function can be precomputed
@@ -89,23 +89,31 @@ void SphereSlice::solve_sphere(int id_axis, double &begin,
 }
 
 
-void SphereSlice::solve_sphere_cuts(int id_axis, double &begin, double &end,
-    int id_cut0, int id_cut1) const {
+void SphereSlice::solve_full(int id_axis, double &begin, double &end,
+    int id_cut0=-1, int id_cut1=-1) const {
 
     double work_begin, work_end;
-    double point_begin[3];
-    double point_end[3];
-
-    solve_sphere(id_axis, work_begin, work_end, point_begin, point_end);
-
-    if (inside_cuts(id_cut0, point_begin) && inside_cuts(id_cut1, point_begin))
-        begin = work_begin;
-    if (inside_cuts(id_cut0, point_end) && inside_cuts(id_cut1, point_end))
-        end = work_end;
+    if ((id_cut0 == -1) && (id_cut1 == -1)) {
+        solve_full_low(id_axis, work_begin, work_end, NULL, NULL);
+    } else {
+        double point_begin[3];
+        double point_end[3];
+        solve_full_low(id_axis, work_begin, work_end, point_begin, point_end);
+        // Reject solution if not between cut0 and/or cut1 planes
+        if (!inside_cuts(id_cut0, point_begin))
+            work_begin = NAN;
+        if (!inside_cuts(id_cut1, point_begin))
+            work_begin = NAN;
+        if (!inside_cuts(id_cut0, point_end))
+            work_end = NAN;
+        if (!inside_cuts(id_cut1, point_end))
+            work_end = NAN;
+    }
+    update_begin_end(work_begin, work_end, begin, end);
 }
 
 
-bool SphereSlice::solve_circle(int id_axis, int id_cut, double frac_cut,
+void SphereSlice::solve_plane_low(int id_axis, int id_cut, double frac_cut,
     double &begin, double &end, double* point_begin, double* point_end) const {
 
     // Get the axis
@@ -126,11 +134,11 @@ bool SphereSlice::solve_circle(int id_axis, int id_cut, double frac_cut,
     double lost_radius_sq = delta_cut*delta_cut/norms_sq[id_cut];
     // The rest of the radius squared is for the size of the circle.
     double circle_radius_sq = radius_sq - lost_radius_sq;
-    // Check if an intersecting circle exists, if not return false;
+    // Check if an intersecting circle exists, if not return;
     if (circle_radius_sq < 0) {
         begin = NAN;
         end = NAN;
-        return false;
+        return;
     }
     // Compute the circle radius
     double circle_radius = sqrt(circle_radius_sq);
@@ -156,28 +164,30 @@ bool SphereSlice::solve_circle(int id_axis, int id_cut, double frac_cut,
 
     // Compute projection on axis, optionally compute points;
     compute_begin_end(circle_center, ortho, axis, begin, end, point_begin, point_end);
-    return true;
 }
 
 
-bool SphereSlice::solve_circle_cuts(int id_axis, int id_cut0, double frac_cut0,
-    double &begin, double &end, int id_cut1) const {
+void SphereSlice::solve_plane(int id_axis, int id_cut0, double frac_cut0,
+    double &begin, double &end, int id_cut1=-1) const {
 
     double work_begin, work_end;
-    double point_begin[3];
-    double point_end[3];
-    long exists;
-
-    exists = solve_circle(id_axis, id_cut0, frac_cut0, work_begin, work_end, point_begin, point_end);
-    if (inside_cuts(id_cut1, point_begin))
-        begin = work_begin;
-    if (inside_cuts(id_cut1, point_end))
-        end = work_end;
-    return exists;
+    if (id_cut1 == -1) {
+        solve_plane_low(id_axis, id_cut0, frac_cut0, work_begin, work_end, NULL, NULL);
+    } else {
+        double point_begin[3];
+        double point_end[3];
+        solve_plane_low(id_axis, id_cut0, frac_cut0, work_begin, work_end, point_begin, point_end);
+        // Reject solution if not between cut1 planes
+        if (!inside_cuts(id_cut1, point_begin))
+            work_begin = NAN;
+        if (!inside_cuts(id_cut1, point_end))
+            work_end = NAN;
+    }
+    update_begin_end(work_begin, work_end, begin, end);
 }
 
 
-bool SphereSlice::solve_line(int id_axis, int id_cut0, int id_cut1,
+void SphereSlice::solve_line_low(int id_axis, int id_cut0, int id_cut1,
     double frac_cut0, double frac_cut1, double &begin, double &end,
     double* point_begin, double* point_end) const {
 
@@ -205,7 +215,7 @@ bool SphereSlice::solve_line(int id_axis, int id_cut0, int id_cut1,
     if (line_radius_sq < 0) {
         begin = NAN;
         end = NAN;
-        return false;
+        return;
     }
     double line_radius = sqrt(line_radius_sq);
 
@@ -218,9 +228,16 @@ bool SphereSlice::solve_line(int id_axis, int id_cut0, int id_cut1,
 
     // Compute projection on axis, optionally compute points;
     compute_begin_end(line_center, basis, axis, begin, end, point_begin, point_end);
-    return true;
 }
 
+
+void SphereSlice::solve_line(int id_axis, int id_cut0, int id_cut1,
+    double frac_cut0, double frac_cut1, double &begin, double &end) const {
+
+    double work_begin, work_end;
+    solve_line_low(id_axis, id_cut0, id_cut1, frac_cut0, frac_cut1, work_begin, work_end, NULL, NULL);
+    update_begin_end(work_begin, work_end, begin, end);
+}
 
 double SphereSlice::compute_plane_intersection(int id_cut0, int id_cut1,
     double cut0, double cut1, double* other_center) const {
@@ -252,8 +269,11 @@ double SphereSlice::compute_plane_intersection(int id_cut0, int id_cut1,
 
 
 void SphereSlice::solve_range_0(double &begin, double &end) const {
-    // The first normal serves as axis on which begin and end is defined.
-    solve_sphere(0, begin, end, NULL, NULL);
+    // Start out with NaNs in begin and end, as to indicate that they are not
+    // found yet.
+    begin = NAN;
+    end = NAN;
+    solve_full(0, begin, end);
 }
 
 
@@ -263,22 +283,13 @@ void SphereSlice::solve_range_1(double &begin, double &end) const {
     begin = NAN;
     end = NAN;
 
-    // work variables
-    double work_begin, work_end;
-
     // Find solutions for all sensible combinations of constraints
-
     // * Case A: cut_begin[0]
-    solve_circle(1, 0, cut_begin[0], work_begin, work_end, NULL, NULL);
-    update_begin_end(work_begin, work_end, begin, end);
-
+    solve_plane(1, 0, cut_begin[0], begin, end);
     // * Case B: cut_end[0]
-    solve_circle(1, 0, cut_end[0], work_begin, work_end, NULL, NULL);
-    update_begin_end(work_begin, work_end, begin, end);
-
+    solve_plane(1, 0, cut_end[0], begin, end);
     // * Case C: Whole-sphere solution, only accepted when within cut0_normal bounds
-    solve_sphere_cuts(1, work_begin, work_end, 0, -1);
-    update_begin_end(work_begin, work_end, begin, end);
+    solve_full(1, begin, end, 0, -1);
 
     if (std::isnan(begin) || std::isnan(end))
         throw no_solution_found("No solution found in solve_range_1.");
@@ -291,49 +302,28 @@ void SphereSlice::solve_range_2(double &begin, double &end) const {
     begin = NAN;
     end = NAN;
 
-    // work variables
-    double work_begin, work_end;
-
     // Find solutions for all sensible combinations of constraints
-
     // * Case A: cut_begin[0], cut_begin[1]
-    solve_line(2, 0, 1, cut_begin[0], cut_begin[1], work_begin, work_end, NULL, NULL);
-    update_begin_end(work_begin, work_end, begin, end);
-
+    solve_line(2, 0, 1, cut_begin[0], cut_begin[1], begin, end);
     // * Case B: cut_begin[0], cut_end[1]
-    solve_line(2, 0, 1, cut_begin[0], cut_end[1], work_begin, work_end, NULL, NULL);
-    update_begin_end(work_begin, work_end, begin, end);
-
+    solve_line(2, 0, 1, cut_begin[0], cut_end[1], begin, end);
     // * Case C: cut_end[0], cut_begin[1]
-    solve_line(2, 0, 1, cut_end[0], cut_begin[1], work_begin, work_end, NULL, NULL);
-    update_begin_end(work_begin, work_end, begin, end);
-
+    solve_line(2, 0, 1, cut_end[0], cut_begin[1], begin, end);
     // * Case D: cut_end[0], cut_end[1]
-    solve_line(2, 0, 1, cut_end[0], cut_end[1], work_begin, work_end, NULL, NULL);
-    update_begin_end(work_begin, work_end, begin, end);
-
+    solve_line(2, 0, 1, cut_end[0], cut_end[1], begin, end);
     // * Case E: cut_begin[0]
-    solve_circle_cuts(2, 0, cut_begin[0], work_begin, work_end, 1);
-    update_begin_end(work_begin, work_end, begin, end);
-
+    solve_plane(2, 0, cut_begin[0], begin, end, 1);
     // * Case F: cut_end[0]
-    solve_circle_cuts(2, 0, cut_end[0], work_begin, work_end, 1);
-    update_begin_end(work_begin, work_end, begin, end);
-
+    solve_plane(2, 0, cut_end[0], begin, end, 1);
     // * Case G: cut_begin[1]
-    solve_circle_cuts(2, 1, cut_begin[1], work_begin, work_end, 0);
-    update_begin_end(work_begin, work_end, begin, end);
-
+    solve_plane(2, 1, cut_begin[1], begin, end, 0);
     // * Case H: cut_end[1]
-    solve_circle_cuts(2, 1, cut_end[1], work_begin, work_end, 0);
-    update_begin_end(work_begin, work_end, begin, end);
-
+    solve_plane(2, 1, cut_end[1], begin, end, 0);
     // * Case I: Whole-sphere solution, only if within cut0_normal and cut1_normal bounds
-    solve_sphere_cuts(2, work_begin, work_end, 0, 1);
-    update_begin_end(work_begin, work_end, begin, end);
+    solve_full(2, begin, end, 0, 1);
 
     if (std::isnan(begin) || std::isnan(end))
-        throw no_solution_found("No solution found in solve_range_1.");
+        throw no_solution_found("No solution found in solve_range_2.");
 }
 
 

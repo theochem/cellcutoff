@@ -59,20 +59,25 @@ class SphereSlice {
         // Auxiliary API, could also be useful and there is no need to really
         // make this private. Having it public also facilitates testing.
         bool inside_cuts(int id_cut, double* point) const;
-        void solve_sphere(int id_axis, double &begin, double &end,
+
+        void solve_full_low(int id_axis, double &begin, double &end,
             double* point_begin, double* point_end) const;
-        void solve_sphere_cuts(int id_axis, double &begin, double &end,
+        void solve_full(int id_axis, double &begin, double &end,
             int id_cut0, int id_cut1) const;
-        bool solve_circle(int id_axis, int id_cut, double frac_cut,
+
+        void solve_plane_low(int id_axis, int id_cut, double frac_cut,
             double &begin, double &end, double* point_begin, double* point_end)
             const;
-        bool solve_circle_cuts(int id_axis, int id_cut0, double frac_cut,
+        void solve_plane(int id_axis, int id_cut0, double frac_cut,
             double &begin, double &end, int id_cut1) const;
+
         double compute_plane_intersection(int id_cut0, int id_cut1,
             double cut0, double cut1, double* other_center) const;
-        bool solve_line(int id_axis, int id_cut0, int id_cut1,
+        void solve_line_low(int id_axis, int id_cut0, int id_cut1,
             double frac_cut0, double frac_cut1, double &begin, double &end,
             double* point_begin, double* point_end) const;
+        void solve_line(int id_axis, int id_cut0, int id_cut1,
+            double frac_cut0, double frac_cut1, double &begin, double &end) const;
 
         void solve_range_0(double &begin, double &end) const;
         void solve_range_1(double &begin, double &end) const;
