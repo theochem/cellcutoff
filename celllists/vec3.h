@@ -28,7 +28,7 @@ double norm(const double* vec);
 double normsq(const double* vec);
 double dot(const double* vec1, const double* vec2);
 double distance(const double* vec1, const double* vec2);
-double triple_product(const double* vec1, const double* vec2, const double* vec3);
+double triple(const double* vec1, const double* vec2, const double* vec3);
 void cross(const double* vec1, const double* vec2, double* vec3);
 void iscale(double* vec, double scale);
 void copy(const double* source, double* dest);

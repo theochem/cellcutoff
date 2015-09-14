@@ -48,7 +48,7 @@ double distance(const double* vec1, const double* vec2) {
     return norm(vec);
 }
 
-double triple_product(const double* vec1, const double* vec2, const double* vec3) {
+double triple(const double* vec1, const double* vec2, const double* vec3) {
     return vec1[0]*(vec2[1]*vec3[2] - vec2[2]*vec3[1]) +
            vec1[1]*(vec2[2]*vec3[0] - vec2[0]*vec3[2]) +
            vec1[2]*(vec2[0]*vec3[1] - vec2[1]*vec3[0]);

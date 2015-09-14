@@ -50,7 +50,7 @@ class SphereSliceTest : public ::testing::Test {
             double vol;
             do {
                 fill_random_double(1342+seed, normals, 9);
-                vol = fabs(vec3::triple_product(normals, normals+3, normals+6));
+                vol = fabs(vec3::triple(normals, normals+3, normals+6));
             } while (vol < 0.001);
             return new SphereSlice(center, normals, radius);
         }
@@ -445,7 +445,7 @@ TEST_F(SphereSliceTest, solve_plane_low_random) {
         // the same plane.
         double delta[3];
         vec3::delta(point_end, point_begin, delta);
-        EXPECT_NEAR(0.0, vec3::triple_product(cut_normal, axis, delta), 1e-10);
+        EXPECT_NEAR(0.0, vec3::triple(cut_normal, axis, delta), 1e-10);
 
         // Check that cut_normal is orthogonal to delta.
         EXPECT_NEAR(0.0, vec3::dot(cut_normal, delta), 1e-10);
