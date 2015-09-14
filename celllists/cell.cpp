@@ -335,8 +335,8 @@ int Cell::set_ranges_rcut(const double* center, double rcut, int* ranges_begin,
         // plane after cutoff sphere. To this end, we must divide rcut by the spacing
         // between planes.
         double frac_rcut = rcut/rspacings[ivec];
-        ranges_begin[ivec] = floor(frac[ivec]-frac_rcut);
-        ranges_end[ivec] = ceil(frac[ivec]+frac_rcut);
+        ranges_begin[ivec] = static_cast<int>(floor(frac[ivec]-frac_rcut));
+        ranges_end[ivec] = static_cast<int>(ceil(frac[ivec]+frac_rcut));
         ncell *= (ranges_end[ivec] - ranges_begin[ivec]);
     }
     return ncell;
@@ -350,8 +350,8 @@ void Cell::select_inside_low(SphereSlice* slice, const int* shape,
     double end_exact = 0.0;
     // Solve the hard problem elsewhere.
     slice->solve_range(ivec, begin_exact, end_exact);
-    int begin = floor(begin_exact);
-    int end = ceil(end_exact);
+    int begin = static_cast<int>(floor(begin_exact));
+    int end = static_cast<int>(ceil(end_exact));
     // Truncate this range if there are non-periodic bounds
     if (!pbc[ivec]) {
         if (begin < 0) begin = 0;

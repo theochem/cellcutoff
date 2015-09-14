@@ -23,33 +23,34 @@
 #include <algorithm>
 #include <cstdlib>
 #include <cmath>
+#include <gtest/gtest.h>
 #include "common.h"
 #include "celllists/vec3.h"
 
 
 //! Fills an array of doubles with random numbers in range ]-0.5*scale, 0.5*scale]
-int fill_random_double(unsigned int seed, double* array, size_t size,
+int fill_random_double(unsigned int seed, double* array, int size,
     double low, double high) {
 
     if (size <= 0)
-        throw std::domain_error("Array size must be strictly positive."); // IGNORE_COVERAGE
+        throw std::domain_error("Array size must be strictly positive.");
 
     srand(seed);
-    for (size_t i=0; i < size; i++)
+    for (int i=0; i < size; i++)
         array[i] = (rand() + 1.0)/(RAND_MAX + 1.0)*(high - low) + low;
     return rand();
 }
 
 //! Fills an array of int with random numbers in range [-range, range]
-int fill_random_int(unsigned int seed, int* array, size_t size,
+int fill_random_int(unsigned int seed, int* array, int size,
     int begin, int end) {
 
     if (size <= 0)
-        throw std::domain_error("Array size must be strictly positive."); // IGNORE_COVERAGE
+        throw std::domain_error("Array size must be strictly positive.");
     if (begin > end)
-        throw std::domain_error("Begin cannot be larger than end."); // IGNORE_COVERAGE
+        throw std::domain_error("Begin cannot be larger than end.");
     srand(seed);
-    for (size_t i=0; i < size; i++)
+    for (int i=0; i < size; i++)
         array[i] = (rand() % (end - begin)) + begin;
     return rand();
 }
@@ -57,12 +58,12 @@ int fill_random_int(unsigned int seed, int* array, size_t size,
 int myrandom(int i) { return rand()%i; }
 
 //! Fills and array of int with a random permutation
-int fill_random_permutation(unsigned int seed, int* array, size_t size) {
+int fill_random_permutation(unsigned int seed, int* array, int size) {
 
     if (size <= 0)
-        throw std::domain_error("Array size must be strictly positive."); // IGNORE_COVERAGE
-    for (size_t i=0; i < size; i++)
-        array[i] = i;
+        throw std::domain_error("Array size must be strictly positive.");
+    for (int i=0; i < size; i++)
+        array[i] = static_cast<int>(i);
     srand(seed);
     std::random_shuffle(array, array+size, myrandom);
     return rand();
@@ -71,7 +72,7 @@ int fill_random_permutation(unsigned int seed, int* array, size_t size) {
 //! Random cell with a volume larger than 0.01
 Cell* create_random_cell_nvec(unsigned int seed, int nvec, double scale, bool cuboid) {
     if ((nvec <= 0) || (nvec > 3)) {
-        throw std::domain_error("A random cell must be 1D, 2D or 2D periodic."); // IGNORE_COVERAGE
+        throw std::domain_error("A random cell must be 1D, 2D or 2D periodic.");
     }
     double rvecs[nvec*3];
     while (true) {
@@ -103,4 +104,18 @@ void random_point(unsigned int seed, double* point, double rcut, const double* c
     fill_random_double(seed, point, 3, -rcut, rcut);
     norm = vec3::norm(point);
     vec3::iadd(point, center);
+}
+
+
+TEST(CommonTest, domain) {
+    EXPECT_THROW(fill_random_double(0, NULL, 0, 0.0, 1.0), std::domain_error);
+    EXPECT_THROW(fill_random_double(0, NULL, -1, 0.0, 1.0), std::domain_error);
+    EXPECT_THROW(fill_random_int(0, NULL, 0, 0, 1), std::domain_error);
+    EXPECT_THROW(fill_random_int(0, NULL, -1, 0, 1), std::domain_error);
+    EXPECT_THROW(fill_random_int(0, NULL, 1, 1, 0), std::domain_error);
+    EXPECT_THROW(fill_random_permutation(0, NULL, 0), std::domain_error);
+    EXPECT_THROW(fill_random_permutation(0, NULL, -1), std::domain_error);
+    EXPECT_THROW(create_random_cell_nvec(-1, 0, 1, false), std::domain_error);
+    EXPECT_THROW(create_random_cell_nvec(0, 0, 1, false), std::domain_error);
+    EXPECT_THROW(create_random_cell_nvec(4, 0, 1, false), std::domain_error);
 }
