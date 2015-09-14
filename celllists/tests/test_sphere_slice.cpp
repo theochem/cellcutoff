@@ -43,7 +43,7 @@ class SphereSliceTest : public ::testing::Test {
             easy_normals[8] = 1.0;
         }
 
-        SphereSlice* create_random_problem(unsigned int seed, double rcut,
+        SphereSlice* create_random_problem(unsigned int seed, double radius,
             double* center, double* normals)
         {
             fill_random_double(seed, center, 3);
@@ -52,7 +52,7 @@ class SphereSliceTest : public ::testing::Test {
                 fill_random_double(1342+seed, normals, 9);
                 vol = fabs(vec3::triple_product(normals, normals+3, normals+6));
             } while (vol < 0.001);
-            return new SphereSlice(center, normals, rcut);
+            return new SphereSlice(center, normals, radius);
         }
 
         void random_cut(unsigned int seed, SphereSlice* slice, int id_cut,
@@ -323,10 +323,10 @@ TEST_F(SphereSliceTest, solve_full_low_random) {
     int num_inside = 0;
     for (int irep=0; irep < NREP; irep++) {
         // Test parameters
-        double rcut = (irep+1)*0.1;
+        double radius = (irep+1)*0.1;
         double center[3];
         double normals[9];
-        SphereSlice* slice = create_random_problem(irep, rcut, center, normals);
+        SphereSlice* slice = create_random_problem(irep, radius, center, normals);
 
         // Do a solve_full_low
         double begin, end;
@@ -353,12 +353,12 @@ TEST_F(SphereSliceTest, solve_full_low_random) {
             // Random point
             double point[3];
             double norm;
-            random_point(ipoint, point, rcut, center, norm);
+            random_point(ipoint, point, radius, center, norm);
 
             // If the point is in the sphere, test if reduced coordinate falls
             // in the range [begin,end].
             double proj = vec3::dot(point, normals);
-            if (norm < rcut) {
+            if (norm < radius) {
                 EXPECT_LE(begin, proj);
                 EXPECT_GE(end, proj);
                 num_inside++;
@@ -372,10 +372,10 @@ TEST_F(SphereSliceTest, solve_full_low_random) {
 TEST_F(SphereSliceTest, solve_range_0_random) {
     for (int irep=0; irep < NREP; irep++) {
         // Test parameters
-        double rcut = (irep+1)*0.1;
+        double radius = (irep+1)*0.1;
         double center[3];
         double normals[9];
-        SphereSlice* slice = create_random_problem(irep, rcut, center, normals);
+        SphereSlice* slice = create_random_problem(irep, radius, center, normals);
 
         // Do a solve_full_low
         double begin, end;
@@ -397,10 +397,10 @@ TEST_F(SphereSliceTest, solve_range_0_random) {
 TEST_F(SphereSliceTest, solve_plane_low_random) {
     for (int irep=0; irep < NREP; irep++) {
         // Test parameters
-        double rcut = (irep+1)*0.1;
+        double radius = (irep+1)*0.1;
         double center[3];
         double normals[9];
-        SphereSlice* slice = create_random_problem(irep, rcut, center, normals);
+        SphereSlice* slice = create_random_problem(irep, radius, center, normals);
 
         // Select the random ids for cut_normal and axis
         int permutation[3];
@@ -430,8 +430,8 @@ TEST_F(SphereSliceTest, solve_plane_low_random) {
         EXPECT_LE(begin, end);
 
         // Points must be on sphere...
-        EXPECT_NEAR(rcut, vec3::distance(center, point_begin), 1e-10);
-        EXPECT_NEAR(rcut, vec3::distance(center, point_end), 1e-10);
+        EXPECT_NEAR(radius, vec3::distance(center, point_begin), 1e-10);
+        EXPECT_NEAR(radius, vec3::distance(center, point_end), 1e-10);
 
         // Points should be consistent with begin and end
         EXPECT_NEAR(begin, vec3::dot(point_begin, axis), 1e-10);
@@ -502,10 +502,10 @@ TEST_F(SphereSliceTest, solve_range_1_random) {
     int num_inside = 0;
     for (int irep=0; irep < NREP; irep++) {
         // Test parameters
-        double rcut = (irep+1)*0.1;
+        double radius = (irep+1)*0.1;
         double center[3];
         double normals[9];
-        SphereSlice* slice = create_random_problem(irep, rcut, center, normals);
+        SphereSlice* slice = create_random_problem(irep, radius, center, normals);
 
         // Name some normals for convenience
         double* cut_normal = normals;
@@ -560,9 +560,9 @@ TEST_F(SphereSliceTest, solve_range_1_random) {
             // Random point
             double point[3];
             double norm;
-            random_point(ipoint, point, rcut, center, norm);
+            random_point(ipoint, point, radius, center, norm);
             ASSERT_NEAR(norm, vec3::distance(point, center), 1e-10);
-            if (norm < rcut) {
+            if (norm < radius) {
                 // Projection on axis should always be in the "sphere range"
                 double proj2 = vec3::dot(point, axis);
                 EXPECT_LE(axis_begin_sphere, proj2);
@@ -589,10 +589,10 @@ TEST_F(SphereSliceTest, solve_line_low_random) {
     int num_inside = 0;
     for (int irep=0; irep < NREP; irep++) {
         // Test parameters
-        double rcut = (irep+1)*0.1;
+        double radius = (irep+1)*0.1;
         double center[3];
         double normals[9];
-        SphereSlice* slice = create_random_problem(irep, rcut, center, normals);
+        SphereSlice* slice = create_random_problem(irep, radius, center, normals);
 
         // Select the random ids for cut_normal and axis
         int permutation[3];
@@ -625,7 +625,7 @@ TEST_F(SphereSliceTest, solve_line_low_random) {
         slice->solve_line_low(id_axis, id_cut0, id_cut1, cut0, cut1, begin, end,
             point_begin, point_end);
 
-        if (dist_line_center > rcut) {
+        if (dist_line_center > radius) {
             // It should not have worked ...
             EXPECT_TRUE(std::isnan(begin));
             EXPECT_TRUE(std::isnan(end));
@@ -641,8 +641,8 @@ TEST_F(SphereSliceTest, solve_line_low_random) {
         EXPECT_LE(begin, end);
 
         // Points must be on sphere...
-        EXPECT_NEAR(rcut, vec3::distance(center, point_begin), 1e-10);
-        EXPECT_NEAR(rcut, vec3::distance(center, point_end), 1e-10);
+        EXPECT_NEAR(radius, vec3::distance(center, point_begin), 1e-10);
+        EXPECT_NEAR(radius, vec3::distance(center, point_end), 1e-10);
 
         // Points should be consistent with begin and end
         EXPECT_NEAR(begin, vec3::dot(point_begin, axis), 1e-10);
@@ -691,10 +691,10 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
     int num_inside = 0;
     for (int irep=0; irep < NREP; irep++) {
         // Test parameters
-        double rcut = (irep+1)*0.1;
+        double radius = (irep+1)*0.1;
         double center[3];
         double normals[9];
-        SphereSlice* slice = create_random_problem(irep, rcut, center, normals);
+        SphereSlice* slice = create_random_problem(irep, radius, center, normals);
 
         // Name some normals for convenience
         double* cut0_normal = normals;
@@ -861,9 +861,9 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
             // Random point
             double point[3];
             double norm;
-            random_point(ipoint, point, rcut, center, norm);
+            random_point(ipoint, point, radius, center, norm);
             ASSERT_NEAR(norm, vec3::distance(point, center), 1e-10);
-            if (norm < rcut) {
+            if (norm < radius) {
                 // Projection on axis should always be in the "sphere range"
                 double frac_axis = vec3::dot(point, axis);
                 EXPECT_LE(axis_begin_i, frac_axis);
