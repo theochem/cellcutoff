@@ -191,7 +191,7 @@ TEST_F(SphereSliceTest, solve_range_1_example_nofound) {
     SphereSlice slice = SphereSlice(my_center, easy_normals, 5.0);
     double begin, end;
     slice.set_cut_begin_end(0, -10, -9);
-    EXPECT_THROW(slice.solve_range(1, begin, end), std::logic_error);
+    EXPECT_THROW(slice.solve_range(1, begin, end), no_solution_found);
 }
 
 TEST_F(SphereSliceTest, solve_line_example_ortho) {
@@ -310,6 +310,14 @@ TEST_F(SphereSliceTest, solve_range_2_example9) {
     slice.solve_range(2, begin, end);
     EXPECT_DOUBLE_EQ(-2.0, begin);
     EXPECT_DOUBLE_EQ(4.0, end);
+}
+
+TEST_F(SphereSliceTest, solve_range_2_example_nofound) {
+    SphereSlice slice = SphereSlice(my_center, easy_normals, 1.0);
+    double begin, end;
+    slice.set_cut_begin_end(0, 20.0, 30.0);
+    slice.set_cut_begin_end(1, -5.2, -4.0);
+    EXPECT_THROW(slice.solve_range(2, begin, end), no_solution_found);
 }
 
 TEST_F(SphereSliceTest, compute_plane_intersection_example1) {
