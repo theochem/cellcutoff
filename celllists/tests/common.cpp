@@ -24,6 +24,7 @@
 #include <cstdlib>
 #include <cmath>
 #include "common.h"
+#include "celllists/vec3.h"
 
 
 //! Fills an array of doubles with random numbers in range ]-0.5*scale, 0.5*scale]
@@ -93,4 +94,12 @@ Cell* create_random_cell_nvec(unsigned int seed, int nvec, double scale, bool cu
             delete cell;
         } catch (singular_cell_vectors) { }
     }
+}
+
+//! Compute a random point in a cubic box centered around center. Also computes distance.
+void random_point(unsigned int seed, double* point, double rcut, const double* center,
+    double &norm) {
+    fill_random_double(seed, point, 3, -rcut, rcut);
+    norm = vec3::norm(point);
+    vec3::iadd(point, center);
 }

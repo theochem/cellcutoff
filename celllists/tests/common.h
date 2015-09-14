@@ -33,5 +33,8 @@ int fill_random_int(unsigned int seed, int* array, size_t size,
     int begin, int end);
 int fill_random_permutation(unsigned int seed, int* array, size_t size);
 Cell* create_random_cell_nvec(unsigned int seed, int nvec, double scale=1, bool cuboid=false);
+void random_point(unsigned int seed, double* point, double rcut, const double* center,
+    double &norm);
+
 
 #endif

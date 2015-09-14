@@ -237,7 +237,7 @@ TEST_P(CellTestP, wrap_random) {
         delete cell;
     }
     // Check whether the test is sufficient.
-    EXPECT_LT(30*nvec, num_wrapped);
+    EXPECT_LT((NREP*nvec)/3, num_wrapped);
 }
 
 TEST_P(CellTestP, wrap_consistency) {
@@ -690,6 +690,7 @@ TEST_P(CellTestP, set_ranges_rcut_domain) {
 }
 
 TEST_P(CellTestP, set_ranges_rcut_random) {
+    int npoint_total = 0;
     for (int icell=0; icell < NREP; icell++) {
         Cell* cell = create_random_cell(icell);
         double center[3];
@@ -700,26 +701,22 @@ TEST_P(CellTestP, set_ranges_rcut_random) {
         cell->set_ranges_rcut(center, rcut, ranges_begin, ranges_end);
         for (int ipoint=0; ipoint < NPOINT; ipoint++) {
             double point[3];
-            double frac[3];
             double norm;
-            fill_random_double(ipoint+icell*1000, point, 3);
-            norm = sqrt(point[0]*point[0] + point[1]*point[1] + point[2]*point[2]);
-            if (norm > 1) {
-                point[0] /= norm;
-                point[1] /= norm;
-                point[2] /= norm;
-            }
-            point[0] = center[0] + rcut*point[0];
-            point[1] = center[1] + rcut*point[1];
-            point[2] = center[2] + rcut*point[2];
-            cell->to_frac(point, frac);
-            for (int ivec=0; ivec < nvec; ivec++) {
-                EXPECT_LE(ranges_begin[ivec], frac[ivec]);
-                EXPECT_GE(ranges_end[ivec], frac[ivec]);
+            random_point(ipoint+icell*NPOINT, point, rcut, center, norm);
+            if (norm <= rcut) {
+                double frac[3];
+                cell->to_frac(point, frac);
+                for (int ivec=0; ivec < nvec; ivec++) {
+                    EXPECT_LE(ranges_begin[ivec], frac[ivec]);
+                    EXPECT_GE(ranges_end[ivec], frac[ivec]);
+                }
+                npoint_total++;
             }
         }
         delete cell;
     }
+    // Check sufficiency
+    EXPECT_LT((NREP*NPOINT)/3, npoint_total);
 }
 
 // select_inside
@@ -808,6 +805,7 @@ TEST_F(CellTest3, select_inside_rcut_example) {
 }
 
 TEST_P(CellTestP, select_inside_rcut_random) {
+    int nbar_total = 0;
     for (int irep=0; irep < NREP; irep++) {
         // Test parameters:
         // - Random cell
@@ -827,10 +825,10 @@ TEST_P(CellTestP, select_inside_rcut_random) {
 
         // Compute the bars.
         int nbar1 = cell->select_inside_rcut(center, rcut, shape, pbc, NULL);
-        //if (nbar1 > 1000) {delete cell; continue;}
         int bars[(nvec+2)*nbar1];
         int nbar2 = cell->select_inside_rcut(center, rcut, shape, pbc, bars);
         EXPECT_EQ(nbar1, nbar2);
+        nbar_total += nbar2;
 
         // Construct a random vector in a cubic box around the cutoff sphere.
         double cart[3];
@@ -897,10 +895,13 @@ TEST_P(CellTestP, select_inside_rcut_random) {
         // Clean up
         delete cell;
     }
+    // Sufficiency check
+    EXPECT_LE(NREP*((nvec-1)*3 + 1), nbar_total);
 }
 
 
 TEST_P(CellTestP, select_inside_rcut_corners) {
+    int nbar_total = 0;
     for (int irep=0; irep < NREP; irep++) {
         // Test parameters:
         // - Random cell
@@ -924,6 +925,7 @@ TEST_P(CellTestP, select_inside_rcut_corners) {
         int bars[(nvec+2)*nbar1];
         int nbar2 = cell->select_inside_rcut(center, rcut, shape, pbc, bars);
         EXPECT_EQ(nbar1, nbar2);
+        nbar_total += nbar2;
 
         // Test if the corners of each bar fall outside of the sphere
         for (int ibar=0; ibar < nbar2; ibar++) {
@@ -981,6 +983,8 @@ TEST_P(CellTestP, select_inside_rcut_corners) {
             }
         }
     }
+    // Sufficiency check
+    EXPECT_LE(NREP*((nvec-1)*3 + 1), nbar_total);
 }
 
 // Instantiation of parameterized tests

@@ -55,16 +55,6 @@ class SphereSliceTest : public ::testing::Test {
             return new SphereSlice(center, normals, rcut);
         }
 
-        void random_point(unsigned int seed, double rcut, const double* center,
-            double* point, double &norm)
-        {
-            fill_random_double(seed, point, 3, -rcut, rcut);
-            norm = vec3::norm(point);
-            point[0] += center[0];
-            point[1] += center[1];
-            point[2] += center[2];
-        }
-
         void random_cut(unsigned int seed, SphereSlice* slice, int id_cut,
             double &cut, double &cut_min, double &cut_max) {
             // Do a solve_sphere, to know over which range we can cut
@@ -364,7 +354,7 @@ TEST_F(SphereSliceTest, solve_sphere_random) {
             // Random point
             double point[3];
             double norm;
-            random_point(ipoint, rcut, center, point, norm);
+            random_point(ipoint, point, rcut, center, norm);
 
             // If the point is in the sphere, test if reduced coordinate falls
             // in the range [begin,end].
@@ -568,7 +558,7 @@ TEST_F(SphereSliceTest, solve_range_1_random) {
             // Random point
             double point[3];
             double norm;
-            random_point(ipoint, rcut, center, point, norm);
+            random_point(ipoint, point, rcut, center, norm);
             ASSERT_NEAR(norm, vec3::distance(point, center), 1e-10);
             if (norm < rcut) {
                 // Projection on axis should always be in the "sphere range"
@@ -856,7 +846,7 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
             // Random point
             double point[3];
             double norm;
-            random_point(ipoint, rcut, center, point, norm);
+            random_point(ipoint, point, rcut, center, norm);
             ASSERT_NEAR(norm, vec3::distance(point, center), 1e-10);
             if (norm < rcut) {
                 // Projection on axis should always be in the "sphere range"
