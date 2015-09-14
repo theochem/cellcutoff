@@ -53,6 +53,9 @@ class SphereSlice {
         double radius_normals[9];
         double sphere_point_begin[9];
         double sphere_point_end[9];
+        double dots[9];
+        double denoms[9];
+        double cut_ortho[27];
     public:
         SphereSlice(const double* center, const double* normals, double radius);
 

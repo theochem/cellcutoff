@@ -44,19 +44,56 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
     cut_end[1] = 0.0;
     // Compute from derived data members
     radius_sq = radius*radius;
-    for (int i=0; i < 3; i++) {
-        norms_sq[i] = vec3::normsq(normals + 3*i);
-        norms[i] = sqrt(norms_sq[i]);
-        frac_radii[i] = radius*norms[i];
-        frac_center[i] = vec3::dot(center, normals + 3*i);
-        sphere_frac_begin[i] = frac_center[i] - frac_radii[i];
-        sphere_frac_end[i] = frac_center[i] + frac_radii[i];
-        vec3::copy(normals + 3*i, radius_normals + 3*i);
-        vec3::iscale(radius_normals + 3*i, radius/norms[i]);
-        vec3::copy(center, sphere_point_begin + 3*i);
-        vec3::iadd(sphere_point_begin + 3*i, radius_normals + 3*i, -1);
-        vec3::copy(center, sphere_point_end + 3*i);
-        vec3::iadd(sphere_point_end + 3*i, radius_normals + 3*i);
+    for (int id_axis=0; id_axis < 3; id_axis++) {
+        const double* axis = normals + 3*id_axis;
+        for (int id_cut=0; id_cut < 3; id_cut++) {
+            const double* cut_normal = normals + 3*id_cut;
+            dots[id_axis + 3*id_cut] = vec3::dot(axis, cut_normal);
+        }
+        norms_sq[id_axis] = vec3::normsq(axis);
+        norms[id_axis] = sqrt(norms_sq[id_axis]);
+        frac_radii[id_axis] = radius*norms[id_axis];
+        frac_center[id_axis] = vec3::dot(center, axis);
+        sphere_frac_begin[id_axis] = frac_center[id_axis] - frac_radii[id_axis];
+        sphere_frac_end[id_axis] = frac_center[id_axis] + frac_radii[id_axis];
+        vec3::copy(axis, radius_normals + 3*id_axis);
+        vec3::iscale(radius_normals + 3*id_axis, radius/norms[id_axis]);
+        vec3::copy(center, sphere_point_begin + 3*id_axis);
+        vec3::iadd(sphere_point_begin + 3*id_axis, radius_normals + 3*id_axis, -1);
+        vec3::copy(center, sphere_point_end + 3*id_axis);
+        vec3::iadd(sphere_point_end + 3*id_axis, radius_normals + 3*id_axis);
+    }
+    for (int id_axis=0; id_axis < 3; id_axis++) {
+        for (int id_cut=0; id_cut < 3; id_cut++) {
+            denoms[id_axis + 3*id_cut] = (
+                dots[id_axis + 3*id_cut]*dots[id_axis + 3*id_cut] -
+                dots[id_axis + 3*id_axis]*dots[id_cut + 3*id_cut]
+            );
+        }
+    }
+    for (int id_axis=0; id_axis < 3; id_axis++) {
+        const double* axis = normals + 3*id_axis;
+        for (int id_cut=0; id_cut < 3; id_cut++) {
+            /* Define a vector orthogonal to cut_normal, in the plane of axis
+               and cut_normal. The length of the vector is such that, when added
+               to the center of the circle, it just ends on the circle edge. The
+               direction is chosen to either minimize or maximise the projection
+               on axis. */
+            const double* cut_normal = normals + 3*id_cut;
+            double ortho[3] = {0.0, 0.0, 0.0};
+            if (id_cut != id_axis) {
+                // Copy of axis -> in plane of axis
+                vec3::copy(axis, ortho);
+                // Subtract projection on cut_normal
+                //  -> in plane of axis and cut_normal
+                //  -> orthogonal to cut_normal
+                vec3::iadd(ortho, cut_normal, -vec3::dot(axis, cut_normal)/norms_sq[id_cut]);
+                // Normalize
+                vec3::iscale(ortho, 1.0/vec3::norm(ortho));
+            }
+            // Store solution
+            vec3::copy(ortho, cut_ortho + 3*id_axis + 9*id_cut);
+        }
     }
 }
 
@@ -151,21 +188,12 @@ void SphereSlice::solve_plane_low(int id_axis, int id_cut, double frac_cut,
     vec3::copy(center, circle_center);
     vec3::iadd(circle_center, cut_normal, delta_cut/norms_sq[id_cut]);
 
-    /* Define a vector orthogonal to cut_normal, in the plane of axis and
-       cut_normal. The length of the vector is such that, when added to the
-       center of the circle, it just ends on the circle edge. The direction
-       is chosen to either minimize or maximise the projection on axis. */
-    double ortho[3]; // TODO: maybe precompute six of such ortho vectors
-    // Copy of axis -> in plane of axis
-    vec3::copy(axis, ortho);
-    // Subtract projection on cut_normal
-    //  -> in plane of axis and cut_normal
-    //  -> orthogonal to cut_normal
-    vec3::iadd(ortho, cut_normal, -vec3::dot(axis, cut_normal)/norms_sq[id_cut]);
+    // Get a vector orthogonal to cut_normal, in the plane of axis;
+    double ortho[3];
+    vec3::copy(cut_ortho + 3*id_axis + 9*id_cut, ortho);
     // Normalize to circle_radius
-    vec3::iscale(ortho, circle_radius/vec3::norm(ortho));
-
-    // Compute projection on axis, optionally compute points;
+    vec3::iscale(ortho, circle_radius);
+    // Compute projection on axis of two solutions, optionally compute points;
     compute_begin_end(circle_center, ortho, axis, begin, end, point_begin, point_end);
 }
 
@@ -254,9 +282,9 @@ double SphereSlice::compute_plane_intersection(int id_cut0, int id_cut1,
 
     // Find the nearest point where the two planes cross
     double dot00 = norms_sq[id_cut0];
-    double dot01 = vec3::dot(cut0_normal, cut1_normal); // TODO precompute
+    double dot01 = dots[id_cut0 + 3*id_cut1];
     double dot11 = norms_sq[id_cut1];
-    double denom = dot01*dot01 - dot00*dot11; // TODO precompute
+    double denom = denoms[id_cut0 + 3*id_cut1]; // TODO precompute
     double ratio0 = (cut1*dot01 - cut0*dot11)/denom;
     double ratio1 = (cut0*dot01 - cut1*dot00)/denom;
     if (other_center != NULL) {
