@@ -54,6 +54,31 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
 }
 
 
+void compute_begin_end(double* other_center, double* ortho, const double* axis,
+    double &begin, double &end, double* point_begin, double* point_end) {
+
+    // Compute projection on axis, optionally compute points;
+    if (point_begin==NULL) {
+        begin = (other_center[0] - ortho[0])*axis[0] +
+                (other_center[1] - ortho[1])*axis[1] +
+                (other_center[2] - ortho[2])*axis[2];
+    } else {
+        vec3::copy(other_center, point_begin);
+        vec3::iadd(point_begin, ortho, -1);
+        begin = vec3::dot(point_begin, axis);
+    }
+    if (point_end==NULL) {
+        end = (other_center[0] + ortho[0])*axis[0] +
+              (other_center[1] + ortho[1])*axis[1] +
+              (other_center[2] + ortho[2])*axis[2];
+    } else {
+        vec3::copy(other_center, point_end);
+        vec3::iadd(point_end, ortho, +1);
+        end = vec3::dot(point_end, axis);
+    }
+}
+
+
 void SphereSlice::solve_sphere(int id_axis, double &begin,
     double &end, double* point_begin, double* point_end) const {
 
@@ -123,32 +148,57 @@ bool SphereSlice::solve_circle(int id_axis, int id_cut, double frac_cut,
     vec3::iscale(ortho, circle_radius/vec3::norm(ortho));
 
     // Compute projection on axis, optionally compute points;
-    if (point_begin==NULL) {
-        begin = (circle_center[0] - ortho[0])*axis[0] +
-                (circle_center[1] - ortho[1])*axis[1] +
-                (circle_center[2] - ortho[2])*axis[2];
-    } else {
-        vec3::copy(circle_center, point_begin);
-        vec3::iadd(point_begin, ortho, -1);
-        begin = vec3::dot(point_begin, axis);
-    }
-    if (point_end==NULL) {
-        end = (circle_center[0] + ortho[0])*axis[0] +
-              (circle_center[1] + ortho[1])*axis[1] +
-              (circle_center[2] + ortho[2])*axis[2];
-    } else {
-        vec3::copy(circle_center, point_end);
-        vec3::iadd(point_end, ortho, +1);
-        end = vec3::dot(point_end, axis);
-    }
-
+    compute_begin_end(circle_center, ortho, axis, begin, end, point_begin, point_end);
     return true;
 }
 
 bool SphereSlice::solve_line(int id_axis, int id_cut0, int id_cut1,
     double frac_cut0, double frac_cut1, double &begin, double &end,
     double* point_begin, double* point_end) const {
-    throw std::logic_error("TODO");
+
+    // Run some checks on the ID arguments.
+    CHECK_ID(id_axis);
+    CHECK_ID(id_cut0);
+    CHECK_ID(id_cut1);
+
+    // Select the vectors
+    const double* axis = normals + 3*id_axis;
+    const double* cut0_normal = normals + 3*id_cut0;
+    const double* cut1_normal = normals + 3*id_cut1;
+
+    // Cuts relative to the center
+    double delta_cut0 = frac_cut0 - frac_center[id_cut0];
+    double delta_cut1 = frac_cut1 - frac_center[id_cut1];
+
+    // Find the nearest point where the two planes cross
+    double dot00 = norms_sq[id_cut0];
+    double dot01 = vec3::dot(cut0_normal, cut1_normal); // TODO precompute
+    double dot11 = norms_sq[id_cut1];
+    double denom = dot01*dot01 - dot00*dot11; // TODO precompute
+    double ratio0 = (delta_cut1*dot01 - delta_cut0*dot11)/denom;
+    double ratio1 = (delta_cut0*dot01 - delta_cut1*dot00)/denom;
+    double line_center[3] = {
+        center[0] + cut0_normal[0]*ratio0 + cut1_normal[0]*ratio1,
+        center[1] + cut0_normal[1]*ratio0 + cut1_normal[1]*ratio1,
+        center[2] + cut0_normal[2]*ratio0 + cut1_normal[2]*ratio1,
+    };
+
+    // Compute the remaining line radius
+    double lost_radius_sq = ratio0*ratio0*dot00 + 2*ratio0*ratio1*dot01 + ratio1*ratio1*dot11;
+    double line_radius_sq = radius_sq - lost_radius_sq;
+    if (line_radius_sq < 0) return false;
+    double line_radius = sqrt(line_radius_sq);
+
+    // Compute the basis vector (easy).
+    double basis[3];
+    vec3::cross(cut0_normal, cut1_normal, basis);
+    double scale = line_radius/vec3::norm(basis);
+    if (vec3::dot(axis, basis) < 0) scale *= -1;
+    vec3::iscale(basis, scale);
+
+    // Compute projection on axis, optionally compute points;
+    compute_begin_end(line_center, basis, axis, begin, end, point_begin, point_end);
+    return true;
 }
 
 void SphereSlice::solve_range_0(double &begin, double &end) const {

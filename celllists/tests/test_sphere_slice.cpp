@@ -516,6 +516,17 @@ TEST_F(SphereSliceTest, solve_line_random) {
         random_cut(irep+12345, slice, id_cut0, cut0, cut0_min, cut0_max);
         random_cut(irep*2+114, slice, id_cut1, cut1, cut1_min, cut1_max);
 
+        // Compute the distance from the origin to the intersection
+        double delta_cut0 = cut0 - vec3::dot(center, cut0_normal);
+        double delta_cut1 = cut1 - vec3::dot(center, cut1_normal);
+        double dot00 = vec3::dot(cut0_normal, cut0_normal);
+        double dot01 = vec3::dot(cut0_normal, cut1_normal);
+        double dot11 = vec3::dot(cut1_normal, cut1_normal);
+        double denom = dot01*dot01 - dot00*dot11; // TODO precompute
+        double ratio0 = (delta_cut1*dot01 - delta_cut0*dot11)/denom;
+        double ratio1 = (delta_cut0*dot01 - delta_cut1*dot00)/denom;
+        double dist_line_center = sqrt(ratio0*ratio0*dot00 + 2*ratio0*ratio1*dot01 + ratio1*ratio1*dot11);
+
         // Actual computation
         double begin, end;
         double point_begin[3];
@@ -523,8 +534,17 @@ TEST_F(SphereSliceTest, solve_line_random) {
         bool exists = slice->solve_line(id_axis, id_cut0, id_cut1, cut0, cut1, begin, end,
             point_begin, point_end);
 
-        // It should have worked...
-        EXPECT_TRUE(exists);
+        if (dist_line_center > rcut) {
+            // It should not have worked ...
+            EXPECT_FALSE(exists);
+            continue;
+        } else {
+            // It should have worked...
+            EXPECT_TRUE(exists);
+        }
+
+        // order of begin and end must be right
+        EXPECT_LE(begin, end);
 
         // Points must be on sphere...
         EXPECT_NEAR(rcut, vec3::distance(center, point_begin), 1e-10);
@@ -551,34 +571,10 @@ TEST_F(SphereSliceTest, solve_line_random) {
         vec3::copy(point_begin, line_center);
         vec3::iadd(line_center, point_end);
         vec3::iscale(line_center, 0.5);
-        // TODO: remove: double line_radius = vec3::distance(point_begin, point_end);
 
         // Check the line center
         EXPECT_NEAR(cut0, vec3::dot(cut0_normal, line_center), 1e-10);
         EXPECT_NEAR(cut1, vec3::dot(cut1_normal, line_center), 1e-10);
-
-        // Randomly sample the sphere surface close to the solution. These
-        // random samples should all be worse.
-        for (int isample=0; isample<100; isample++) {
-            double other[3];
-            double frac_axis;
-            // Check end
-            fill_random_double(isample+irep, other, 3, -rcut*1e-4, rcut*1e-4);
-            vec3::iadd(other, point_end);
-            vec3::iadd(other, center, -1);
-            vec3::iscale(other, 1.0/vec3::norm(other));
-            vec3::iadd(other, center);
-            frac_axis = vec3::dot(other, axis);
-            EXPECT_GE(end+1e-10, frac_axis);
-            // Check begin
-            fill_random_double(isample+irep, other, 3, -rcut*1e-4, rcut*1e-4);
-            vec3::iadd(other, point_begin);
-            vec3::iadd(other, center, -1);
-            vec3::iscale(other, 1.0/vec3::norm(other));
-            vec3::iadd(other, center);
-            frac_axis = vec3::dot(other, axis);
-            EXPECT_LE(begin-1e-10, frac_axis);
-        }
 
         // Call without point_* arguments
         double begin_bis, end_bis;
