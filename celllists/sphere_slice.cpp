@@ -25,9 +25,9 @@
 #include "celllists/vec3.h"
 
 
-#define CHECK_ID(arg) if ((arg < 0) || (arg >= 3)) throw std::domain_error("arg must be 0, 1 or 2.")
-#define UPDATE_BEGIN(found, work, dest) if (found) {if (work < dest) dest = work;} else {dest = work; found = true;}
-#define UPDATE_END(found, work, dest)   if (found) {if (work > dest) dest = work;} else {dest = work; found = true;}
+#define CHECK_ID(ARG) if ((ARG < 0) || (ARG >= 3)) throw std::domain_error(#ARG " must be 0, 1 or 2.")
+#define UPDATE_BEGIN(FOUND, WORK, DEST) if (FOUND) {if (WORK < DEST) DEST = WORK;} else {DEST = WORK; FOUND = true;}
+#define UPDATE_END(FOUND, WORK, DEST)   if (FOUND) {if (WORK > DEST) DEST = WORK;} else {DEST = WORK; FOUND = true;}
 
 
 SphereSlice::SphereSlice(const double* center, const double* normals, double radius) :
