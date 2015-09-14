@@ -214,19 +214,30 @@ TEST_F(CellTest3, wrap_edges) {
 }
 
 TEST_P(CellTestP, wrap_random) {
+    int num_wrapped = 0;
     for (int irep=0; irep < NREP; irep++) {
         Cell* cell = create_random_cell(irep);
         double delta[3];
-        fill_random_double(irep, delta, 3, -5.0, 5.0);
+        fill_random_double(irep+NREP, delta, 3, -6.0, 6.0);
         double frac[3];
+
+        // For test sufficiency check
+        cell->to_frac(delta, frac);
+        for (int ivec=0; ivec < nvec; ivec++) {
+            if (fabs(frac[ivec] > 0.5)) num_wrapped++;
+        }
+
+        // Actual test
         cell->wrap(delta);
         cell->to_frac(delta, frac);
-        for (int ivec=0; ivec<=3; ivec++) {
+        for (int ivec=0; ivec < nvec; ivec++) {
             EXPECT_LT(frac[ivec], 0.5);
             EXPECT_GE(frac[ivec], -0.5);
         }
         delete cell;
     }
+    // Check whether the test is sufficient.
+    EXPECT_LT(30*nvec, num_wrapped);
 }
 
 TEST_P(CellTestP, wrap_consistency) {
