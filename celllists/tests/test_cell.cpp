@@ -222,8 +222,8 @@ TEST_P(CellTestP, wrap_random) {
         cell->wrap(delta);
         cell->to_frac(delta, frac);
         for (int ivec=0; ivec<=3; ivec++) {
-            EXPECT_LT(frac[0], 0.5);
-            EXPECT_GE(frac[0], -0.5);
+            EXPECT_LT(frac[ivec], 0.5);
+            EXPECT_GE(frac[ivec], -0.5);
         }
         delete cell;
     }
