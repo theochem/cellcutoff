@@ -207,28 +207,16 @@ void SphereSlice::solve_range_0(double &begin, double &end) const {
 
 
 void SphereSlice::solve_range_1(double &begin, double &end) const {
-    // work
     double work_begin;
     double work_end;
-    double frac_tmp;
+    double frac_cut;
     double point_begin[3];
     double point_end[3];
     bool found_begin = false;
     bool found_end = false;
 
-    // cut_normal
+    // Convenient variable name
     const double* cut_normal = normals;
-
-    // Whole-sphere solution
-    solve_sphere(1, work_begin, work_end, point_begin, point_end);
-    frac_tmp = vec3::dot(point_begin, cut_normal);
-    if ((frac_tmp > cut_begin[0]) && (frac_tmp < cut_end[0])) {
-        UPDATE_BEGIN(found_begin, work_begin, begin);
-    }
-    frac_tmp = vec3::dot(point_end, cut_normal);
-    if ((frac_tmp > cut_begin[0]) && (frac_tmp < cut_end[0])) {
-        UPDATE_END(found_end, work_end, end);
-    }
 
     // Cut circle begin
     if (solve_circle(1, 0, cut_begin[0], work_begin, work_end, NULL, NULL)) {
@@ -242,13 +230,128 @@ void SphereSlice::solve_range_1(double &begin, double &end) const {
         UPDATE_END(found_end, work_end, end);
     }
 
+    // Whole-sphere solution
+    solve_sphere(1, work_begin, work_end, point_begin, point_end);
+    frac_cut = vec3::dot(point_begin, cut_normal);
+    if ((frac_cut > cut_begin[0]) && (frac_cut < cut_end[0])) {
+        UPDATE_BEGIN(found_begin, work_begin, begin);
+    }
+    frac_cut = vec3::dot(point_end, cut_normal);
+    if ((frac_cut > cut_begin[0]) && (frac_cut < cut_end[0])) {
+        UPDATE_END(found_end, work_end, end);
+    }
+
     if (!(found_end && found_begin))
-        throw std::logic_error("No solution found");
+        throw no_solution_found("No solution found in solve_range_1.");
 }
 
 
-void SphereSlice::solve_range_2(double &begin, double &end) const{
-    throw std::logic_error("TODO");
+void SphereSlice::solve_range_2(double &begin, double &end) const {
+    double work_begin;
+    double work_end;
+    double frac_cut0;
+    double frac_cut1;
+    double point_begin[3];
+    double point_end[3];
+    bool found_begin = false;
+    bool found_end = false;
+    bool exists;
+
+    // Convenient variable names
+    const double* cut0_normal = normals;
+    const double* cut1_normal = normals + 3;
+
+    // Find solutions for all sensible combinations of constraints
+    // * Case A: cut_begin[0], cut_begin[1]
+    if (solve_line(2, 0, 1, cut_begin[0], cut_begin[1], work_begin, work_end, NULL, NULL)) {
+        UPDATE_BEGIN(found_begin, work_begin, begin);
+        UPDATE_END(found_end, work_end, end);
+    }
+    // * Case B: cut_begin[0], cut_end[1]
+    if (solve_line(2, 0, 1, cut_begin[0], cut_end[1], work_begin, work_end, NULL, NULL)) {
+        UPDATE_BEGIN(found_begin, work_begin, begin);
+        UPDATE_END(found_end, work_end, end);
+    }
+    // * Case C: cut_end[0], cut_begin[1]
+    if (solve_line(2, 0, 1, cut_end[0], cut_begin[1], work_begin, work_end, NULL, NULL)) {
+        UPDATE_BEGIN(found_begin, work_begin, begin);
+        UPDATE_END(found_end, work_end, end);
+    }
+    // * Case D: cut_end[0], cut_end[1]
+    if (solve_line(2, 0, 1, cut_end[0], cut_end[1], work_begin, work_end, NULL, NULL)) {
+        UPDATE_BEGIN(found_begin, work_begin, begin);
+        UPDATE_END(found_end, work_end, end);
+    }
+
+    // * Case E: cut_begin[0]
+    exists = solve_circle(2, 0, cut_begin[0], work_begin, work_end, point_begin, point_end);
+    if (exists) {
+        frac_cut1 = vec3::dot(point_begin, cut1_normal);
+        if ((frac_cut1 > cut_begin[1]) && (frac_cut1 < cut_end[1])) {
+            UPDATE_BEGIN(found_begin, work_begin, begin);
+        }
+        frac_cut1 = vec3::dot(point_end, cut1_normal);
+        if ((frac_cut1 > cut_begin[1]) && (frac_cut1 < cut_end[1])) {
+            UPDATE_END(found_end, work_end, end);
+        }
+    }
+
+    // * Case F: cut_end[0]
+    exists = solve_circle(2, 0, cut_end[0], work_begin, work_end, point_begin, point_end);
+    if (exists) {
+        frac_cut1 = vec3::dot(point_begin, cut1_normal);
+        if ((frac_cut1 > cut_begin[1]) && (frac_cut1 < cut_end[1])) {
+            UPDATE_BEGIN(found_begin, work_begin, begin);
+        }
+        frac_cut1 = vec3::dot(point_end, cut1_normal);
+        if ((frac_cut1 > cut_begin[1]) && (frac_cut1 < cut_end[1])) {
+            UPDATE_END(found_end, work_end, end);
+        }
+    }
+
+    // * Case G: cut_begin[1]
+    exists = solve_circle(2, 1, cut_begin[1], work_begin, work_end, point_begin, point_end);
+    if (exists) {
+        frac_cut0 = vec3::dot(point_begin, cut0_normal);
+        if ((frac_cut0 > cut_begin[0]) && (frac_cut0 < cut_end[0])) {
+            UPDATE_BEGIN(found_begin, work_begin, begin);
+        }
+        frac_cut0 = vec3::dot(point_end, cut0_normal);
+        if ((frac_cut0 > cut_begin[0]) && (frac_cut0 < cut_end[0])) {
+            UPDATE_END(found_end, work_end, end);
+        }
+    }
+
+    // * Case H: cut_end[1]
+    exists = solve_circle(2, 1, cut_end[1], work_begin, work_end, point_begin, point_end);
+    if (exists) {
+        frac_cut0 = vec3::dot(point_begin, cut0_normal);
+        if ((frac_cut0 > cut_begin[0]) && (frac_cut0 < cut_end[0])) {
+            UPDATE_BEGIN(found_begin, work_begin, begin);
+        }
+        frac_cut0 = vec3::dot(point_end, cut0_normal);
+        if ((frac_cut0 > cut_begin[0]) && (frac_cut0 < cut_end[0])) {
+            UPDATE_END(found_end, work_end, end);
+        }
+    }
+
+    // * Case I: Whole-sphere solution (always exists)
+    solve_sphere(2, work_begin, work_end, point_begin, point_end);
+    frac_cut0 = vec3::dot(point_begin, cut0_normal);
+    frac_cut1 = vec3::dot(point_begin, cut1_normal);
+    if ((frac_cut0 > cut_begin[0]) && (frac_cut0 < cut_end[0]) &&
+        (frac_cut1 > cut_begin[1]) && (frac_cut1 < cut_end[1])) {
+        UPDATE_BEGIN(found_begin, work_begin, begin);
+    }
+    frac_cut0 = vec3::dot(point_end, cut0_normal);
+    frac_cut1 = vec3::dot(point_end, cut1_normal);
+    if ((frac_cut0 > cut_begin[0]) && (frac_cut0 < cut_end[0]) &&
+        (frac_cut1 > cut_begin[1]) && (frac_cut1 < cut_end[1])) {
+        UPDATE_END(found_end, work_end, end);
+    }
+
+    if (!(found_end && found_begin))
+        throw no_solution_found("No solution found in solve_range_2.");
 }
 
 

@@ -23,6 +23,14 @@
 #ifndef CELLLIST_SPHERE_SLICE_H_
 #define CELLLIST_SPHERE_SLICE_H_
 
+/** @brief.
+        An exception for when solve_range(_*) can not find a solution.
+ */
+class no_solution_found : public std::domain_error {
+    public:
+        explicit no_solution_found (const std::string& what_arg) : std::domain_error(what_arg) {};
+};
+
 class SphereSlice {
     private:
         // Constant independent data members

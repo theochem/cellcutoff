@@ -200,8 +200,8 @@ TEST_F(SphereSliceTest, bar_slice_example1) {
     slice.set_cut_begin_end(0, 0.0, 1.0);
     slice.set_cut_begin_end(1, -2.2, 1.0);
     slice.solve_range(2, begin, end);
-    EXPECT_DOUBLE_EQ(6.0, begin);
-    EXPECT_DOUBLE_EQ(-4.0, end);
+    EXPECT_DOUBLE_EQ(-4.0, begin);
+    EXPECT_DOUBLE_EQ(6.0, end);
 }
 
 TEST_F(SphereSliceTest, bar_slice_example2) {
@@ -210,18 +210,18 @@ TEST_F(SphereSliceTest, bar_slice_example2) {
     slice.set_cut_begin_end(0, 3.4, 4.0);
     slice.set_cut_begin_end(1, -2.2, 1.0);
     slice.solve_range(2, begin, end);
-    EXPECT_DOUBLE_EQ(5.0, begin);
-    EXPECT_DOUBLE_EQ(-3.0, end);
+    EXPECT_DOUBLE_EQ(-3.0, begin);
+    EXPECT_DOUBLE_EQ(5.0, end);
 }
 
 TEST_F(SphereSliceTest, bar_slice_example3) {
     SphereSlice slice = SphereSlice(my_center, easy_normals, 5.0);
     double begin, end;
-    slice.set_cut_begin_end(0, -5.0, -3.0);
+    slice.set_cut_begin_end(0, -5.0, -2.6);
     slice.set_cut_begin_end(1, -2.2, 1.0);
     slice.solve_range(2, begin, end);
-    EXPECT_DOUBLE_EQ(5.0, begin);
-    EXPECT_DOUBLE_EQ(-3.0, end);
+    EXPECT_DOUBLE_EQ(-3.0, begin);
+    EXPECT_DOUBLE_EQ(5.0, end);
 }
 
 TEST_F(SphereSliceTest, bar_slice_example4) {
@@ -230,8 +230,8 @@ TEST_F(SphereSliceTest, bar_slice_example4) {
     slice.set_cut_begin_end(0, 0.0, 1.0);
     slice.set_cut_begin_end(1, -6.2, -5.0);
     slice.solve_range(2, begin, end);
-    EXPECT_DOUBLE_EQ(5.0, begin);
-    EXPECT_DOUBLE_EQ(-3.0, end);
+    EXPECT_DOUBLE_EQ(-3.0, begin);
+    EXPECT_DOUBLE_EQ(5.0, end);
 }
 
 TEST_F(SphereSliceTest, bar_slice_example5) {
@@ -241,8 +241,8 @@ TEST_F(SphereSliceTest, bar_slice_example5) {
     slice.set_cut_begin_end(0, 0.0, 1.0);
     slice.set_cut_begin_end(1, 1.0, 2.0);
     slice.solve_range(2, begin, end);
-    EXPECT_DOUBLE_EQ(5.0, begin);
-    EXPECT_DOUBLE_EQ(-3.0, end);
+    EXPECT_DOUBLE_EQ(-3.0, begin);
+    EXPECT_DOUBLE_EQ(5.0, end);
 }
 
 TEST_F(SphereSliceTest, bar_slice_example6) {
@@ -252,8 +252,8 @@ TEST_F(SphereSliceTest, bar_slice_example6) {
     slice.set_cut_begin_end(0, 1.4, 2.0);
     slice.set_cut_begin_end(1, 0.0, 1.0);
     slice.solve_range(2, begin, end);
-    EXPECT_DOUBLE_EQ(2.0, begin);
-    EXPECT_DOUBLE_EQ(0.0, end);
+    EXPECT_DOUBLE_EQ(-2.0, begin);
+    EXPECT_DOUBLE_EQ(4.0, end);
 }
 
 TEST_F(SphereSliceTest, bar_slice_example7) {
@@ -262,8 +262,8 @@ TEST_F(SphereSliceTest, bar_slice_example7) {
     slice.set_cut_begin_end(0, 1.4, 2.0);
     slice.set_cut_begin_end(1, -5.2, -4.0);
     slice.solve_range(2, begin, end);
-    EXPECT_DOUBLE_EQ(2.0, begin);
-    EXPECT_DOUBLE_EQ(0.0, end);
+    EXPECT_DOUBLE_EQ(-2.0, begin);
+    EXPECT_DOUBLE_EQ(4.0, end);
 }
 
 TEST_F(SphereSliceTest, bar_slice_example8) {
@@ -272,8 +272,8 @@ TEST_F(SphereSliceTest, bar_slice_example8) {
     slice.set_cut_begin_end(0, -2.0, -0.6);
     slice.set_cut_begin_end(1, 0.0, 1.0);
     slice.solve_range(2, begin, end);
-    EXPECT_DOUBLE_EQ(2.0, begin);
-    EXPECT_DOUBLE_EQ(0.0, end);
+    EXPECT_DOUBLE_EQ(-2.0, begin);
+    EXPECT_DOUBLE_EQ(4.0, end);
 }
 
 TEST_F(SphereSliceTest, bar_slice_example9) {
@@ -282,8 +282,8 @@ TEST_F(SphereSliceTest, bar_slice_example9) {
     slice.set_cut_begin_end(0, -2.0, -0.6);
     slice.set_cut_begin_end(1, -5.2, -4.0);
     slice.solve_range(2, begin, end);
-    EXPECT_DOUBLE_EQ(2.0, begin);
-    EXPECT_DOUBLE_EQ(0.0, end);
+    EXPECT_DOUBLE_EQ(-2.0, begin);
+    EXPECT_DOUBLE_EQ(4.0, end);
 }
 
 TEST_F(SphereSliceTest, compute_plane_intersection_example1) {
@@ -490,7 +490,7 @@ TEST_F(SphereSliceTest, solve_range_1_random) {
         double cut_min, cut_max;
         random_slice(irep*2+1, slice, 0, cut_begin, cut_end, cut_min, cut_max);
 
-        // Do the computation
+        // Do the computation, this should always work!
         double axis_begin, axis_end;
         slice->set_cut_begin_end(0, cut_begin, cut_end);
         slice->solve_range_1(axis_begin, axis_end);
@@ -588,7 +588,7 @@ TEST_F(SphereSliceTest, solve_line_random) {
         double dist_line_center = sqrt(slice->compute_plane_intersection(id_cut0, id_cut1,
             delta_cut0, delta_cut1, NULL));
 
-        // Actual computation
+        // Actual computation, may not work in some cases.
         double begin, end;
         double point_begin[3];
         double point_end[3];
@@ -678,7 +678,12 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
         double axis_begin, axis_end;
         slice->set_cut_begin_end(0, cut0_begin, cut0_end);
         slice->set_cut_begin_end(1, cut1_begin, cut1_end);
-        slice->solve_range_2(axis_begin, axis_end);
+        try {
+            slice->solve_range_2(axis_begin, axis_end);
+        } catch (no_solution_found) {
+            // The rest of this iteration of the test makes no sense.
+            continue;
+        }
 
         // order of begin and end must be right
         EXPECT_LE(axis_begin, axis_end);
@@ -692,96 +697,104 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
         double frac1_begin_a, frac1_end_a;
         double point_begin_a[3], point_end_a[3];
         exists = slice->solve_line(2, 0, 1, cut0_begin, cut1_begin, axis_begin_a, axis_end_a, point_begin_a, point_end_a);
-        EXPECT_TRUE(exists);
-        EXPECT_LE(axis_begin_a, axis_end_a);
-        EXPECT_LE(axis_begin, axis_begin_a);
-        EXPECT_GE(axis_end, axis_end_a);
+        if (exists) {
+            EXPECT_LE(axis_begin_a, axis_end_a);
+            EXPECT_LE(axis_begin, axis_begin_a);
+            EXPECT_GE(axis_end, axis_end_a);
+        }
 
         // * case B: cut0_begin  cut1_end
         double axis_begin_b, axis_end_b;
         double frac1_begin_b, frac1_end_b;
         double point_begin_b[3], point_end_b[3];
         exists = slice->solve_line(2, 0, 1, cut0_begin, cut1_end, axis_begin_b, axis_end_b, point_begin_b, point_end_b);
-        EXPECT_TRUE(exists);
-        EXPECT_LE(axis_begin_b, axis_end_b);
-        EXPECT_LE(axis_begin, axis_begin_b);
-        EXPECT_GE(axis_end, axis_end_b);
+        if (exists) {
+            EXPECT_LE(axis_begin_b, axis_end_b);
+            EXPECT_LE(axis_begin, axis_begin_b);
+            EXPECT_GE(axis_end, axis_end_b);
+        }
 
         // * case C: cut0_end    cut1_begin
         double axis_begin_c, axis_end_c;
         double frac1_begin_c, frac1_end_c;
         double point_begin_c[3], point_end_c[3];
         exists = slice->solve_line(2, 0, 1, cut0_end, cut1_begin, axis_begin_c, axis_end_c, point_begin_c, point_end_c);
-        EXPECT_TRUE(exists);
-        EXPECT_LE(axis_begin_c, axis_end_c);
-        EXPECT_LE(axis_begin, axis_begin_c);
-        EXPECT_GE(axis_end, axis_end_c);
+        if (exists) {
+            EXPECT_LE(axis_begin_c, axis_end_c);
+            EXPECT_LE(axis_begin, axis_begin_c);
+            EXPECT_GE(axis_end, axis_end_c);
+        }
 
         // * case D: cut0_end    cut1_end
         double axis_begin_d, axis_end_d;
         double frac1_begin_d, frac1_end_d;
         double point_begin_d[3], point_end_d[3];
         exists = slice->solve_line(2, 0, 1, cut0_end, cut1_end, axis_begin_d, axis_end_d, point_begin_d, point_end_d);
-        EXPECT_TRUE(exists);
-        EXPECT_LE(axis_begin_d, axis_end_d);
-        EXPECT_LE(axis_begin, axis_begin_d);
-        EXPECT_GE(axis_end, axis_end_d);
+        if (exists) {
+            EXPECT_LE(axis_begin_d, axis_end_d);
+            EXPECT_LE(axis_begin, axis_begin_d);
+            EXPECT_GE(axis_end, axis_end_d);
+        }
 
         // * case E: cut0_begin
         double axis_begin_e, axis_end_e;
         double frac1_begin_e, frac1_end_e;
         double point_begin_e[3], point_end_e[3];
         exists = slice->solve_circle(2, 0, cut0_begin, axis_begin_e, axis_end_e, point_begin_e, point_end_e);
-        EXPECT_TRUE(exists);
-        EXPECT_LE(axis_begin_e, axis_end_e);
-        frac1_begin_e = vec3::dot(cut1_normal, point_begin_e);
-        if ((frac1_begin_e > cut1_begin) && (frac1_begin_e < cut1_end))
-            EXPECT_LE(axis_begin, axis_begin_e);
-        frac1_end_e = vec3::dot(cut1_normal, point_end_e);
-        if ((frac1_end_e > cut1_begin) && (frac1_end_e < cut1_end))
-            EXPECT_GE(axis_end, axis_end_e);
+        if (exists) {
+            EXPECT_LE(axis_begin_e, axis_end_e);
+            frac1_begin_e = vec3::dot(cut1_normal, point_begin_e);
+            if ((frac1_begin_e > cut1_begin) && (frac1_begin_e < cut1_end))
+                EXPECT_LE(axis_begin, axis_begin_e);
+            frac1_end_e = vec3::dot(cut1_normal, point_end_e);
+            if ((frac1_end_e > cut1_begin) && (frac1_end_e < cut1_end))
+                EXPECT_GE(axis_end, axis_end_e);
+        }
 
         // * case F: cut0_end
         double axis_begin_f, axis_end_f;
         double frac1_begin_f, frac1_end_f;
         double point_begin_f[3], point_end_f[3];
         exists = slice->solve_circle(2, 0, cut0_end, axis_begin_f, axis_end_f, point_begin_f, point_end_f);
-        EXPECT_TRUE(exists);
-        EXPECT_LE(axis_begin_f, axis_end_f);
-        frac1_begin_f = vec3::dot(cut1_normal, point_begin_f);
-        if ((frac1_begin_f > cut1_begin) && (frac1_begin_f < cut1_end))
-            EXPECT_LE(axis_begin, axis_begin_f);
-        frac1_end_f = vec3::dot(cut1_normal, point_end_f);
-        if ((frac1_end_f > cut1_begin) && (frac1_end_f < cut1_end))
-            EXPECT_GE(axis_end, axis_end_f);
+        if (exists) {
+            EXPECT_LE(axis_begin_f, axis_end_f);
+            frac1_begin_f = vec3::dot(cut1_normal, point_begin_f);
+            if ((frac1_begin_f > cut1_begin) && (frac1_begin_f < cut1_end))
+                EXPECT_LE(axis_begin, axis_begin_f);
+            frac1_end_f = vec3::dot(cut1_normal, point_end_f);
+            if ((frac1_end_f > cut1_begin) && (frac1_end_f < cut1_end))
+                EXPECT_GE(axis_end, axis_end_f);
+        }
 
         // * case G: cut1_begin
         double axis_begin_g, axis_end_g;
         double frac0_begin_g, frac0_end_g;
         double point_begin_g[3], point_end_g[3];
-        exists = slice->solve_circle(2, 0, cut1_begin, axis_begin_g, axis_end_g, point_begin_g, point_end_g);
-        EXPECT_TRUE(exists);
-        EXPECT_LE(axis_begin_g, axis_end_g);
-        frac0_begin_g = vec3::dot(cut0_normal, point_begin_g);
-        if ((frac0_begin_g > cut0_begin) && (frac0_begin_g < cut0_end))
-            EXPECT_LE(axis_begin, axis_begin_g);
-        frac0_end_g = vec3::dot(cut0_normal, point_end_g);
-        if ((frac0_end_g > cut0_begin) && (frac0_end_g < cut0_end))
-            EXPECT_GE(axis_end, axis_end_g);
+        exists = slice->solve_circle(2, 1, cut1_begin, axis_begin_g, axis_end_g, point_begin_g, point_end_g);
+        if (exists) {
+            EXPECT_LE(axis_begin_g, axis_end_g);
+            frac0_begin_g = vec3::dot(cut0_normal, point_begin_g);
+            if ((frac0_begin_g > cut0_begin) && (frac0_begin_g < cut0_end))
+                EXPECT_LE(axis_begin, axis_begin_g);
+            frac0_end_g = vec3::dot(cut0_normal, point_end_g);
+            if ((frac0_end_g > cut0_begin) && (frac0_end_g < cut0_end))
+                EXPECT_GE(axis_end, axis_end_g);
+        }
 
         // * case H: cut1_end
         double axis_begin_h, axis_end_h;
         double frac0_begin_h, frac0_end_h;
         double point_begin_h[3], point_end_h[3];
-        exists = slice->solve_circle(2, 0, cut1_end, axis_begin_h, axis_end_h, point_begin_h, point_end_h);
-        EXPECT_TRUE(exists);
-        EXPECT_LE(axis_begin_h, axis_end_h);
-        frac0_begin_h = vec3::dot(cut0_normal, point_begin_h);
-        if ((frac0_begin_h > cut0_begin) && (frac0_begin_h < cut0_end))
-            EXPECT_LE(axis_begin, axis_begin_h);
-        frac0_end_h = vec3::dot(cut0_normal, point_end_h);
-        if ((frac0_end_h > cut0_begin) && (frac0_end_h < cut0_end))
-            EXPECT_GE(axis_end, axis_end_h);
+        exists = slice->solve_circle(2, 1, cut1_end, axis_begin_h, axis_end_h, point_begin_h, point_end_h);
+        if (exists) {
+            EXPECT_LE(axis_begin_h, axis_end_h);
+            frac0_begin_h = vec3::dot(cut0_normal, point_begin_h);
+            if ((frac0_begin_h > cut0_begin) && (frac0_begin_h < cut0_end))
+                EXPECT_LE(axis_begin, axis_begin_h);
+            frac0_end_h = vec3::dot(cut0_normal, point_end_h);
+            if ((frac0_end_h > cut0_begin) && (frac0_end_h < cut0_end))
+                EXPECT_GE(axis_end, axis_end_h);
+        }
 
         // * case I: (none)
         //   If the sphere solution is in the proper range, it is the solution.
