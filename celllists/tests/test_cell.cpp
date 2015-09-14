@@ -714,6 +714,16 @@ TEST_P(CellTestP, set_ranges_rcut_random) {
 // select_inside
 // -------------
 
+TEST_P(CellTestP, select_inside_rcut_domain) {
+    double center[3] = {2.5, 3.4, -0.6};
+    int shape[3] = {10, 10, 10};
+    bool pbc[3] = {true, true, true};
+    EXPECT_THROW(mycell->select_inside_rcut(center, 0.0, shape, pbc, NULL), std::domain_error);
+    EXPECT_THROW(mycell->select_inside_rcut(center, -1.0, shape, pbc, NULL), std::domain_error);
+    Cell zero_cell = Cell(NULL, 0);
+    EXPECT_THROW(zero_cell.select_inside_rcut(center, 1.0, shape, pbc, NULL), std::domain_error);
+}
+
 TEST_F(CellTest1, select_inside_rcut_example) {
     // All the parameters
     double rcut = 5.0;

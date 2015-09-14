@@ -97,6 +97,7 @@ class SphereSliceTest : public ::testing::Test {
 
 TEST_F(SphereSliceTest, domain) {
     EXPECT_THROW(SphereSlice(my_center, easy_normals, 0.0), std::domain_error);
+    EXPECT_THROW(SphereSlice(my_center, easy_normals, -1.0), std::domain_error);
     const double degenerate_normals[9] = {1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0};
     EXPECT_THROW(SphereSlice(my_center, degenerate_normals, 5.0), std::domain_error);
     SphereSlice slice = SphereSlice(my_center, easy_normals, 5.0);
@@ -119,6 +120,10 @@ TEST_F(SphereSliceTest, domain) {
     EXPECT_THROW(slice.solve_line(0, 3, 1, 0.0, 0.0, begin, end, NULL, NULL), std::domain_error);
     EXPECT_THROW(slice.solve_line(0, 1, -1, 0.0, 0.0, begin, end, NULL, NULL), std::domain_error);
     EXPECT_THROW(slice.solve_line(0, 1, 3, 0.0, 0.0, begin, end, NULL, NULL), std::domain_error);
+    EXPECT_THROW(slice.compute_plane_intersection(-1, 0, 0.0, 0.0, NULL), std::domain_error);
+    EXPECT_THROW(slice.compute_plane_intersection(3, 0, 0.0, 0.0, NULL), std::domain_error);
+    EXPECT_THROW(slice.compute_plane_intersection(0, -1, 0.0, 0.0, NULL), std::domain_error);
+    EXPECT_THROW(slice.compute_plane_intersection(0, 3, 0.0, 0.0, NULL), std::domain_error);
 }
 
 TEST_F(SphereSliceTest, sphere_example1) {
@@ -156,21 +161,37 @@ TEST_F(SphereSliceTest, disc_slice_example3) {
     EXPECT_DOUBLE_EQ(2.0, end);
 }
 
-TEST_F(SphereSliceTest, solve_circle_ortho) {
+TEST_F(SphereSliceTest, disc_slice_example_nofound) {
     SphereSlice slice = SphereSlice(my_center, easy_normals, 5.0);
     double begin, end;
-    slice.solve_circle(1, 0, 3.4, begin, end, NULL, NULL);
+    slice.set_cut_begin_end(0, -10, -9);
+    EXPECT_THROW(slice.solve_range(1, begin, end), std::logic_error);
+}
+
+TEST_F(SphereSliceTest, solve_circle_example_ortho) {
+    SphereSlice slice = SphereSlice(my_center, easy_normals, 5.0);
+    double begin, end;
+    bool exists = slice.solve_circle(1, 0, 3.4, begin, end, NULL, NULL);
+    EXPECT_TRUE(exists);
     EXPECT_DOUBLE_EQ(-6.0, begin);
     EXPECT_DOUBLE_EQ(2.0, end);
 }
 
-TEST_F(SphereSliceTest, solve_circle_angle) {
+TEST_F(SphereSliceTest, solve_circle_example_angle) {
     easy_normals[3] = 1.0;
     SphereSlice slice = SphereSlice(my_center, easy_normals, 5.0);
     double begin, end;
-    slice.solve_circle(1, 0, 3.4, begin, end, NULL, NULL);
+    bool exists = slice.solve_circle(1, 0, 3.4, begin, end, NULL, NULL);
+    EXPECT_TRUE(exists);
     EXPECT_DOUBLE_EQ(-2.6, begin);
     EXPECT_DOUBLE_EQ(5.4, end);
+}
+
+TEST_F(SphereSliceTest, solve_circle_example_nonexisting) {
+    SphereSlice slice = SphereSlice(my_center, easy_normals, 5.0);
+    double begin, end;
+    bool exists = slice.solve_circle(1, 0, 50.0, begin, end, NULL, NULL);
+    EXPECT_FALSE(exists);
 }
 
 TEST_F(SphereSliceTest, bar_slice_example1) {
