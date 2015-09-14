@@ -64,4 +64,8 @@ class SphereSlice {
         void solve_range_2(double &begin, double &end) const;
 };
 
+void compute_begin_end(const double* other_center, const double* ortho,
+    const double* axis, double &begin, double &end,
+    double* point_begin, double* point_end);
+
 #endif

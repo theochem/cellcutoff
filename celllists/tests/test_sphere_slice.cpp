@@ -799,3 +799,31 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
         delete slice;
     }
 }
+
+TEST(ComputeBeginEndTest, example1) {
+    // Test parameters
+    const double center[3] = {1.0, 0.5, -2.0};
+    const double ortho[3] = {-0.5, 2.2, 1.5};
+    const double axis[3] = {1.0, 2.0, 3.0};
+
+    // Check the output of a call with all arguments.
+    double begin, end;
+    double point_begin[3];
+    double point_end[3];
+    compute_begin_end(center, ortho, axis, begin, end, point_begin, point_end);
+    EXPECT_DOUBLE_EQ(1.5, point_begin[0]);
+    EXPECT_DOUBLE_EQ(-1.7, point_begin[1]);
+    EXPECT_DOUBLE_EQ(-3.5, point_begin[2]);
+    EXPECT_DOUBLE_EQ(0.5, point_end[0]);
+    EXPECT_DOUBLE_EQ(2.7, point_end[1]);
+    EXPECT_DOUBLE_EQ(-0.5, point_end[2]);
+    EXPECT_DOUBLE_EQ(-12.4, begin);
+    EXPECT_DOUBLE_EQ(4.4, end);
+
+    // Also compare to the output of a call without point_* arguments.
+    double begin_bis, end_bis;
+    compute_begin_end(center, ortho, axis, begin_bis, end_bis, NULL, NULL);
+
+    EXPECT_DOUBLE_EQ(begin, begin_bis);
+    EXPECT_DOUBLE_EQ(end, end_bis);
+}

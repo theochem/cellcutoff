@@ -54,31 +54,6 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
 }
 
 
-void compute_begin_end(double* other_center, double* ortho, const double* axis,
-    double &begin, double &end, double* point_begin, double* point_end) {
-
-    // Compute projection on axis, optionally compute points;
-    if (point_begin==NULL) {
-        begin = (other_center[0] - ortho[0])*axis[0] +
-                (other_center[1] - ortho[1])*axis[1] +
-                (other_center[2] - ortho[2])*axis[2];
-    } else {
-        vec3::copy(other_center, point_begin);
-        vec3::iadd(point_begin, ortho, -1);
-        begin = vec3::dot(point_begin, axis);
-    }
-    if (point_end==NULL) {
-        end = (other_center[0] + ortho[0])*axis[0] +
-              (other_center[1] + ortho[1])*axis[1] +
-              (other_center[2] + ortho[2])*axis[2];
-    } else {
-        vec3::copy(other_center, point_end);
-        vec3::iadd(point_end, ortho, +1);
-        end = vec3::dot(point_end, axis);
-    }
-}
-
-
 void SphereSlice::solve_sphere(int id_axis, double &begin,
     double &end, double* point_begin, double* point_end) const {
 
@@ -279,4 +254,30 @@ void SphereSlice::set_cut_begin_end(int icut, double new_begin, double new_end) 
 
     cut_begin[icut] = new_begin;
     cut_end[icut] = new_end;
+}
+
+
+void compute_begin_end(const double* other_center, const double* ortho,
+     const double* axis, double &begin, double &end,
+     double* point_begin, double* point_end) {
+
+    // Compute projection on axis, optionally compute points;
+    if (point_begin==NULL) {
+        begin = (other_center[0] - ortho[0])*axis[0] +
+                (other_center[1] - ortho[1])*axis[1] +
+                (other_center[2] - ortho[2])*axis[2];
+    } else {
+        vec3::copy(other_center, point_begin);
+        vec3::iadd(point_begin, ortho, -1);
+        begin = vec3::dot(point_begin, axis);
+    }
+    if (point_end==NULL) {
+        end = (other_center[0] + ortho[0])*axis[0] +
+              (other_center[1] + ortho[1])*axis[1] +
+              (other_center[2] + ortho[2])*axis[2];
+    } else {
+        vec3::copy(other_center, point_end);
+        vec3::iadd(point_end, ortho, +1);
+        end = vec3::dot(point_end, axis);
+    }
 }
