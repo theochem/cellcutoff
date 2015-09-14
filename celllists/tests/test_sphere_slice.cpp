@@ -322,6 +322,7 @@ TEST_F(SphereSliceTest, compute_plane_intersection_example1) {
 }
 
 TEST_F(SphereSliceTest, solve_sphere_random) {
+    int num_inside = 0;
     for (int irep=0; irep < NREP; irep++) {
         // Test parameters
         double rcut = (irep+1)*0.1;
@@ -362,9 +363,12 @@ TEST_F(SphereSliceTest, solve_sphere_random) {
             if (norm < rcut) {
                 EXPECT_LE(begin, proj);
                 EXPECT_GE(end, proj);
+                num_inside++;
             }
         }
     }
+    // Check sufficiency
+    EXPECT_LT((NREP*NPOINT)/3, num_inside);
 }
 
 TEST_F(SphereSliceTest, solve_range_0_random) {
@@ -499,6 +503,7 @@ TEST_F(SphereSliceTest, solve_circle_random) {
 }
 
 TEST_F(SphereSliceTest, solve_range_1_random) {
+    int num_inside = 0;
     for (int irep=0; irep < NREP; irep++) {
         // Test parameters
         double rcut = (irep+1)*0.1;
@@ -572,15 +577,19 @@ TEST_F(SphereSliceTest, solve_range_1_random) {
                 if ((proj > cut_begin) && (proj < cut_end)) {
                     EXPECT_LE(axis_begin, proj2);
                     EXPECT_GE(axis_end, proj2);
+                    num_inside++;
                 }
             }
         }
         delete slice;
     }
+    // Sufficiency check
+    EXPECT_LT((NREP*NPOINT)/10, num_inside);
 }
 
 
 TEST_F(SphereSliceTest, solve_line_random) {
+    int num_inside = 0;
     for (int irep=0; irep < NREP; irep++) {
         // Test parameters
         double rcut = (irep+1)*0.1;
@@ -626,6 +635,7 @@ TEST_F(SphereSliceTest, solve_line_random) {
         } else {
             // It should have worked...
             EXPECT_TRUE(exists);
+            num_inside++;
         }
 
         // order of begin and end must be right
@@ -676,10 +686,13 @@ TEST_F(SphereSliceTest, solve_line_random) {
         // Clean up
         delete slice;
     }
+    // Sufficiency check
+    EXPECT_LT(NREP/3, num_inside);
 }
 
 
 TEST_F(SphereSliceTest, solve_range_2_random) {
+    int num_inside = 0;
     for (int irep=0; irep < NREP; irep++) {
         // Test parameters
         double rcut = (irep+1)*0.1;
@@ -864,11 +877,14 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
                     (frac_cut1 > cut1_begin) && (frac_cut1 < cut1_end)) {
                     EXPECT_LE(axis_begin, frac_axis);
                     EXPECT_GE(axis_end, frac_axis);
+                    num_inside++;
                 }
             }
         }
         delete slice;
     }
+    // Sufficiency check
+    EXPECT_LT((NREP*NPOINT)/20, num_inside);
 }
 
 TEST(ComputeBeginEndTest, example1) {
