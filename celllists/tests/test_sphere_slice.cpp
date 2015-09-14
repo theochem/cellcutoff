@@ -260,6 +260,9 @@ TEST_F(SphereSliceTest, solve_sphere_random) {
         double point_end[3];
         slice->solve_sphere(0, begin, end, point_begin, point_end);
 
+        // order of begin and end must be right
+        EXPECT_LE(begin, end);
+
         // Check consistency begin, point_begin
         EXPECT_NEAR(begin, vec3::dot(point_begin, normals), 1e-10);
 
@@ -301,6 +304,9 @@ TEST_F(SphereSliceTest, solve_range_0_random) {
         double begin, end;
         slice->solve_sphere(0, begin, end, NULL, NULL);
 
+        // order of begin and end must be right
+        EXPECT_LE(begin, end);
+
         // Do a solve_range_zero
         double begin_bis, end_bis;
         slice->solve_range_0(begin_bis, end_bis);
@@ -341,6 +347,9 @@ TEST_F(SphereSliceTest, solve_circle_random) {
 
         // It should have worked...
         EXPECT_TRUE(exists);
+
+        // order of begin and end must be right
+        EXPECT_LE(begin, end);
 
         // Points must be on sphere...
         EXPECT_NEAR(rcut, vec3::distance(center, point_begin), 1e-10);
@@ -435,17 +444,22 @@ TEST_F(SphereSliceTest, solve_range_1_random) {
         slice->set_cut_begin_end(0, cut_begin, cut_end);
         slice->solve_range_1(axis_begin, axis_end);
 
+        // order of begin and end must be right
+        EXPECT_LE(axis_begin, axis_end);
+
         // Check if the solution of solve_range_1 is better or as good as the
         // solutions of the separate parts
         double axis_begin0, axis_end0;
         double exists;
         exists = slice->solve_circle(1, 0, cut_begin, axis_begin0, axis_end0, NULL, NULL);
         EXPECT_TRUE(exists);
+        EXPECT_LE(axis_begin0, axis_end0);
         EXPECT_LE(axis_begin, axis_begin0);
         EXPECT_GE(axis_end, axis_end0);
         double axis_begin1, axis_end1;
         exists = slice->solve_circle(1, 0, cut_end, axis_begin1, axis_end1, NULL, NULL);
         EXPECT_TRUE(exists);
+        EXPECT_LE(axis_begin1, axis_end1);
         EXPECT_LE(axis_begin, axis_begin1);
         EXPECT_GE(axis_end, axis_end1);
         double point_begin[3];
@@ -453,6 +467,7 @@ TEST_F(SphereSliceTest, solve_range_1_random) {
         // If the sphere solution is in the proper range, it is the solution
         double axis_begin_sphere, axis_end_sphere;
         slice->solve_sphere(1, axis_begin_sphere, axis_end_sphere, point_begin, point_end);
+        EXPECT_LE(axis_begin_sphere, axis_end_sphere);
         double proj_begin = vec3::dot(cut_normal, point_begin);
         if ((proj_begin > cut_begin) && (proj_begin < cut_end)) {
             EXPECT_EQ(axis_begin, axis_begin_sphere);
@@ -619,9 +634,12 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
         slice->set_cut_begin_end(1, cut1_begin, cut1_end);
         slice->solve_range_2(axis_begin, axis_end);
 
+        // order of begin and end must be right
+        EXPECT_LE(axis_begin, axis_end);
+
         // Check if the solution of solve_range_2 is better or as good as the
         // solutions of the 9 separate parts (A-I).
-        double exists;
+        bool exists;
 
         // * case A: cut0_begin  cut1_begin
         double axis_begin_a, axis_end_a;
@@ -629,6 +647,7 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
         double point_begin_a[3], point_end_a[3];
         exists = slice->solve_line(2, 0, 1, cut0_begin, cut1_begin, axis_begin_a, axis_end_a, point_begin_a, point_end_a);
         EXPECT_TRUE(exists);
+        EXPECT_LE(axis_begin_a, axis_end_a);
         EXPECT_LE(axis_begin, axis_begin_a);
         EXPECT_GE(axis_end, axis_end_a);
 
@@ -638,6 +657,7 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
         double point_begin_b[3], point_end_b[3];
         exists = slice->solve_line(2, 0, 1, cut0_begin, cut1_end, axis_begin_b, axis_end_b, point_begin_b, point_end_b);
         EXPECT_TRUE(exists);
+        EXPECT_LE(axis_begin_b, axis_end_b);
         EXPECT_LE(axis_begin, axis_begin_b);
         EXPECT_GE(axis_end, axis_end_b);
 
@@ -647,6 +667,7 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
         double point_begin_c[3], point_end_c[3];
         exists = slice->solve_line(2, 0, 1, cut0_end, cut1_begin, axis_begin_c, axis_end_c, point_begin_c, point_end_c);
         EXPECT_TRUE(exists);
+        EXPECT_LE(axis_begin_c, axis_end_c);
         EXPECT_LE(axis_begin, axis_begin_c);
         EXPECT_GE(axis_end, axis_end_c);
 
@@ -656,6 +677,7 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
         double point_begin_d[3], point_end_d[3];
         exists = slice->solve_line(2, 0, 1, cut0_end, cut1_end, axis_begin_d, axis_end_d, point_begin_d, point_end_d);
         EXPECT_TRUE(exists);
+        EXPECT_LE(axis_begin_d, axis_end_d);
         EXPECT_LE(axis_begin, axis_begin_d);
         EXPECT_GE(axis_end, axis_end_d);
 
@@ -665,6 +687,7 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
         double point_begin_e[3], point_end_e[3];
         exists = slice->solve_circle(2, 0, cut0_begin, axis_begin_e, axis_end_e, point_begin_e, point_end_e);
         EXPECT_TRUE(exists);
+        EXPECT_LE(axis_begin_e, axis_end_e);
         frac1_begin_e = vec3::dot(cut1_normal, point_begin_e);
         if ((frac1_begin_e > cut1_begin) && (frac1_begin_e < cut1_end))
             EXPECT_LE(axis_begin, axis_begin_e);
@@ -678,6 +701,7 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
         double point_begin_f[3], point_end_f[3];
         exists = slice->solve_circle(2, 0, cut0_end, axis_begin_f, axis_end_f, point_begin_f, point_end_f);
         EXPECT_TRUE(exists);
+        EXPECT_LE(axis_begin_f, axis_end_f);
         frac1_begin_f = vec3::dot(cut1_normal, point_begin_f);
         if ((frac1_begin_f > cut1_begin) && (frac1_begin_f < cut1_end))
             EXPECT_LE(axis_begin, axis_begin_f);
@@ -691,6 +715,7 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
         double point_begin_g[3], point_end_g[3];
         exists = slice->solve_circle(2, 0, cut1_begin, axis_begin_g, axis_end_g, point_begin_g, point_end_g);
         EXPECT_TRUE(exists);
+        EXPECT_LE(axis_begin_g, axis_end_g);
         frac0_begin_g = vec3::dot(cut0_normal, point_begin_g);
         if ((frac0_begin_g > cut0_begin) && (frac0_begin_g < cut0_end))
             EXPECT_LE(axis_begin, axis_begin_g);
@@ -704,6 +729,7 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
         double point_begin_h[3], point_end_h[3];
         exists = slice->solve_circle(2, 0, cut1_end, axis_begin_h, axis_end_h, point_begin_h, point_end_h);
         EXPECT_TRUE(exists);
+        EXPECT_LE(axis_begin_h, axis_end_h);
         frac0_begin_h = vec3::dot(cut0_normal, point_begin_h);
         if ((frac0_begin_h > cut0_begin) && (frac0_begin_h < cut0_end))
             EXPECT_LE(axis_begin, axis_begin_h);
@@ -719,6 +745,7 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
         double point_begin_i[3], point_end_i[3];
 
         slice->solve_sphere(2, axis_begin_i, axis_end_i, point_begin_i, point_end_i);
+        EXPECT_LE(axis_begin_i, axis_end_i);
         frac0_begin_i = vec3::dot(cut0_normal, point_begin_i);
         frac1_begin_i = vec3::dot(cut1_normal, point_begin_i);
         if ((frac0_begin_i > cut0_begin) && (frac0_begin_i < cut0_end) &&
