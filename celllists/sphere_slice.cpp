@@ -26,8 +26,6 @@
 
 
 #define CHECK_ID(ARG) if ((ARG < 0) || (ARG >= 3)) throw std::domain_error(#ARG " must be 0, 1 or 2.")
-#define UPDATE_BEGIN(FOUND, WORK, DEST) if (FOUND) {if (WORK < DEST) DEST = WORK;} else {DEST = WORK; FOUND = true;}
-#define UPDATE_END(FOUND, WORK, DEST)   if (FOUND) {if (WORK > DEST) DEST = WORK;} else {DEST = WORK; FOUND = true;}
 
 
 SphereSlice::SphereSlice(const double* center, const double* normals, double radius) :
@@ -57,6 +55,16 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
 }
 
 
+bool SphereSlice::inside_cuts(int id_cut, double* point) const {
+    // if id_cut == 1, the test always passes, i.e. bounds are not imposed.
+    if (id_cut == -1) return true;
+    CHECK_ID(id_cut);
+    const double* cut_normal = normals + 3*id_cut;
+    double frac_cut = vec3::dot(point, cut_normal);
+    return (frac_cut > cut_begin[id_cut]) && (frac_cut < cut_end[id_cut]);
+}
+
+
 void SphereSlice::solve_sphere(int id_axis, double &begin,
     double &end, double* point_begin, double* point_end) const {
 
@@ -78,6 +86,22 @@ void SphereSlice::solve_sphere(int id_axis, double &begin,
         point_end[1] = center[1] + radius_normal[1];
         point_end[2] = center[2] + radius_normal[2];
     }
+}
+
+
+void SphereSlice::solve_sphere_cuts(int id_axis, double &begin, double &end,
+    int id_cut0, int id_cut1) const {
+
+    double work_begin, work_end;
+    double point_begin[3];
+    double point_end[3];
+
+    solve_sphere(id_axis, work_begin, work_end, point_begin, point_end);
+
+    if (inside_cuts(id_cut0, point_begin) && inside_cuts(id_cut1, point_begin))
+        begin = work_begin;
+    if (inside_cuts(id_cut0, point_end) && inside_cuts(id_cut1, point_end))
+        end = work_end;
 }
 
 
@@ -103,7 +127,11 @@ bool SphereSlice::solve_circle(int id_axis, int id_cut, double frac_cut,
     // The rest of the radius squared is for the size of the circle.
     double circle_radius_sq = radius_sq - lost_radius_sq;
     // Check if an intersecting circle exists, if not return false;
-    if (circle_radius_sq < 0) return false;
+    if (circle_radius_sq < 0) {
+        begin = NAN;
+        end = NAN;
+        return false;
+    }
     // Compute the circle radius
     double circle_radius = sqrt(circle_radius_sq);
 
@@ -132,6 +160,23 @@ bool SphereSlice::solve_circle(int id_axis, int id_cut, double frac_cut,
 }
 
 
+bool SphereSlice::solve_circle_cuts(int id_axis, int id_cut0, double frac_cut0,
+    double &begin, double &end, int id_cut1) const {
+
+    double work_begin, work_end;
+    double point_begin[3];
+    double point_end[3];
+    long exists;
+
+    exists = solve_circle(id_axis, id_cut0, frac_cut0, work_begin, work_end, point_begin, point_end);
+    if (inside_cuts(id_cut1, point_begin))
+        begin = work_begin;
+    if (inside_cuts(id_cut1, point_end))
+        end = work_end;
+    return exists;
+}
+
+
 bool SphereSlice::solve_line(int id_axis, int id_cut0, int id_cut1,
     double frac_cut0, double frac_cut1, double &begin, double &end,
     double* point_begin, double* point_end) const {
@@ -157,7 +202,11 @@ bool SphereSlice::solve_line(int id_axis, int id_cut0, int id_cut1,
 
     // Compute the remaining line radius
     double line_radius_sq = radius_sq - lost_radius_sq;
-    if (line_radius_sq < 0) return false;
+    if (line_radius_sq < 0) {
+        begin = NAN;
+        end = NAN;
+        return false;
+    }
     double line_radius = sqrt(line_radius_sq);
 
     // Compute the basis vector (easy).
@@ -171,6 +220,7 @@ bool SphereSlice::solve_line(int id_axis, int id_cut0, int id_cut1,
     compute_begin_end(line_center, basis, axis, begin, end, point_begin, point_end);
     return true;
 }
+
 
 double SphereSlice::compute_plane_intersection(int id_cut0, int id_cut1,
     double cut0, double cut1, double* other_center) const {
@@ -200,6 +250,7 @@ double SphereSlice::compute_plane_intersection(int id_cut0, int id_cut1,
     return ratio0*ratio0*dot00 + 2*ratio0*ratio1*dot01 + ratio1*ratio1*dot11;
 }
 
+
 void SphereSlice::solve_range_0(double &begin, double &end) const {
     // The first normal serves as axis on which begin and end is defined.
     solve_sphere(0, begin, end, NULL, NULL);
@@ -207,151 +258,82 @@ void SphereSlice::solve_range_0(double &begin, double &end) const {
 
 
 void SphereSlice::solve_range_1(double &begin, double &end) const {
-    double work_begin;
-    double work_end;
-    double frac_cut;
-    double point_begin[3];
-    double point_end[3];
-    bool found_begin = false;
-    bool found_end = false;
+    // Start out with NaNs in begin and end, as to identify the unsolvable case.
+    // (See end of function.)
+    begin = NAN;
+    end = NAN;
 
-    // Convenient variable name
-    const double* cut_normal = normals;
+    // work variables
+    double work_begin, work_end;
 
-    // Cut circle begin
-    if (solve_circle(1, 0, cut_begin[0], work_begin, work_end, NULL, NULL)) {
-        UPDATE_BEGIN(found_begin, work_begin, begin);
-        UPDATE_END(found_end, work_end, end);
-    }
+    // Find solutions for all sensible combinations of constraints
 
-    // Cut circle end
-    if (solve_circle(1, 0, cut_end[0], work_begin, work_end, NULL, NULL)) {
-        UPDATE_BEGIN(found_begin, work_begin, begin);
-        UPDATE_END(found_end, work_end, end);
-    }
+    // * Case A: cut_begin[0]
+    solve_circle(1, 0, cut_begin[0], work_begin, work_end, NULL, NULL);
+    update_begin_end(work_begin, work_end, begin, end);
 
-    // Whole-sphere solution
-    solve_sphere(1, work_begin, work_end, point_begin, point_end);
-    frac_cut = vec3::dot(point_begin, cut_normal);
-    if ((frac_cut > cut_begin[0]) && (frac_cut < cut_end[0])) {
-        UPDATE_BEGIN(found_begin, work_begin, begin);
-    }
-    frac_cut = vec3::dot(point_end, cut_normal);
-    if ((frac_cut > cut_begin[0]) && (frac_cut < cut_end[0])) {
-        UPDATE_END(found_end, work_end, end);
-    }
+    // * Case B: cut_end[0]
+    solve_circle(1, 0, cut_end[0], work_begin, work_end, NULL, NULL);
+    update_begin_end(work_begin, work_end, begin, end);
 
-    if (!(found_end && found_begin))
+    // * Case C: Whole-sphere solution, only accepted when within cut0_normal bounds
+    solve_sphere_cuts(1, work_begin, work_end, 0, -1);
+    update_begin_end(work_begin, work_end, begin, end);
+
+    if (std::isnan(begin) || std::isnan(end))
         throw no_solution_found("No solution found in solve_range_1.");
 }
 
 
 void SphereSlice::solve_range_2(double &begin, double &end) const {
-    double work_begin;
-    double work_end;
-    double frac_cut0;
-    double frac_cut1;
-    double point_begin[3];
-    double point_end[3];
-    bool found_begin = false;
-    bool found_end = false;
-    bool exists;
+    // Start out with NaNs in begin and end, as to identify the unsolvable case.
+    // (See end of function.)
+    begin = NAN;
+    end = NAN;
 
-    // Convenient variable names
-    const double* cut0_normal = normals;
-    const double* cut1_normal = normals + 3;
+    // work variables
+    double work_begin, work_end;
 
     // Find solutions for all sensible combinations of constraints
+
     // * Case A: cut_begin[0], cut_begin[1]
-    if (solve_line(2, 0, 1, cut_begin[0], cut_begin[1], work_begin, work_end, NULL, NULL)) {
-        UPDATE_BEGIN(found_begin, work_begin, begin);
-        UPDATE_END(found_end, work_end, end);
-    }
+    solve_line(2, 0, 1, cut_begin[0], cut_begin[1], work_begin, work_end, NULL, NULL);
+    update_begin_end(work_begin, work_end, begin, end);
+
     // * Case B: cut_begin[0], cut_end[1]
-    if (solve_line(2, 0, 1, cut_begin[0], cut_end[1], work_begin, work_end, NULL, NULL)) {
-        UPDATE_BEGIN(found_begin, work_begin, begin);
-        UPDATE_END(found_end, work_end, end);
-    }
+    solve_line(2, 0, 1, cut_begin[0], cut_end[1], work_begin, work_end, NULL, NULL);
+    update_begin_end(work_begin, work_end, begin, end);
+
     // * Case C: cut_end[0], cut_begin[1]
-    if (solve_line(2, 0, 1, cut_end[0], cut_begin[1], work_begin, work_end, NULL, NULL)) {
-        UPDATE_BEGIN(found_begin, work_begin, begin);
-        UPDATE_END(found_end, work_end, end);
-    }
+    solve_line(2, 0, 1, cut_end[0], cut_begin[1], work_begin, work_end, NULL, NULL);
+    update_begin_end(work_begin, work_end, begin, end);
+
     // * Case D: cut_end[0], cut_end[1]
-    if (solve_line(2, 0, 1, cut_end[0], cut_end[1], work_begin, work_end, NULL, NULL)) {
-        UPDATE_BEGIN(found_begin, work_begin, begin);
-        UPDATE_END(found_end, work_end, end);
-    }
+    solve_line(2, 0, 1, cut_end[0], cut_end[1], work_begin, work_end, NULL, NULL);
+    update_begin_end(work_begin, work_end, begin, end);
 
     // * Case E: cut_begin[0]
-    exists = solve_circle(2, 0, cut_begin[0], work_begin, work_end, point_begin, point_end);
-    if (exists) {
-        frac_cut1 = vec3::dot(point_begin, cut1_normal);
-        if ((frac_cut1 > cut_begin[1]) && (frac_cut1 < cut_end[1])) {
-            UPDATE_BEGIN(found_begin, work_begin, begin);
-        }
-        frac_cut1 = vec3::dot(point_end, cut1_normal);
-        if ((frac_cut1 > cut_begin[1]) && (frac_cut1 < cut_end[1])) {
-            UPDATE_END(found_end, work_end, end);
-        }
-    }
+    solve_circle_cuts(2, 0, cut_begin[0], work_begin, work_end, 1);
+    update_begin_end(work_begin, work_end, begin, end);
 
     // * Case F: cut_end[0]
-    exists = solve_circle(2, 0, cut_end[0], work_begin, work_end, point_begin, point_end);
-    if (exists) {
-        frac_cut1 = vec3::dot(point_begin, cut1_normal);
-        if ((frac_cut1 > cut_begin[1]) && (frac_cut1 < cut_end[1])) {
-            UPDATE_BEGIN(found_begin, work_begin, begin);
-        }
-        frac_cut1 = vec3::dot(point_end, cut1_normal);
-        if ((frac_cut1 > cut_begin[1]) && (frac_cut1 < cut_end[1])) {
-            UPDATE_END(found_end, work_end, end);
-        }
-    }
+    solve_circle_cuts(2, 0, cut_end[0], work_begin, work_end, 1);
+    update_begin_end(work_begin, work_end, begin, end);
 
     // * Case G: cut_begin[1]
-    exists = solve_circle(2, 1, cut_begin[1], work_begin, work_end, point_begin, point_end);
-    if (exists) {
-        frac_cut0 = vec3::dot(point_begin, cut0_normal);
-        if ((frac_cut0 > cut_begin[0]) && (frac_cut0 < cut_end[0])) {
-            UPDATE_BEGIN(found_begin, work_begin, begin);
-        }
-        frac_cut0 = vec3::dot(point_end, cut0_normal);
-        if ((frac_cut0 > cut_begin[0]) && (frac_cut0 < cut_end[0])) {
-            UPDATE_END(found_end, work_end, end);
-        }
-    }
+    solve_circle_cuts(2, 1, cut_begin[1], work_begin, work_end, 0);
+    update_begin_end(work_begin, work_end, begin, end);
 
     // * Case H: cut_end[1]
-    exists = solve_circle(2, 1, cut_end[1], work_begin, work_end, point_begin, point_end);
-    if (exists) {
-        frac_cut0 = vec3::dot(point_begin, cut0_normal);
-        if ((frac_cut0 > cut_begin[0]) && (frac_cut0 < cut_end[0])) {
-            UPDATE_BEGIN(found_begin, work_begin, begin);
-        }
-        frac_cut0 = vec3::dot(point_end, cut0_normal);
-        if ((frac_cut0 > cut_begin[0]) && (frac_cut0 < cut_end[0])) {
-            UPDATE_END(found_end, work_end, end);
-        }
-    }
+    solve_circle_cuts(2, 1, cut_end[1], work_begin, work_end, 0);
+    update_begin_end(work_begin, work_end, begin, end);
 
-    // * Case I: Whole-sphere solution (always exists)
-    solve_sphere(2, work_begin, work_end, point_begin, point_end);
-    frac_cut0 = vec3::dot(point_begin, cut0_normal);
-    frac_cut1 = vec3::dot(point_begin, cut1_normal);
-    if ((frac_cut0 > cut_begin[0]) && (frac_cut0 < cut_end[0]) &&
-        (frac_cut1 > cut_begin[1]) && (frac_cut1 < cut_end[1])) {
-        UPDATE_BEGIN(found_begin, work_begin, begin);
-    }
-    frac_cut0 = vec3::dot(point_end, cut0_normal);
-    frac_cut1 = vec3::dot(point_end, cut1_normal);
-    if ((frac_cut0 > cut_begin[0]) && (frac_cut0 < cut_end[0]) &&
-        (frac_cut1 > cut_begin[1]) && (frac_cut1 < cut_end[1])) {
-        UPDATE_END(found_end, work_end, end);
-    }
+    // * Case I: Whole-sphere solution, only if within cut0_normal and cut1_normal bounds
+    solve_sphere_cuts(2, work_begin, work_end, 0, 1);
+    update_begin_end(work_begin, work_end, begin, end);
 
-    if (!(found_end && found_begin))
-        throw no_solution_found("No solution found in solve_range_2.");
+    if (std::isnan(begin) || std::isnan(end))
+        throw no_solution_found("No solution found in solve_range_1.");
 }
 
 
@@ -406,5 +388,23 @@ void compute_begin_end(const double* other_center, const double* ortho,
         vec3::copy(other_center, point_end);
         vec3::iadd(point_end, ortho, +1);
         end = vec3::dot(point_end, axis);
+    }
+}
+
+
+void update_begin_end(double work_begin, double work_end, double &begin, double &end) {
+    if (!std::isnan(work_begin)) {
+        if (std::isnan(begin)) {
+            begin = work_begin;
+        } else if (work_begin < begin) {
+            begin = work_begin;
+        }
+    }
+    if (!std::isnan(work_end)) {
+        if (std::isnan(end)) {
+            end = work_end;
+        } else if (work_end > end) {
+            end = work_end;
+        }
     }
 }
