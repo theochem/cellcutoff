@@ -23,14 +23,14 @@
 include_directories(${GTEST_INCLUDE_DIRS})
 
 # The testing executable
-add_executable(celllists_tests EXCLUDE_FROM_ALL test_cell.cpp test_sphere_slice.cpp common.cpp)
+add_executable(test_celllists EXCLUDE_FROM_ALL test_cell.cpp test_sphere_slice.cpp common.cpp)
 
 # How the testing executable has to be linked...
-target_link_libraries(celllists_tests celllists gtest gtest_main)
+target_link_libraries(test_celllists celllists gtest gtest_main)
 
 # Use our own test target because ctest hides relevant output.
 add_custom_target(check
-                  COMMAND celllists_tests
-                  DEPENDS celllists_tests
+                  COMMAND test_celllists
+                  DEPENDS test_celllists
                   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-                  COMMENT "Running test")
+                  COMMENT "Running tests")
