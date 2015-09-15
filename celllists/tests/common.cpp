@@ -29,6 +29,9 @@
 #include "celllists/vec3.h"
 
 
+using namespace celllists;
+
+
 unsigned int get_next_seed(std::minstd_rand gen) {
     std::uniform_int_distribution<unsigned int>
         dis_seed(0, std::numeric_limits<unsigned int>::max());

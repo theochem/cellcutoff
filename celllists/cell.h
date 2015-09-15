@@ -20,12 +20,17 @@
 
 /** @file */
 
-#ifndef CELLLIST_CELL_H_
-#define CELLLIST_CELL_H_
+
+#ifndef __CELLLISTS_CELL_H__
+#define __CELLLISTS_CELL_H__
 
 #include <exception>
 #include <string>
 #include "celllists/sphere_slice.h"
+
+
+namespace celllists {
+
 
 /** @brief
         An exception for singular cell vectors
@@ -297,5 +302,8 @@ class Cell {
         that range, `-1` is returned.
  */
 int smart_wrap(int i, int shape, bool pbc);
+
+
+}
 
 #endif

@@ -20,8 +20,13 @@
 
 /** @file */
 
-#ifndef CELLLIST_SPHERE_SLICE_H_
-#define CELLLIST_SPHERE_SLICE_H_
+
+#ifndef __CELLLISTS_SPHERE_SLICE_H__
+#define __CELLLISTS_SPHERE_SLICE_H__
+
+
+namespace celllists {
+
 
 /** @brief.
         An exception for when solve_range(_*) can not find a solution.
@@ -96,5 +101,8 @@ void compute_begin_end(const double* other_center, const double* ortho,
     double* point_begin, double* point_end);
 
 void update_begin_end(double work_begin, double work_end, double &begin, double &end);
+
+
+}
 
 #endif

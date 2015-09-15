@@ -25,6 +25,9 @@
 #include "celllists/vec3.h"
 
 
+namespace celllists {
+
+
 #define CHECK_ID(ARG) if ((ARG < 0) || (ARG >= 3)) throw std::domain_error(#ARG " must be 0, 1 or 2.")
 
 
@@ -426,4 +429,7 @@ void update_begin_end(double work_begin, double work_end, double &begin, double 
             end = work_end;
         }
     }
+}
+
+
 }

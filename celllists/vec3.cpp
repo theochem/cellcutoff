@@ -22,7 +22,10 @@
 #include <cmath>
 #include "celllists/vec3.h"
 
+
+namespace celllists {
 namespace vec3 {
+
 
 //! Computes the norm of a vector
 double norm(const double* vec) {
@@ -109,4 +112,6 @@ void tmatvec(const double* mat, const double* vec, double* output) {
 
 }
 
+
+}
 }

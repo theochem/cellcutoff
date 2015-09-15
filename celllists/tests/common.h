@@ -24,6 +24,8 @@
 
 #include "celllists/cell.h"
 
+using namespace celllists;
+
 #define NREP 100
 #define NPOINT 1000
 

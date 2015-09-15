@@ -26,6 +26,9 @@
 #include "celllists/vec3.h"
 
 
+namespace celllists {
+
+
 Cell::Cell(const double* _rvecs, int _nvec): nvec(_nvec) {
     // check if nvec is sensible
     if ((_nvec < 0) || (_nvec > 3)) {
@@ -367,4 +370,7 @@ int smart_wrap(int i, int shape, bool pbc) {
     } else {
         return i;
     }
+}
+
+
 }

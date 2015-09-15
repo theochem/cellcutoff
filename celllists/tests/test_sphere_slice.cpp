@@ -28,6 +28,9 @@
 #include "common.h"
 
 
+using namespace celllists;
+
+
 class SphereSliceTest : public ::testing::Test {
     public:
         double my_center[3];

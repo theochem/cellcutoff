@@ -19,10 +19,12 @@
 //--
 
 
-#ifndef CELLLIST_VEC3_H_
-#define CELLLIST_VEC3_H_
+#ifndef __CELLLISTS_VEC3_H__
+#define __CELLLISTS_VEC3_H__
 
+namespace celllists {
 namespace vec3 {
+
 
 double norm(const double* vec);
 double normsq(const double* vec);
@@ -37,6 +39,8 @@ void delta(const double* begin, const double* end, double* output);
 void matvec(const double* mat, const double* vec, double* output);
 void tmatvec(const double* mat, const double* vec, double* output);
 
-}
-
 #endif
+
+
+}
+}
