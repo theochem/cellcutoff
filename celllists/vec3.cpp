@@ -41,43 +41,52 @@ double dot(const double* vec1, const double* vec2) {
 
 //! Computes the distance between two vectors
 double distance(const double* vec1, const double* vec2) {
-    double vec[3];
-    vec[0] = vec1[0] - vec2[0];
-    vec[1] = vec1[1] - vec2[1];
-    vec[2] = vec1[2] - vec2[2];
-    return norm(vec);
+    double d, sum;
+    d = vec1[0] - vec2[0];
+    sum = d*d;
+    d = vec1[1] - vec2[1];
+    sum += d*d;
+    d = vec1[2] - vec2[2];
+    sum += d*d;
+    return sqrt(sum);
 }
 
+//! Computes the triple product of the three given vectors
 double triple(const double* vec1, const double* vec2, const double* vec3) {
     return vec1[0]*(vec2[1]*vec3[2] - vec2[2]*vec3[1]) +
            vec1[1]*(vec2[2]*vec3[0] - vec2[0]*vec3[2]) +
            vec1[2]*(vec2[0]*vec3[1] - vec2[1]*vec3[0]);
 }
 
+//! Computes the cross product of the first two vectors and assigns result to the third
 void cross(const double* vec1, const double* vec2, double* vec3) {
     vec3[0] = vec1[1]*vec2[2] - vec1[2]*vec2[1];
     vec3[1] = vec1[2]*vec2[0] - vec1[0]*vec2[2];
     vec3[2] = vec1[0]*vec2[1] - vec1[1]*vec2[0];
 }
 
+//! Scale the vector in-place
 void iscale(double* vec, double scale) {
     vec[0] *= scale;
     vec[1] *= scale;
     vec[2] *= scale;
 }
 
+//! Copy contents of first argument to the second
 void copy(const double* source, double* dest) {
     dest[0] = source[0];
     dest[1] = source[1];
     dest[2] = source[2];
 }
 
+//! Add to the first argument a rescaled second argument
 void iadd(double* output, const double* term, double scale) {
     output[0] += scale*term[0];
     output[1] += scale*term[1];
     output[2] += scale*term[2];
 }
 
+//! Construct a relative vector
 void delta(const double* begin, const double* end, double* output) {
     output[0] = end[0] - begin[0];
     output[1] = end[1] - begin[1];
