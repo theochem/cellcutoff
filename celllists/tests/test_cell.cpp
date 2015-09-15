@@ -119,7 +119,7 @@ class CellTest3 : public CellTest {
 // =========================================
 
 // Constructor
-// -----------
+// ~~~~~~~~~~~
 
 TEST_P(CellTestP, constructor_singular) {
     EXPECT_THROW(cl::Cell cell(singrvecs, GetParam()), cl::singular_cell_vectors);
@@ -170,7 +170,7 @@ TEST_P(CellTestP, constructor_simple) {
 
 
 // iwrap
-// -----
+// ~~~~~
 
 TEST_F(CellTest1, iwrap_example) {
     double delta[3] = {2.5, 4.3, 3.0};
@@ -222,7 +222,7 @@ TEST_F(CellTest3, iwrap_edges) {
 
 TEST_P(CellTestP, iwrap_random) {
     int num_wrapped = 0;
-    for (int irep=0; irep < NREP; irep++) {
+    for (int irep=0; irep < NREP; ++irep) {
         std::unique_ptr<cl::Cell> cell(create_random_cell(irep));
         double delta[3];
         fill_random_double(irep+NREP, delta, 3, -6.0, 6.0);
@@ -230,14 +230,14 @@ TEST_P(CellTestP, iwrap_random) {
 
         // For test sufficiency check
         cell->to_rfrac(delta, frac);
-        for (int ivec=0; ivec < nvec; ivec++) {
-            if (fabs(frac[ivec] > 0.5)) num_wrapped++;
+        for (int ivec=0; ivec < nvec; ++ivec) {
+            if (fabs(frac[ivec] > 0.5)) ++num_wrapped;
         }
 
         // Actual test
         cell->iwrap(delta);
         cell->to_rfrac(delta, frac);
-        for (int ivec=0; ivec < nvec; ivec++) {
+        for (int ivec=0; ivec < nvec; ++ivec) {
             EXPECT_LT(frac[ivec], 0.5);
             EXPECT_GE(frac[ivec], -0.5);
         }
@@ -247,7 +247,7 @@ TEST_P(CellTestP, iwrap_random) {
 }
 
 TEST_P(CellTestP, iwrap_consistency) {
-    for (int irep=0; irep < NREP; irep++) {
+    for (int irep=0; irep < NREP; ++irep) {
         std::unique_ptr<cl::Cell> cell(create_random_cell(irep));
         int coeffs[3];
         fill_random_int(irep, coeffs, nvec, -5, 5);
@@ -266,7 +266,7 @@ TEST_P(CellTestP, iwrap_consistency) {
 }
 
 // to_rfrac and to_rcart
-// ---------------------
+// ~~~~~~~~~~~~~~~~~~~~~
 
 TEST_F(CellTest1, to_rfrac_example) {
     double rcart[3] = {2.5, 4.3, 3.0};
@@ -323,7 +323,7 @@ TEST_F(CellTest3, to_rcart_example) {
 }
 
 TEST_P(CellTestP, to_rcart_to_rfrac_consistency) {
-    for (int irep=0; irep < NREP; irep++) {
+    for (int irep=0; irep < NREP; ++irep) {
         std::unique_ptr<cl::Cell> cell(create_random_cell(irep));
         double rfrac[3];
         double rcart1[3];
@@ -338,7 +338,7 @@ TEST_P(CellTestP, to_rcart_to_rfrac_consistency) {
 }
 
 // to_gcart and to_gfrac
-// ---------------------
+// ~~~~~~~~~~~~~~~~~~~~~
 
 TEST_F(CellTest1, to_gcart_example) {
     double gfrac[3] = {2.5, 4.3, 3.0};
@@ -395,7 +395,7 @@ TEST_F(CellTest3, to_gfrac_example) {
 }
 
 TEST_P(CellTestP, to_gcart_to_gfrac_consistency) {
-    for (int irep=0; irep < NREP; irep++) {
+    for (int irep=0; irep < NREP; ++irep) {
         std::unique_ptr<cl::Cell> cell(create_random_cell(irep));
         double gfrac1[3];
         double gcart[3];
@@ -410,10 +410,10 @@ TEST_P(CellTestP, to_gcart_to_gfrac_consistency) {
 }
 
 // iadd_rvec
-// ---------
+// ~~~~~~~~~
 
 TEST_P(CellTestP, iadd_rvec_consistency) {
-    for (int irep=0; irep < NREP; irep++) {
+    for (int irep=0; irep < NREP; ++irep) {
         std::unique_ptr<cl::Cell> cell(create_random_cell(irep));
         int coeffs[3];
         fill_random_int(irep, coeffs, 3, -5, 5);
@@ -428,17 +428,17 @@ TEST_P(CellTestP, iadd_rvec_consistency) {
         cell->iadd_rvec(cart2, coeffs);
         cell->to_rfrac(cart1, frac1);
         cell->to_rfrac(cart2, frac2);
-        for (int ivec=0; ivec < nvec; ivec++) {
+        for (int ivec=0; ivec < nvec; ++ivec) {
             EXPECT_NEAR(coeffs[ivec], frac2[ivec] - frac1[ivec], 1e-10);
         }
-        for (int ivec=nvec; ivec < 3; ivec++) {
+        for (int ivec=nvec; ivec < 3; ++ivec) {
             EXPECT_NEAR(0.0, frac2[ivec] - frac1[ivec], 1e-10);
         }
     }
 }
 
 // The getters
-// -----------
+// ~~~~~~~~~~~
 
 // get_nvec() is already tested above
 
@@ -452,7 +452,7 @@ TEST_P(CellTestP, get_rvec_rvecs_gvecs) {
             break;
         } catch (cl::singular_cell_vectors) {}
     }
-    for (int ivec=0; ivec < nvec; ivec++) {
+    for (int ivec=0; ivec < nvec; ++ivec) {
         EXPECT_EQ(rvecs[3*ivec+0], cell->get_rvec(ivec)[0]);
         EXPECT_EQ(rvecs[3*ivec+1], cell->get_rvec(ivec)[1]);
         EXPECT_EQ(rvecs[3*ivec+2], cell->get_rvec(ivec)[2]);
@@ -549,7 +549,7 @@ TEST_F(CellTest3, get_example) {
 }
 
 TEST_P(CellTestP, signed_volume) {
-    for (int irep=0; irep < NREP; irep++) {
+    for (int irep=0; irep < NREP; ++irep) {
         std::unique_ptr<cl::Cell> cell(create_random_cell(irep));
         double sv = vec3::triple(cell->get_rvec(0), cell->get_rvec(1), cell->get_rvec(2));
         EXPECT_NEAR(cell->get_volume(), fabs(sv), 1e-10);
@@ -558,10 +558,10 @@ TEST_P(CellTestP, signed_volume) {
 }
 
 // is_cubic and is_cuboid
-// ----------------------
+// ~~~~~~~~~~~~~~~~~~~~~~
 
 TEST_P(CellTestP, cubic_cuboid_random1) {
-    for (int irep = 0; irep < NREP; irep++) {
+    for (int irep = 0; irep < NREP; ++irep) {
         std::unique_ptr<cl::Cell> cell(create_random_cell(irep));
         EXPECT_FALSE(cell->is_cubic());
         EXPECT_FALSE(cell->is_cuboid());
@@ -569,7 +569,7 @@ TEST_P(CellTestP, cubic_cuboid_random1) {
 }
 
 TEST_P(CellTestP, cubic_cuboid_random2) {
-    for (int irep = 0; irep < NREP; irep++) {
+    for (int irep = 0; irep < NREP; ++irep) {
         std::unique_ptr<cl::Cell> cell(create_random_cell(irep, 1.0, true));
         if (nvec == 1) {
             EXPECT_TRUE(cell->is_cubic());
@@ -596,7 +596,7 @@ TEST_F(CellTest3, cubic_cuboid_example) {
 }
 
 // set_ranges_rcut
-// ---------------
+// ~~~~~~~~~~~~~~~
 
 TEST_F(CellTest1, set_ranges_rcut_example) {
     double center[3] = {6.3, 0.2, -0.8};
@@ -702,7 +702,7 @@ TEST_P(CellTestP, set_ranges_rcut_domain) {
 
 TEST_P(CellTestP, set_ranges_rcut_random) {
     int npoint_total = 0;
-    for (int irep=0; irep < NREP; irep++) {
+    for (int irep=0; irep < NREP; ++irep) {
         std::unique_ptr<cl::Cell> cell(create_random_cell(irep));
         double center[3];
         int ranges_begin[3];
@@ -710,18 +710,18 @@ TEST_P(CellTestP, set_ranges_rcut_random) {
         double rcut = 0.3*(irep+1);
         fill_random_double(irep+2, center, 3, -5.0, 5.0);
         cell->set_ranges_rcut(center, rcut, ranges_begin, ranges_end);
-        for (int ipoint=0; ipoint < NPOINT; ipoint++) {
+        for (int ipoint=0; ipoint < NPOINT; ++ipoint) {
             double point[3];
             double norm;
             random_point(ipoint+irep*NPOINT, center, rcut, point, &norm);
             if (norm <= rcut) {
                 double frac[3];
                 cell->to_rfrac(point, frac);
-                for (int ivec=0; ivec < nvec; ivec++) {
+                for (int ivec=0; ivec < nvec; ++ivec) {
                     EXPECT_LE(ranges_begin[ivec], frac[ivec]);
                     EXPECT_GE(ranges_end[ivec], frac[ivec]);
                 }
-                npoint_total++;
+                ++npoint_total;
             }
         }
     }
@@ -730,7 +730,7 @@ TEST_P(CellTestP, set_ranges_rcut_random) {
 }
 
 // select_inside_rcut
-// ------------------
+// ~~~~~~~~~~~~~~~~~~
 
 TEST_P(CellTestP, select_inside_rcut_domain) {
     double center[3] = {2.5, 3.4, -0.6};
@@ -778,7 +778,7 @@ TEST_F(CellTest2, select_inside_rcut_example) {
     EXPECT_EQ(6*3, bars.size());
 
     // Test
-    for (size_t ibar = 0; ibar < nbar; ibar++) {
+    for (size_t ibar = 0; ibar < nbar; ++ibar) {
         EXPECT_EQ(ibar-2, bars[3*ibar]);
         EXPECT_EQ(0, bars[3*ibar+1]);
         if ((ibar == 0) || (ibar == 1) || (ibar == 5)) {
@@ -803,7 +803,7 @@ TEST_F(CellTest3, select_inside_rcut_example) {
     EXPECT_EQ(8*4, bars.size());
 
     // Test
-    for (size_t ibar = 0; ibar < nbar; ibar++) {
+    for (size_t ibar = 0; ibar < nbar; ++ibar) {
         std::vector<int> bar(&bars[ibar*4], &bars[(ibar+1)*4]);
         EXPECT_EQ(bar[0], ibar/4);
         EXPECT_EQ(bar[1], ibar%4);
@@ -814,7 +814,7 @@ TEST_F(CellTest3, select_inside_rcut_example) {
 
 TEST_P(CellTestP, select_inside_rcut_random) {
     size_t nbar_total = 0;
-    for (int irep=0; irep < NREP; irep++) {
+    for (int irep=0; irep < NREP; ++irep) {
         // Test parameters:
         // - Random cell
         std::unique_ptr<cl::Cell> cell(create_random_cell(2*irep));
@@ -826,7 +826,7 @@ TEST_P(CellTestP, select_inside_rcut_random) {
         // - Alternating values for shape and pbc
         int shape[3];
         bool pbc[3];
-        for (int ivec=0; ivec < 3; ivec++) {
+        for (int ivec=0; ivec < 3; ++ivec) {
             shape[ivec] = ((irep*(ivec+1)) % 5) + 1;
             pbc[ivec] = (irep >> ivec) % 2;
         }
@@ -856,7 +856,7 @@ TEST_P(CellTestP, select_inside_rcut_random) {
             static_cast<int>(floor(frac[2]))
         };
         bool in_bar = false;
-        for (size_t ibar=0; ibar < nbar; ibar++) {
+        for (size_t ibar=0; ibar < nbar; ++ibar) {
             std::vector<int> bar(&bars[ibar*(nvec+1)], &bars[(ibar+1)*(nvec+1)]);
 
             if (nvec > 1) {
@@ -879,7 +879,7 @@ TEST_P(CellTestP, select_inside_rcut_random) {
         // non-periodic boundaries that truncate the cutoff sphere.
         bool in_sphere = (norm < rcut);
         if (in_sphere) {
-            for (int ivec=0; ivec < nvec; ivec++) {
+            for (int ivec=0; ivec < nvec; ++ivec) {
                 if (!pbc[ivec]) {
                     if (frac[ivec] < 0) {
                         in_sphere = false;
@@ -911,7 +911,7 @@ TEST_P(CellTestP, select_inside_rcut_random) {
 
 TEST_P(CellTestP, select_inside_rcut_corners) {
     size_t nbar_total = 0;
-    for (int irep=0; irep < NREP; irep++) {
+    for (int irep=0; irep < NREP; ++irep) {
         // Test parameters:
         // - Random cell
         std::unique_ptr<cl::Cell> cell(create_random_cell(2*irep));
@@ -923,7 +923,7 @@ TEST_P(CellTestP, select_inside_rcut_corners) {
         // - Alternating values for shape and pbc
         int shape[3];
         bool pbc[3];
-        for (int ivec=0; ivec < 3; ivec++) {
+        for (int ivec=0; ivec < 3; ++ivec) {
             shape[ivec] = ((irep*(ivec+1)) % 5) + 1;
             pbc[ivec] = true;
         }
@@ -935,7 +935,7 @@ TEST_P(CellTestP, select_inside_rcut_corners) {
         nbar_total += nbar;
 
         // Test if the corners of each bar fall outside of the sphere
-        for (size_t ibar=0; ibar < nbar; ibar++) {
+        for (size_t ibar=0; ibar < nbar; ++ibar) {
             std::vector<int> bar(&bars[ibar*(nvec+1)], &bars[(ibar+1)*(nvec+1)]);
 
             double frac_corner[3] = {0, 0, 0};
@@ -944,7 +944,7 @@ TEST_P(CellTestP, select_inside_rcut_corners) {
 
             // loop of begin and end of the bar (last two integers in the bar).
             cell->to_rfrac(center, frac_corner);
-            for (int ilast = 0; ilast < 2; ilast++) {
+            for (int ilast = 0; ilast < 2; ++ilast) {
                 frac_corner[nvec-1] = bar[nvec-ilast];
                 if (nvec == 1) {
                     cell->to_rcart(frac_corner, cart_corner);
@@ -995,13 +995,13 @@ TEST_P(CellTestP, select_inside_rcut_corners) {
 }
 
 // Instantiation of parameterized tests
-// ------------------------------------
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 INSTANTIATE_TEST_CASE_P(CellTest123, CellTestP, ::testing::Range(1, 4));
 
 
 // smart_wrap
-// ----------
+// ~~~~~~~~~~
 
 TEST(SmartWrap, examples) {
     EXPECT_EQ(0, cl::smart_wrap(-15, 5, true));

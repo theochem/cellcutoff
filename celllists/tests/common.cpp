@@ -54,7 +54,7 @@ unsigned int fill_random_double(unsigned int seed, double* array, int size,
     // Fill the array with random data for given seed.
     std::minstd_rand gen(seed);
     std::uniform_real_distribution<double> dis(low, high);
-    for (int i=0; i < size; i++)
+    for (int i=0; i < size; ++i)
         array[i] = dis(gen);
 
     // Generate a different seed for the next call
@@ -73,7 +73,7 @@ unsigned int fill_random_int(unsigned int seed, int* array, int size,
     // Fill the array with random data for given seed.
     std::minstd_rand gen(seed);
     std::uniform_int_distribution<int> dis(begin, end);
-    for (int i=0; i < size; i++)
+    for (int i=0; i < size; ++i)
         array[i] = dis(gen);
 
     // Generate a different seed for the next call
@@ -87,7 +87,7 @@ unsigned int fill_random_permutation(unsigned int seed, int* array, int size) {
         throw std::domain_error("Array size must be strictly positive.");
 
     // Fill the array with integers in order.
-    for (int i=0; i < size; i++)
+    for (int i=0; i < size; ++i)
         array[i] = static_cast<int>(i);
 
     // Make a random permutation

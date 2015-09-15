@@ -48,9 +48,9 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
     cut_end[1] = 0.0;
     // Compute from derived data members
     radius_sq = radius*radius;
-    for (int id_axis=0; id_axis < 3; id_axis++) {
+    for (int id_axis=0; id_axis < 3; ++id_axis) {
         const double* axis = normals + 3*id_axis;
-        for (int id_cut=0; id_cut < 3; id_cut++) {
+        for (int id_cut=0; id_cut < 3; ++id_cut) {
             const double* cut_normal = normals + 3*id_cut;
             dots[id_axis + 3*id_cut] = vec3::dot(axis, cut_normal);
         }
@@ -67,16 +67,16 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
         vec3::copy(center, sphere_point_end + 3*id_axis);
         vec3::iadd(sphere_point_end + 3*id_axis, radius_normals + 3*id_axis);
     }
-    for (int id_axis=0; id_axis < 3; id_axis++) {
-        for (int id_cut=0; id_cut < 3; id_cut++) {
+    for (int id_axis=0; id_axis < 3; ++id_axis) {
+        for (int id_cut=0; id_cut < 3; ++id_cut) {
             denoms[id_axis + 3*id_cut] = (
                 dots[id_axis + 3*id_cut]*dots[id_axis + 3*id_cut] -
                 dots[id_axis + 3*id_axis]*dots[id_cut + 3*id_cut]);
         }
     }
-    for (int id_axis=0; id_axis < 3; id_axis++) {
+    for (int id_axis=0; id_axis < 3; ++id_axis) {
         const double* axis = normals + 3*id_axis;
-        for (int id_cut=0; id_cut < 3; id_cut++) {
+        for (int id_cut=0; id_cut < 3; ++id_cut) {
             /* Define a vector orthogonal to cut_normal, in the plane of axis
                and cut_normal. The length of the vector is such that, when added
                to the center of the circle, it just ends on the circle edge. The

@@ -121,7 +121,7 @@ Cell::Cell(const double* _rvecs, int _nvec): nvec(_nvec) {
     vec3::iscale(gvecs+6, denom);
 
     // compute the spacings and the lengths of the cell vectors
-    for (int ivec = 2; ivec >= 0; ivec--) {
+    for (int ivec = 2; ivec >= 0; --ivec) {
         rlengths[ivec] = vec3::norm(rvecs+3*ivec);
         glengths[ivec] = vec3::norm(gvecs+3*ivec);
         rspacings[ivec] = 1.0/glengths[ivec];
@@ -232,7 +232,7 @@ int Cell::set_ranges_rcut(const double* center, double rcut, int* ranges_begin,
     double frac[3];
     int ncell = 1;
     to_rfrac(center, frac);
-    for (int ivec = nvec-1; ivec >= 0; ivec--) {
+    for (int ivec = nvec-1; ivec >= 0; --ivec) {
         // Use spacings between planes to find first plane before cutoff sphere and last
         // plane after cutoff sphere. To this end, we must divide rcut by the spacing
         // between planes.
@@ -271,7 +271,7 @@ void Cell::select_inside_low(SphereSlice* slice, const int* shape,
     } else {
         // If this is not yet the last recursion, iterate over the range of integer
         // fractional coordinates, and go one recursion deeper in each iteration.
-        for (int i = begin; i < end; i++) {
+        for (int i = begin; i < end; ++i) {
             // Make sure the following recursion knows the indices of the current bar.
             prefix->push_back(i);
             // Make a new cut in the spere slice.

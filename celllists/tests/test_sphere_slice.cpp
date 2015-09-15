@@ -324,7 +324,7 @@ TEST_F(SphereSliceTest, compute_plane_intersection_example1) {
 
 TEST_F(SphereSliceTest, solve_full_low_random) {
     int num_inside = 0;
-    for (int irep=0; irep < NREP; irep++) {
+    for (int irep=0; irep < NREP; ++irep) {
         // Test parameters
         double radius = (irep+1)*0.1;
         double center[3];
@@ -352,7 +352,7 @@ TEST_F(SphereSliceTest, solve_full_low_random) {
         EXPECT_DOUBLE_EQ(begin, begin_bis);
         EXPECT_DOUBLE_EQ(end, end_bis);
 
-        for (int ipoint=0; ipoint < NPOINT; ipoint++) {
+        for (int ipoint=0; ipoint < NPOINT; ++ipoint) {
             // Random point
             double point[3];
             double norm;
@@ -364,7 +364,7 @@ TEST_F(SphereSliceTest, solve_full_low_random) {
             if (norm < radius) {
                 EXPECT_LE(begin, proj);
                 EXPECT_GE(end, proj);
-                num_inside++;
+                ++num_inside;
             }
         }
     }
@@ -373,7 +373,7 @@ TEST_F(SphereSliceTest, solve_full_low_random) {
 }
 
 TEST_F(SphereSliceTest, solve_range_0_random) {
-    for (int irep=0; irep < NREP; irep++) {
+    for (int irep=0; irep < NREP; ++irep) {
         // Test parameters
         double radius = (irep+1)*0.1;
         double center[3];
@@ -398,7 +398,7 @@ TEST_F(SphereSliceTest, solve_range_0_random) {
 }
 
 TEST_F(SphereSliceTest, solve_plane_low_random) {
-    for (int irep=0; irep < NREP; irep++) {
+    for (int irep=0; irep < NREP; ++irep) {
         // Test parameters
         double radius = (irep+1)*0.1;
         double center[3];
@@ -500,7 +500,7 @@ TEST_F(SphereSliceTest, solve_plane_low_random) {
 
 TEST_F(SphereSliceTest, solve_range_1_random) {
     int num_inside = 0;
-    for (int irep=0; irep < NREP; irep++) {
+    for (int irep=0; irep < NREP; ++irep) {
         // Test parameters
         double radius = (irep+1)*0.1;
         double center[3];
@@ -556,7 +556,7 @@ TEST_F(SphereSliceTest, solve_range_1_random) {
 
         // Test by generating lots of random points. If a point is in the disc,
         // its fractional coordinate should be between begin and end.
-        for (int ipoint=0; ipoint < NPOINT; ipoint++) {
+        for (int ipoint=0; ipoint < NPOINT; ++ipoint) {
             // Random point
             double point[3];
             double norm;
@@ -574,7 +574,7 @@ TEST_F(SphereSliceTest, solve_range_1_random) {
                 if ((proj > cut_begin) && (proj < cut_end)) {
                     EXPECT_LE(axis_begin, proj2);
                     EXPECT_GE(axis_end, proj2);
-                    num_inside++;
+                    ++num_inside;
                 }
             }
         }
@@ -586,7 +586,7 @@ TEST_F(SphereSliceTest, solve_range_1_random) {
 
 TEST_F(SphereSliceTest, solve_line_low_random) {
     int num_inside = 0;
-    for (int irep=0; irep < NREP; irep++) {
+    for (int irep=0; irep < NREP; ++irep) {
         // Test parameters
         double radius = (irep+1)*0.1;
         double center[3];
@@ -633,7 +633,7 @@ TEST_F(SphereSliceTest, solve_line_low_random) {
             // It should have worked...
             EXPECT_FALSE(std::isnan(begin));
             EXPECT_FALSE(std::isnan(end));
-            num_inside++;
+            ++num_inside;
         }
 
         // order of begin and end must be right
@@ -685,7 +685,7 @@ TEST_F(SphereSliceTest, solve_line_low_random) {
 
 TEST_F(SphereSliceTest, solve_range_2_random) {
     int num_inside = 0;
-    for (int irep=0; irep < NREP; irep++) {
+    for (int irep=0; irep < NREP; ++irep) {
         // Test parameters
         double radius = (irep+1)*0.1;
         double center[3];
@@ -853,7 +853,7 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
 
         // Test by generating lots of random points. If a point is in the bar,
         // its fractional coordinate should be between begin and end.
-        for (int ipoint=0; ipoint < NPOINT; ipoint++) {
+        for (int ipoint=0; ipoint < NPOINT; ++ipoint) {
             // Random point
             double point[3];
             double norm;
@@ -875,7 +875,7 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
                     (frac_cut1 > cut1_begin) && (frac_cut1 < cut1_end)) {
                     EXPECT_LE(axis_begin, frac_axis);
                     EXPECT_GE(axis_end, frac_axis);
-                    num_inside++;
+                    ++num_inside;
                 }
             }
         }
