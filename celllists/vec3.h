@@ -19,8 +19,8 @@
 //--
 
 
-#ifndef __CELLLISTS_VEC3_H__
-#define __CELLLISTS_VEC3_H__
+#ifndef CELLLISTS_VEC3_H_
+#define CELLLISTS_VEC3_H_
 
 namespace celllists {
 namespace vec3 {
@@ -39,7 +39,7 @@ void delta(const double* begin, const double* end, double* output);
 void matvec(const double* mat, const double* vec, double* output);
 void tmatvec(const double* mat, const double* vec, double* output);
 
-#endif
+#endif  // CELLLISTS_VEC3_H_
 
 
 }

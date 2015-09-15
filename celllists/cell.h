@@ -21,8 +21,8 @@
 /** @file */
 
 
-#ifndef __CELLLISTS_CELL_H__
-#define __CELLLISTS_CELL_H__
+#ifndef CELLLISTS_CELL_H_
+#define CELLLISTS_CELL_H_
 
 #include <exception>
 #include <string>
@@ -310,4 +310,4 @@ int smart_wrap(int i, int shape, bool pbc);
 
 }
 
-#endif
+#endif  // CELLLISTS_CELL_H_

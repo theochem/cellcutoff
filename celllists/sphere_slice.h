@@ -21,8 +21,8 @@
 /** @file */
 
 
-#ifndef __CELLLISTS_SPHERE_SLICE_H__
-#define __CELLLISTS_SPHERE_SLICE_H__
+#ifndef CELLLISTS_SPHERE_SLICE_H_
+#define CELLLISTS_SPHERE_SLICE_H_
 
 
 namespace celllists {
@@ -105,4 +105,4 @@ void update_begin_end(double work_begin, double work_end, double &begin, double 
 
 }
 
-#endif
+#endif  // CELLLISTS_SPHERE_SLICE_H_
