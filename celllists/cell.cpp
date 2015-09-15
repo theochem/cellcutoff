@@ -38,7 +38,7 @@ Cell::Cell(const double* _rvecs, int _nvec): nvec(_nvec) {
         throw std::domain_error("The number of cell vectors must be 0, 1, 2 or 3.");
 
     // copy the given _rvecs and _nvec:
-    std::copy(_rvecs, _rvecs+nvec*3, rvecs);
+    std::copy(_rvecs, _rvecs + nvec*3, rvecs);
 
     // compute the volume
     switch (nvec) {
@@ -51,13 +51,13 @@ Cell::Cell(const double* _rvecs, int _nvec): nvec(_nvec) {
             break;
         }
         case 2: {
-            double tmp = vec3::dot(rvecs, rvecs+3);
-            tmp = vec3::normsq(rvecs)*vec3::normsq(rvecs+3) - tmp*tmp;
+            double tmp = vec3::dot(rvecs, rvecs + 3);
+            tmp = vec3::normsq(rvecs)*vec3::normsq(rvecs + 3) - tmp*tmp;
             volume = (tmp > 0.0) ? sqrt(tmp) : 0.0;
             break;
         }
         case 3: {
-            volume = fabs(vec3::triple(rvecs, rvecs+3, rvecs+6));
+            volume = fabs(vec3::triple(rvecs, rvecs + 3, rvecs + 6));
             break;
         }
     }
@@ -71,7 +71,7 @@ Cell::Cell(const double* _rvecs, int _nvec): nvec(_nvec) {
     switch (nvec) {
         case 0: {
             // Just put in the identity matrix.
-            std::fill(rvecs, rvecs+9, 0.0);
+            std::fill(rvecs, rvecs + 9, 0.0);
             rvecs[0] = 1.0;
             rvecs[4] = 1.0;
             rvecs[8] = 1.0;
@@ -93,22 +93,22 @@ Cell::Cell(const double* _rvecs, int _nvec): nvec(_nvec) {
                 ismall = 2;
             }
             // 2) store a temporary vector in position 3
-            std::fill(rvecs+6, rvecs+9, 0.0);
-            rvecs[ismall+6] = 1.0;
+            std::fill(rvecs + 6, rvecs + 9, 0.0);
+            rvecs[ismall + 6] = 1.0;
             // 3) compute the cross product of vector 3 and 1
-            vec3::cross(rvecs+6, rvecs, rvecs+3);
+            vec3::cross(rvecs + 6, rvecs, rvecs + 3);
             // 4) normalize
-            double norm = vec3::norm(rvecs+3);
-            vec3::iscale(rvecs+3, 1.0/norm);
+            double norm = vec3::norm(rvecs + 3);
+            vec3::iscale(rvecs + 3, 1.0/norm);
             // the rest is done in case 2, so no break here!
         }
         case 2: {
             // Add one rvec that is normalized and orthogonal to the two given
             // rvecs. The three vectors will be right-handed.
             // 1) compute the cross product of vector 1 and 2
-            vec3::cross(rvecs, rvecs+3, rvecs+6);
+            vec3::cross(rvecs, rvecs + 3, rvecs + 6);
             // 2) normalize
-            vec3::iscale(rvecs+6, 1.0/vec3::norm(rvecs+6));
+            vec3::iscale(rvecs + 6, 1.0/vec3::norm(rvecs + 6));
         }
     }
 
@@ -116,20 +116,20 @@ Cell::Cell(const double* _rvecs, int _nvec): nvec(_nvec) {
     // non-degenerate vectors. Cramer's rule is used to compute the reciprocal
     // space vectors. This is fairly ugly in terms of numerical stability but
     // it keeps things simple.
-    vec3::cross(rvecs+3, rvecs+6, gvecs);
-    vec3::cross(rvecs+6, rvecs, gvecs+3);
-    vec3::cross(rvecs, rvecs+3, gvecs+6);
+    vec3::cross(rvecs + 3, rvecs + 6, gvecs);
+    vec3::cross(rvecs + 6, rvecs, gvecs + 3);
+    vec3::cross(rvecs, rvecs + 3, gvecs + 6);
     // inverse of determinant
     double denom = 1.0/vec3::dot(gvecs, rvecs);
     // inverse
     vec3::iscale(gvecs, denom);
-    vec3::iscale(gvecs+3, denom);
-    vec3::iscale(gvecs+6, denom);
+    vec3::iscale(gvecs + 3, denom);
+    vec3::iscale(gvecs + 6, denom);
 
     // compute the spacings and the lengths of the cell vectors
     for (int ivec = 2; ivec >= 0; --ivec) {
-        rlengths[ivec] = vec3::norm(rvecs+3*ivec);
-        glengths[ivec] = vec3::norm(gvecs+3*ivec);
+        rlengths[ivec] = vec3::norm(rvecs + 3*ivec);
+        glengths[ivec] = vec3::norm(gvecs + 3*ivec);
         rspacings[ivec] = 1.0/glengths[ivec];
         gspacings[ivec] = 1.0/rlengths[ivec];
     }
@@ -186,12 +186,12 @@ void Cell::iwrap(double* delta) const {
     vec3::iadd(delta, rvecs, -x);
     if (nvec == 1) return;
     // Compute the second fractional coordinates, subtract one half and ceil.
-    x = ceil(vec3::dot(gvecs+3, delta) - 0.5);
-    vec3::iadd(delta, rvecs+3, -x);
+    x = ceil(vec3::dot(gvecs + 3, delta) - 0.5);
+    vec3::iadd(delta, rvecs + 3, -x);
     if (nvec == 2) return;
     // Compute the third fractional coordinates, subtract one half and ceil.
-    x = ceil(vec3::dot(gvecs+6, delta) - 0.5);
-    vec3::iadd(delta, rvecs+6, -x);
+    x = ceil(vec3::dot(gvecs + 6, delta) - 0.5);
+    vec3::iadd(delta, rvecs + 6, -x);
 }
 
 
@@ -200,9 +200,9 @@ void Cell::iadd_rvec(double* delta, const int* coeffs) const {
     if (nvec == 0) return;
     vec3::iadd(delta, rvecs, coeffs[0]);
     if (nvec == 1) return;
-    vec3::iadd(delta, rvecs+3, coeffs[1]);
+    vec3::iadd(delta, rvecs + 3, coeffs[1]);
     if (nvec == 2) return;
-    vec3::iadd(delta, rvecs+6, coeffs[2]);
+    vec3::iadd(delta, rvecs + 6, coeffs[2]);
 }
 
 
@@ -243,8 +243,8 @@ int Cell::set_ranges_rcut(const double* center, const double rcut, int* ranges_b
         // plane after cutoff sphere. To this end, we must divide rcut by the spacing
         // between planes.
         double frac_rcut = rcut/rspacings[ivec];
-        ranges_begin[ivec] = static_cast<int>(floor(frac[ivec]-frac_rcut));
-        ranges_end[ivec] = static_cast<int>(ceil(frac[ivec]+frac_rcut));
+        ranges_begin[ivec] = static_cast<int>(floor(frac[ivec] - frac_rcut));
+        ranges_end[ivec] = static_cast<int>(ceil(frac[ivec] + frac_rcut));
         ncell *= (ranges_end[ivec] - ranges_begin[ivec]);
     }
     return ncell;
@@ -281,7 +281,7 @@ void Cell::select_inside_low(SphereSlice* slice, const int* shape,
             // Make sure the following recursion knows the indices of the current bar.
             prefix->push_back(i);
             // Make a new cut in the spere slice.
-            slice->set_cut_begin_end(ivec, i, i+1);
+            slice->set_cut_begin_end(ivec, i, i + 1);
             // Make recursion
             select_inside_low(slice, shape, pbc, prefix, bars);
             // Remove the last element of prefix again
@@ -307,7 +307,7 @@ size_t Cell::select_inside_rcut(const double* center, const double rcut,
     std::vector<int> prefix;
     // Compute bars and return the number of bars
     select_inside_low(&sphere_slice, shape, pbc, &prefix, bars);
-    return bars->size()/(nvec+1);
+    return bars->size()/(nvec + 1);
 }
 
 

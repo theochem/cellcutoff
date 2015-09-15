@@ -39,7 +39,7 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
     // Check sanity of arguments
     if (radius <= 0)
         throw std::domain_error("radius must be strictly positive.");
-    if (vec3::triple(normals, normals+3, normals+6) == 0.0)
+    if (vec3::triple(normals, normals + 3, normals + 6) == 0.0)
         throw std::domain_error("The three normals must be linearly independent.");
     // Initialize variable data members
     cut_begin[0] = 0.0;
@@ -226,9 +226,9 @@ void SphereSlice::solve_full_low(const int id_axis, double* begin,
     *begin = sphere_frac_begin[id_axis];
     *end = sphere_frac_end[id_axis];
     if (point_begin != nullptr)
-        vec3::copy(sphere_point_begin+3*id_axis, point_begin);
+        vec3::copy(sphere_point_begin + 3*id_axis, point_begin);
     if (point_end != nullptr)
-        vec3::copy(sphere_point_end+3*id_axis, point_end);
+        vec3::copy(sphere_point_end + 3*id_axis, point_end);
 }
 
 
@@ -415,7 +415,7 @@ void compute_begin_end(const double* other_center, const double* ortho,
                (other_center[2] + ortho[2])*axis[2];
     } else {
         vec3::copy(other_center, point_end);
-        vec3::iadd(point_end, ortho, +1);
+        vec3::iadd(point_end, ortho, 1);
         *end = vec3::dot(point_end, axis);
     }
 }

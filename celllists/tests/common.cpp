@@ -93,7 +93,7 @@ unsigned int fill_random_permutation(const unsigned int seed, int* array,
 
     // Make a random permutation
     std::minstd_rand gen(seed);
-    std::shuffle(array, array+size, gen);
+    std::shuffle(array, array + size, gen);
 
     // Generate a different seed for the next call
     return get_next_seed(gen);
@@ -109,7 +109,7 @@ std::unique_ptr<cl::Cell> create_random_cell_nvec(unsigned int seed, const int n
     // Randomly construct a cell till a decent one (sufficient volume) is found.
     double rvecs[9];
     while (true) {
-        seed = fill_random_double(seed, rvecs, 9, -scale, +scale);
+        seed = fill_random_double(seed, rvecs, 9, -scale, scale);
         if (cuboid) {
             rvecs[1] = 0.0;
             rvecs[2] = 0.0;

@@ -43,7 +43,7 @@ class SphereSliceTest : public ::testing::Test {
         my_center[0] = 0.4;
         my_center[1] = -2.0;
         my_center[2] = 1.0;
-        std::fill(easy_normals, easy_normals+9, 0.0);
+        std::fill(easy_normals, easy_normals + 9, 0.0);
         easy_normals[0] = 1.0;
         easy_normals[4] = 1.0;
         easy_normals[8] = 1.0;
@@ -56,7 +56,7 @@ class SphereSliceTest : public ::testing::Test {
         double vol;
         do {
             seed = fill_random_double(seed, normals, 9);
-            vol = fabs(vec3::triple(normals, normals+3, normals+6));
+            vol = fabs(vec3::triple(normals, normals + 3, normals + 6));
         } while (vol < 0.001);
         return std::unique_ptr<cl::SphereSlice>(new cl::SphereSlice(center, normals,
             radius));
@@ -327,7 +327,7 @@ TEST_F(SphereSliceTest, solve_full_low_random) {
     int num_inside = 0;
     for (int irep=0; irep < NREP; ++irep) {
         // Test parameters
-        double radius = (irep+1)*0.1;
+        double radius = (irep + 1)*0.1;
         double center[3];
         double normals[9];
         std::unique_ptr<cl::SphereSlice> slice(create_random_problem(irep, radius, center, normals));
@@ -376,7 +376,7 @@ TEST_F(SphereSliceTest, solve_full_low_random) {
 TEST_F(SphereSliceTest, solve_range_0_random) {
     for (int irep=0; irep < NREP; ++irep) {
         // Test parameters
-        double radius = (irep+1)*0.1;
+        double radius = (irep + 1)*0.1;
         double center[3];
         double normals[9];
         std::unique_ptr<cl::SphereSlice> slice(create_random_problem(irep, radius, center, normals));
@@ -401,14 +401,14 @@ TEST_F(SphereSliceTest, solve_range_0_random) {
 TEST_F(SphereSliceTest, solve_plane_low_random) {
     for (int irep=0; irep < NREP; ++irep) {
         // Test parameters
-        double radius = (irep+1)*0.1;
+        double radius = (irep + 1)*0.1;
         double center[3];
         double normals[9];
         std::unique_ptr<cl::SphereSlice> slice(create_random_problem(irep, radius, center, normals));
 
         // Select the random ids for cut_normal and axis
         int permutation[3];
-        fill_random_permutation(irep*5+123, permutation, 3);
+        fill_random_permutation(irep*5 + 123, permutation, 3);
         int id_cut = permutation[0];
         int id_axis = permutation[1];
 
@@ -418,7 +418,7 @@ TEST_F(SphereSliceTest, solve_plane_low_random) {
 
         // Select randomized place to cut the sphere
         double cut, cut_min, cut_max;
-        random_cut(irep+12345, *slice, id_cut, &cut, &cut_min, &cut_max);
+        random_cut(irep + 12345, *slice, id_cut, &cut, &cut_min, &cut_max);
 
         // Actual computation
         double begin, end;
@@ -472,7 +472,7 @@ TEST_F(SphereSliceTest, solve_plane_low_random) {
 
         // Scan the circle close to the solutions, where optimality is easily
         // tested.
-        for (double angle=-0.01; angle < 0.01; angle += 0.001) {
+        for (double angle = -0.01; angle < 0.01; angle += 0.001) {
             double other[3];
             double proj_axis;
             // Check end
@@ -480,7 +480,7 @@ TEST_F(SphereSliceTest, solve_plane_low_random) {
             vec3::iadd(other, circle_basis0, cos(angle));
             vec3::iadd(other, circle_basis1, sin(angle));
             proj_axis = vec3::dot(other, axis);
-            EXPECT_GE(end+1e-10, proj_axis);
+            EXPECT_GE(end + 1e-10, proj_axis);
             // Check begin
             vec3::copy(circle_center, other);
             vec3::iadd(other, circle_basis0, -cos(angle));
@@ -503,7 +503,7 @@ TEST_F(SphereSliceTest, solve_range_1_random) {
     int num_inside = 0;
     for (int irep=0; irep < NREP; ++irep) {
         // Test parameters
-        double radius = (irep+1)*0.1;
+        double radius = (irep + 1)*0.1;
         double center[3];
         double normals[9];
         std::unique_ptr<cl::SphereSlice> slice(create_random_problem(irep, radius, center, normals));
@@ -514,7 +514,7 @@ TEST_F(SphereSliceTest, solve_range_1_random) {
 
         double cut_begin, cut_end;
         double cut_min, cut_max;
-        random_slice(irep*2+1, *slice, 0, &cut_begin, &cut_end, &cut_min, &cut_max);
+        random_slice(irep*2 + 1, *slice, 0, &cut_begin, &cut_end, &cut_min, &cut_max);
 
         // Do the computation, this should always work!
         double axis_begin, axis_end;
@@ -589,14 +589,14 @@ TEST_F(SphereSliceTest, solve_line_low_random) {
     int num_inside = 0;
     for (int irep=0; irep < NREP; ++irep) {
         // Test parameters
-        double radius = (irep+1)*0.1;
+        double radius = (irep + 1)*0.1;
         double center[3];
         double normals[9];
         std::unique_ptr<cl::SphereSlice> slice(create_random_problem(irep, radius, center, normals));
 
         // Select the random ids for cut_normal and axis
         int permutation[3];
-        fill_random_permutation(irep*5+123, permutation, 3);
+        fill_random_permutation(irep*5 + 123, permutation, 3);
         int id_cut0 = permutation[0];
         int id_cut1 = permutation[1];
         int id_axis = permutation[2];
@@ -609,8 +609,8 @@ TEST_F(SphereSliceTest, solve_line_low_random) {
         // Select randomized places to cut the sphere
         double cut0, cut0_min, cut0_max;
         double cut1, cut1_min, cut1_max;
-        random_cut(irep+12345, *slice, id_cut0, &cut0, &cut0_min, &cut0_max);
-        random_cut(irep*2+114, *slice, id_cut1, &cut1, &cut1_min, &cut1_max);
+        random_cut(irep + 12345, *slice, id_cut0, &cut0, &cut0_min, &cut0_max);
+        random_cut(irep*2 + 114, *slice, id_cut1, &cut1, &cut1_min, &cut1_max);
 
         // Compute the distance from the origin to the intersection
         double delta_cut0 = cut0 - vec3::dot(center, cut0_normal);
@@ -688,7 +688,7 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
     int num_inside = 0;
     for (int irep=0; irep < NREP; ++irep) {
         // Test parameters
-        double radius = (irep+1)*0.1;
+        double radius = (irep + 1)*0.1;
         double center[3];
         double normals[9];
         std::unique_ptr<cl::SphereSlice> slice(create_random_problem(irep, radius, center, normals));
@@ -700,9 +700,9 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
 
         // Take two random slices to form a random bar
         double cut0_begin, cut0_end, cut0_min, cut0_max;
-        random_slice(irep*3+1, *slice, 0, &cut0_begin, &cut0_end, &cut0_min, &cut0_max);
+        random_slice(irep*3 + 1, *slice, 0, &cut0_begin, &cut0_end, &cut0_min, &cut0_max);
         double cut1_begin, cut1_end, cut1_min, cut1_max;
-        random_slice(irep*3+2, *slice, 1, &cut1_begin, &cut1_end, &cut1_min, &cut1_max);
+        random_slice(irep*3 + 2, *slice, 1, &cut1_begin, &cut1_end, &cut1_min, &cut1_max);
 
         // Do the computation
         double axis_begin, axis_end;
