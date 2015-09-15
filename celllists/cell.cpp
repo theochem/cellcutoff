@@ -32,14 +32,11 @@ namespace celllists {
 
 Cell::Cell(const double* _rvecs, int _nvec): nvec(_nvec) {
     // check if nvec is sensible
-    if ((_nvec < 0) || (_nvec > 3)) {
+    if ((_nvec < 0) || (_nvec > 3))
         throw std::domain_error("The number of cell vectors must be 0, 1, 2 or 3.");
-    }
 
     // copy the given _rvecs and _nvec:
-    for (int ivec=nvec*3-1; ivec>=0; ivec--) {
-        rvecs[ivec] = _rvecs[ivec];
-    }
+    std::copy(_rvecs, _rvecs+nvec*3, rvecs);
 
     // compute the volume
     switch(nvec) {
@@ -49,39 +46,28 @@ Cell::Cell(const double* _rvecs, int _nvec): nvec(_nvec) {
         case 1:
             volume = vec3::norm(rvecs);
             break;
-        case 2:
-            double tmp;
-            tmp = vec3::dot(rvecs, rvecs+3);
+        case 2: {
+            double tmp = vec3::dot(rvecs, rvecs+3);
             tmp = vec3::normsq(rvecs)*vec3::normsq(rvecs+3) - tmp*tmp;
-            if (tmp > 0) {
-                volume = sqrt(tmp);
-            } else {
-                volume = 0.0;
-            }
+            volume = (tmp > 0.0) ? sqrt(tmp) : 0.0;
             break;
-        case 3:
+        } case 3:
             volume = fabs(vec3::triple(rvecs, rvecs+3, rvecs+6));
             break;
     }
 
     // If the volume is zero and nvec > 0, raise an error. In this case, the
     // reciprocal cell vectors can not be computed.
-    if (volume == 0.0) {
+    if (volume == 0.0)
         throw singular_cell_vectors("The cell vectors are degenerate");
-    }
 
     // complete the list of rvecs in case nvec < 3
     switch(nvec) {
         case 0:
             // Just put in the identity matrix.
+            std::fill(rvecs, rvecs+9, 0.0);
             rvecs[0] = 1.0;
-            rvecs[1] = 0.0;
-            rvecs[2] = 0.0;
-            rvecs[3] = 0.0;
             rvecs[4] = 1.0;
-            rvecs[5] = 0.0;
-            rvecs[6] = 0.0;
-            rvecs[7] = 0.0;
             rvecs[8] = 1.0;
             break;
         case 1: {
@@ -100,9 +86,7 @@ Cell::Cell(const double* _rvecs, int _nvec): nvec(_nvec) {
                 ismall = 2;
             }
             // 2) store a temporary vector in position 3
-            rvecs[6] = 0.0;
-            rvecs[7] = 0.0;
-            rvecs[8] = 0.0;
+            std::fill(rvecs+6, rvecs+9, 0.0);
             rvecs[ismall+6] = 1.0;
             // 3) compute the cross product of vector 3 and 1
             vec3::cross(rvecs+6, rvecs, rvecs+3);
@@ -117,8 +101,7 @@ Cell::Cell(const double* _rvecs, int _nvec): nvec(_nvec) {
             // 1) compute the cross product of vector 1 and 2
             vec3::cross(rvecs, rvecs+3, rvecs+6);
             // 2) normalize
-            double norm = vec3::norm(rvecs+6);
-            vec3::iscale(rvecs+6, 1.0/norm);
+            vec3::iscale(rvecs+6, 1.0/vec3::norm(rvecs+6));
     }
 
     // Now we assume that rvecs contains a set of three well-behaved
