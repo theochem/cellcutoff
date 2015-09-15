@@ -67,7 +67,7 @@ class Cell {
                 TODO
          */
         void select_inside_low(SphereSlice* slice, const int* shape,
-            const bool* pbc, std::vector<int> &bars, int* prefix, int ivec)
+            const bool* pbc, std::vector<int> &bars, std::vector<int> &prefix)
             const;
     public:
         /** @brief

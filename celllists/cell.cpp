@@ -296,11 +296,13 @@ int Cell::set_ranges_rcut(const double* center, double rcut, int* ranges_begin,
 
 
 void Cell::select_inside_low(SphereSlice* slice, const int* shape,
-    const bool* pbc, std::vector<int> &bars, int* prefix, int ivec) const {
+    const bool* pbc, std::vector<int> &bars, std::vector<int> &prefix) const {
 
+    // Get the vector index for which the range is currently searched
+    int ivec = static_cast<int>(prefix.size());
+    // Solve the hard problem elsewhere.
     double begin_exact = 0.0;
     double end_exact = 0.0;
-    // Solve the hard problem elsewhere.
     slice->solve_range(ivec, begin_exact, end_exact);
     int begin = static_cast<int>(floor(begin_exact));
     int end = static_cast<int>(ceil(end_exact));
@@ -312,8 +314,8 @@ void Cell::select_inside_low(SphereSlice* slice, const int* shape,
 
     if (ivec == nvec - 1) {
         // If we are dealing with the last recursion, just store the bar.
-        for (int i=0; i<ivec; i++)
-            bars.push_back(prefix[i]);
+        for (auto& i: prefix)
+            bars.push_back(i);
         bars.push_back(begin);
         bars.push_back(end);
     } else {
@@ -321,11 +323,13 @@ void Cell::select_inside_low(SphereSlice* slice, const int* shape,
         // fractional coordinates, and go one recursion deeper in each iteration.
         for (int i = begin; i < end; i++) {
             // Make sure the following recursion knows the indices of the current bar.
-            prefix[ivec] = i;
+            prefix.push_back(i);
             // Make a new cut in the spere slice.
             slice->set_cut_begin_end(ivec, i, i+1);
             // Make recursion
-            select_inside_low(slice, shape, pbc, bars, prefix, ivec+1);
+            select_inside_low(slice, shape, pbc, bars, prefix);
+            // Remove the last element of prefix again
+            prefix.pop_back();
         }
     }
 }
@@ -344,9 +348,9 @@ size_t Cell::select_inside_rcut(const double* center, double rcut,
     SphereSlice sphere_slice(center, gvecs, rcut);
 
     // Prefix is used to keep track of current bar indices while going into recursion.
-    int prefix[nvec-1];
+    std::vector<int> prefix;
     // Compute bars and return the number of bars
-    select_inside_low(&sphere_slice, shape, pbc, bars, prefix, 0);
+    select_inside_low(&sphere_slice, shape, pbc, bars, prefix);
     return bars.size()/(nvec+1);
 }
 
