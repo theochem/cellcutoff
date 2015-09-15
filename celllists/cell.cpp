@@ -42,20 +42,24 @@ Cell::Cell(const double* _rvecs, int _nvec): nvec(_nvec) {
 
     // compute the volume
     switch (nvec) {
-        case 0:
+        case 0: {
             volume = NAN;
             break;
-        case 1:
+        }
+        case 1: {
             volume = vec3::norm(rvecs);
             break;
+        }
         case 2: {
             double tmp = vec3::dot(rvecs, rvecs+3);
             tmp = vec3::normsq(rvecs)*vec3::normsq(rvecs+3) - tmp*tmp;
             volume = (tmp > 0.0) ? sqrt(tmp) : 0.0;
             break;
-        } case 3:
+        }
+        case 3: {
             volume = fabs(vec3::triple(rvecs, rvecs+3, rvecs+6));
             break;
+        }
     }
 
     // If the volume is zero and nvec > 0, raise an error. In this case, the
@@ -65,13 +69,14 @@ Cell::Cell(const double* _rvecs, int _nvec): nvec(_nvec) {
 
     // complete the list of rvecs in case nvec < 3
     switch (nvec) {
-        case 0:
+        case 0: {
             // Just put in the identity matrix.
             std::fill(rvecs, rvecs+9, 0.0);
             rvecs[0] = 1.0;
             rvecs[4] = 1.0;
             rvecs[8] = 1.0;
             break;
+        }
         case 1: {
             // Add two rvecs that are orthogonal to the given rvec, orthogonal
             // to each other and normalized. The three vectors will be
@@ -97,13 +102,14 @@ Cell::Cell(const double* _rvecs, int _nvec): nvec(_nvec) {
             vec3::iscale(rvecs+3, 1.0/norm);
             // the rest is done in case 2, so no break here!
         }
-        case 2:
+        case 2: {
             // Add one rvec that is normalized and orthogonal to the two given
             // rvecs. The three vectors will be right-handed.
             // 1) compute the cross product of vector 1 and 2
             vec3::cross(rvecs, rvecs+3, rvecs+6);
             // 2) normalize
             vec3::iscale(rvecs+6, 1.0/vec3::norm(rvecs+6));
+        }
     }
 
     // Now we assume that rvecs contains a set of three well-behaved

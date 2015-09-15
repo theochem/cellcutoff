@@ -104,18 +104,21 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
 
 void SphereSlice::solve_range(const int ncut, double* begin, double* end) const {
     switch (ncut) {
-        case 0:
+        case 0: {
             solve_range_0(begin, end);
             break;
-        case 1:
+        }
+        case 1: {
             solve_range_1(begin, end);
             break;
-        case 2:
+        }
+        case 2: {
             solve_range_2(begin, end);
             break;
-        default:
+        }
+        default: {
             throw std::domain_error("ncut must be 0, 1, or 2.");
-            break;
+        }
     }
 }
 
