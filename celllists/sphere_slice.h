@@ -36,84 +36,84 @@ namespace celllists {
  */
 class no_solution_found : public std::domain_error {
  public:
-    explicit no_solution_found(const std::string& what_arg)
-        : std::domain_error(what_arg) {}
+  explicit no_solution_found(const std::string& what_arg)
+    : std::domain_error(what_arg) {}
 };
 
 class SphereSlice {
  public:
-    SphereSlice(const double* center, const double* normals, double radius);
+  SphereSlice(const double* center, const double* normals, double radius);
 
-    // Copy-constructor, move-constructor and assignment make no sense as SphereSlice
-    // is almost constant after construction! Just pass references or pointers
-    // instead.
-    SphereSlice(const SphereSlice& that) = delete;
-    SphereSlice(SphereSlice&&) = delete;
-    SphereSlice& operator=(const SphereSlice&) = delete;
+  // Copy-constructor, move-constructor and assignment make no sense as SphereSlice
+  // is almost constant after construction! Just pass references or pointers
+  // instead.
+  SphereSlice(const SphereSlice& that) = delete;
+  SphereSlice(SphereSlice&&) = delete;
+  SphereSlice& operator=(const SphereSlice&) = delete;
 
-    // Main API
-    void solve_range(const int ncut, double* begin, double* end) const;
-    void set_cut_begin_end(const int icut, double new_begin, double new_end);
+  // Main API
+  void solve_range(const int ncut, double* begin, double* end) const;
+  void set_cut_begin_end(const int icut, double new_begin, double new_end);
 
-    // Auxiliary API, could also be useful and there is no need to really
-    // make this private. Having it public also facilitates testing.
-    void solve_range_0(double* begin, double* end) const;
-    void solve_range_1(double* begin, double* end) const;
-    void solve_range_2(double* begin, double* end) const;
+  // Auxiliary API, could also be useful and there is no need to really
+  // make this private. Having it public also facilitates testing.
+  void solve_range_0(double* begin, double* end) const;
+  void solve_range_1(double* begin, double* end) const;
+  void solve_range_2(double* begin, double* end) const;
 
-    void solve_full(const int id_axis, double* begin, double* end,
-        const int id_cut0 = -1, const int id_cut1 = -1) const;
-    void solve_full_low(const int id_axis, double* begin, double* end,
-        double* point_begin = nullptr, double* point_end = nullptr) const;
+  void solve_full(const int id_axis, double* begin, double* end,
+    const int id_cut0 = -1, const int id_cut1 = -1) const;
+  void solve_full_low(const int id_axis, double* begin, double* end,
+    double* point_begin = nullptr, double* point_end = nullptr) const;
 
-    void solve_plane(const int id_axis, const int id_cut0, const double frac_cut,
-        double* begin, double* end, const int id_cut1 = -1) const;
-    void solve_plane_low(const int id_axis, const int id_cut, const double frac_cut,
-        double* begin, double* end,
-        double* point_begin = nullptr, double* point_end = nullptr) const;
+  void solve_plane(const int id_axis, const int id_cut0, const double frac_cut,
+    double* begin, double* end, const int id_cut1 = -1) const;
+  void solve_plane_low(const int id_axis, const int id_cut, const double frac_cut,
+    double* begin, double* end,
+    double* point_begin = nullptr, double* point_end = nullptr) const;
 
-    void solve_line(const int id_axis, const int id_cut0, const int id_cut1,
-        const double frac_cut0, const double frac_cut1, double* begin, double* end) const;
-    void solve_line_low(const int id_axis, const int id_cut0, const int id_cut1,
-        const double frac_cut0, const double frac_cut1, double* begin, double* end,
-        double* point_begin = nullptr, double* point_end = nullptr) const;
-    double compute_plane_intersection(const int id_cut0, int const id_cut1,
-        const double cut0, const double cut1, double* other_center) const;
+  void solve_line(const int id_axis, const int id_cut0, const int id_cut1,
+    const double frac_cut0, const double frac_cut1, double* begin, double* end) const;
+  void solve_line_low(const int id_axis, const int id_cut0, const int id_cut1,
+    const double frac_cut0, const double frac_cut1, double* begin, double* end,
+    double* point_begin = nullptr, double* point_end = nullptr) const;
+  double compute_plane_intersection(const int id_cut0, int const id_cut1,
+    const double cut0, const double cut1, double* other_center) const;
 
-    bool inside_cuts(const int id_cut, const double* point) const;
+  bool inside_cuts(const int id_cut, const double* point) const;
 
  private:
-    // Constant independent data members
-    const double* center;
-    const double* normals;
-    const double radius;
+  // Constant independent data members
+  const double* center;
+  const double* normals;
+  const double radius;
 
-    // Configurable data members
-    double cut_begin[2];
-    double cut_end[2];
+  // Configurable data members
+  double cut_begin[2];
+  double cut_end[2];
 
-    // Derived from constant data members upon construction
-    double radius_sq;
-    double norms_sq[3];
-    double norms[3];
-    double frac_radii[3];
-    double frac_center[3];
-    double sphere_frac_begin[3];
-    double sphere_frac_end[3];
-    double radius_normals[9];
-    double sphere_point_begin[9];
-    double sphere_point_end[9];
-    double dots[9];
-    double denoms[9];
-    double cut_ortho[27];
+  // Derived from constant data members upon construction
+  double radius_sq;
+  double norms_sq[3];
+  double norms[3];
+  double frac_radii[3];
+  double frac_center[3];
+  double sphere_frac_begin[3];
+  double sphere_frac_end[3];
+  double radius_normals[9];
+  double sphere_point_begin[9];
+  double sphere_point_end[9];
+  double dots[9];
+  double denoms[9];
+  double cut_ortho[27];
 };
 
 void compute_begin_end(const double* other_center, const double* ortho,
-    const double* axis, double* begin, double* end,
-    double* point_begin, double* point_end);
+  const double* axis, double* begin, double* end,
+  double* point_begin, double* point_end);
 
 void update_begin_end(const double work_begin, const double work_end,
-    double* begin, double* end);
+  double* begin, double* end);
 
 
 }  // namespace celllists
