@@ -44,8 +44,8 @@ unsigned int get_next_seed(std::minstd_rand gen) {
 
 
 //! Fills an array of doubles with random numbers in range ]-0.5*scale, 0.5*scale]
-unsigned int fill_random_double(unsigned int seed, double* array, int size,
-    double low, double high) {
+unsigned int fill_random_double(const unsigned int seed, double* array, const int size,
+    const double low, const double high) {
 
     // Parameter check
     if (size <= 0)
@@ -62,8 +62,8 @@ unsigned int fill_random_double(unsigned int seed, double* array, int size,
 }
 
 //! Fills an array of int with random numbers in range [-range, range]
-unsigned int fill_random_int(unsigned int seed, int* array, int size,
-    int begin, int end) {
+unsigned int fill_random_int(const unsigned int seed, int* array, const int size,
+    const int begin, const int end) {
     // Parameter check
     if (size <= 0)
         throw std::domain_error("Array size must be strictly positive.");
@@ -81,7 +81,8 @@ unsigned int fill_random_int(unsigned int seed, int* array, int size,
 }
 
 //! Fills and array of int with a random permutation
-unsigned int fill_random_permutation(unsigned int seed, int* array, int size) {
+unsigned int fill_random_permutation(const unsigned int seed, int* array,
+    const int size) {
     // Parameter check
     if (size <= 0)
         throw std::domain_error("Array size must be strictly positive.");
@@ -99,8 +100,8 @@ unsigned int fill_random_permutation(unsigned int seed, int* array, int size) {
 }
 
 //! Random cell with a volume larger than (0.1*scale)**nvec
-std::unique_ptr<cl::Cell> create_random_cell_nvec(unsigned int seed, int nvec,
-    double scale, bool cuboid) {
+std::unique_ptr<cl::Cell> create_random_cell_nvec(unsigned int seed, const int nvec,
+    const double scale, const bool cuboid) {
     // Range check
     if ((nvec <= 0) || (nvec > 3)) {
         throw std::domain_error("A random cell must be 1D, 2D or 2D periodic.");
@@ -130,8 +131,8 @@ std::unique_ptr<cl::Cell> create_random_cell_nvec(unsigned int seed, int nvec,
 }
 
 //! Compute a random point in a cubic box centered around center. Also computes distance.
-unsigned int random_point(unsigned int seed,  const double* center, double rcut,
-    double* point, double* norm) {
+unsigned int random_point(unsigned int seed,  const double* center,
+    const double rcut, double* point, double* norm) {
     seed = fill_random_double(seed, point, 3, -rcut, rcut);
     *norm = vec3::norm(point);
     vec3::iadd(point, center);

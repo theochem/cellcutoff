@@ -130,7 +130,7 @@ Cell::Cell(const double* _rvecs, int _nvec): nvec(_nvec) {
 }
 
 
-const double* Cell::get_rvec(int ivec) const {
+const double* Cell::get_rvec(const int ivec) const {
     if ((ivec < 0) || (ivec >= 3)) {
         throw std::domain_error("ivec must be 0, 1 or 2.");
     }
@@ -138,7 +138,7 @@ const double* Cell::get_rvec(int ivec) const {
 }
 
 
-const double* Cell::get_gvec(int ivec) const {
+const double* Cell::get_gvec(const int ivec) const {
     if ((ivec < 0) || (ivec >= 3)) {
         throw std::domain_error("ivec must be 0, 1 or 2.");
     }
@@ -224,7 +224,7 @@ bool Cell::is_cuboid() const {
 }
 
 
-int Cell::set_ranges_rcut(const double* center, double rcut, int* ranges_begin,
+int Cell::set_ranges_rcut(const double* center, const double rcut, int* ranges_begin,
     int* ranges_end) const {
     if (rcut <= 0) {
         throw std::domain_error("rcut must be strictly positive.");
@@ -285,7 +285,7 @@ void Cell::select_inside_low(SphereSlice* slice, const int* shape,
 }
 
 
-size_t Cell::select_inside_rcut(const double* center, double rcut,
+size_t Cell::select_inside_rcut(const double* center, const double rcut,
     const int* shape, const bool* pbc, std::vector<int>* bars) const {
     if (nvec == 0) {
         throw std::domain_error("The cell must be at least 1D periodic.");
@@ -305,7 +305,7 @@ size_t Cell::select_inside_rcut(const double* center, double rcut,
 }
 
 
-int smart_wrap(int i, int shape, bool pbc) {
+int smart_wrap(int i, const int shape, const bool pbc) {
     if (pbc) {
         i %= shape;
         if (i < 0) i += shape;

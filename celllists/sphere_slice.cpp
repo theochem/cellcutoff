@@ -102,7 +102,7 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
 }
 
 
-void SphereSlice::solve_range(int ncut, double* begin, double* end) const {
+void SphereSlice::solve_range(const int ncut, double* begin, double* end) const {
     switch (ncut) {
         case 0:
             solve_range_0(begin, end);
@@ -117,6 +117,17 @@ void SphereSlice::solve_range(int ncut, double* begin, double* end) const {
             throw std::domain_error("ncut must be 0, 1, or 2.");
             break;
     }
+}
+
+
+void SphereSlice::set_cut_begin_end(const int icut, double new_begin, double new_end) {
+    if ((icut < 0) || (icut >= 2))
+        throw std::domain_error("icut must be 0 or 1.");
+    if (new_begin >= new_end)
+        throw std::domain_error("begin must be strictly smaller than end.");
+
+    cut_begin[icut] = new_begin;
+    cut_end[icut] = new_end;
 }
 
 
@@ -179,19 +190,8 @@ void SphereSlice::solve_range_2(double* begin, double* end) const {
 }
 
 
-void SphereSlice::set_cut_begin_end(int icut, double new_begin, double new_end) {
-    if ((icut < 0) || (icut >= 2))
-        throw std::domain_error("icut must be 0 or 1.");
-    if (new_begin >= new_end)
-        throw std::domain_error("begin must be strictly smaller than end.");
-
-    cut_begin[icut] = new_begin;
-    cut_end[icut] = new_end;
-}
-
-
-void SphereSlice::solve_full(int id_axis, double* begin, double* end,
-    int id_cut0, int id_cut1) const {
+void SphereSlice::solve_full(const int id_axis, double* begin, double* end,
+    const int id_cut0, const int id_cut1) const {
 
     double work_begin, work_end;
     if ((id_cut0 == -1) && (id_cut1 == -1)) {
@@ -214,7 +214,7 @@ void SphereSlice::solve_full(int id_axis, double* begin, double* end,
 }
 
 
-void SphereSlice::solve_full_low(int id_axis, double* begin,
+void SphereSlice::solve_full_low(const int id_axis, double* begin,
     double* end, double* point_begin, double* point_end) const {
 
     // Check the axis
@@ -229,8 +229,8 @@ void SphereSlice::solve_full_low(int id_axis, double* begin,
 }
 
 
-void SphereSlice::solve_plane(int id_axis, int id_cut0, double frac_cut0,
-    double* begin, double* end, int id_cut1) const {
+void SphereSlice::solve_plane(const int id_axis, int const id_cut0,
+    double const frac_cut0, double* begin, double* end, const int id_cut1) const {
 
     double work_begin, work_end;
     if (id_cut1 == -1) {
@@ -254,8 +254,9 @@ void SphereSlice::solve_plane(int id_axis, int id_cut0, double frac_cut0,
 }
 
 
-void SphereSlice::solve_plane_low(int id_axis, int id_cut, double frac_cut,
-    double* begin, double* end, double* point_begin, double* point_end) const {
+void SphereSlice::solve_plane_low(const int id_axis, const int id_cut,
+    const double frac_cut, double* begin, double* end,
+    double* point_begin, double* point_end) const {
 
     // Get the axis
     CHECK_ID(id_axis);
@@ -299,8 +300,8 @@ void SphereSlice::solve_plane_low(int id_axis, int id_cut, double frac_cut,
 }
 
 
-void SphereSlice::solve_line(int id_axis, int id_cut0, int id_cut1,
-    double frac_cut0, double frac_cut1, double* begin, double* end) const {
+void SphereSlice::solve_line(const int id_axis, const int id_cut0, const int id_cut1,
+    const double frac_cut0, const double frac_cut1, double* begin, double* end) const {
 
     double work_begin, work_end;
     solve_line_low(id_axis, id_cut0, id_cut1, frac_cut0, frac_cut1,
@@ -309,8 +310,8 @@ void SphereSlice::solve_line(int id_axis, int id_cut0, int id_cut1,
 }
 
 
-void SphereSlice::solve_line_low(int id_axis, int id_cut0, int id_cut1,
-    double frac_cut0, double frac_cut1, double* begin, double* end,
+void SphereSlice::solve_line_low(const int id_axis, const int id_cut0, const int id_cut1,
+    const double frac_cut0, const double frac_cut1, double* begin, double* end,
     double* point_begin, double* point_end) const {
 
     // Run some checks on the ID arguments.
@@ -353,8 +354,8 @@ void SphereSlice::solve_line_low(int id_axis, int id_cut0, int id_cut1,
 }
 
 
-double SphereSlice::compute_plane_intersection(int id_cut0, int id_cut1,
-    double cut0, double cut1, double* other_center) const {
+double SphereSlice::compute_plane_intersection(const int id_cut0, const int id_cut1,
+    const double cut0, const double cut1, double* other_center) const {
 
     CHECK_ID(id_cut0);
     CHECK_ID(id_cut1);
@@ -382,7 +383,7 @@ double SphereSlice::compute_plane_intersection(int id_cut0, int id_cut1,
 }
 
 
-bool SphereSlice::inside_cuts(int id_cut, double* point) const {
+bool SphereSlice::inside_cuts(const int id_cut, const double* point) const {
     // if id_cut == -1, the test always passes, i.e. bounds are not imposed.
     if (id_cut == -1) return true;
     CHECK_ID(id_cut);

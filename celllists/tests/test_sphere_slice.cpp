@@ -50,7 +50,7 @@ class SphereSliceTest : public ::testing::Test {
     }
 
     std::unique_ptr<cl::SphereSlice> create_random_problem(unsigned int seed,
-        double radius, double* center, double* normals) {
+        const double radius, double* center, double* normals) {
         // get random double and keep seed of more random data is needed
         seed = fill_random_double(seed, center, 3);
         double vol;
@@ -62,15 +62,16 @@ class SphereSliceTest : public ::testing::Test {
             radius));
     }
 
-    void random_cut(unsigned int seed, const cl::SphereSlice &slice, int id_cut,
-        double *cut, double *cut_min, double *cut_max) {
+    void random_cut(const unsigned int seed, const cl::SphereSlice &slice,
+        const int id_cut, double *cut, double *cut_min, double *cut_max) {
         // Do a solve_full_low, to know over which range we can cut
         slice.solve_full_low(id_cut, cut_min, cut_max, nullptr, nullptr);
         fill_random_double(seed, cut, 1, *cut_min, *cut_max);
     }
 
-    void random_slice(unsigned int seed, const cl::SphereSlice &slice, int id_cut,
-        double *cut_begin, double *cut_end, double *cut_min, double *cut_max) {
+    void random_slice(const unsigned int seed, const cl::SphereSlice &slice,
+        const int id_cut, double *cut_begin, double *cut_end,
+        double *cut_min, double *cut_max) {
         // Do a solve_full_low, to know over which range we can make a
         // disc-like slice that still intersects with the sphere.
         slice.solve_full_low(id_cut, cut_min, cut_max, nullptr, nullptr);

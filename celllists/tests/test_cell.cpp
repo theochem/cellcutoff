@@ -68,8 +68,8 @@ class CellTest : public ::testing::Test {
         }
     }
 
-    std::unique_ptr<cl::Cell> create_random_cell(unsigned int seed, double scale = 1.0,
-        bool cuboid = false) {
+    std::unique_ptr<cl::Cell> create_random_cell(const unsigned int seed,
+        const double scale = 1.0, const bool cuboid = false) {
         return create_random_cell_nvec(seed, nvec, scale, cuboid);
     }
 

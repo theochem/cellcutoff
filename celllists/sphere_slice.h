@@ -52,8 +52,8 @@ class SphereSlice {
     SphereSlice& operator=(const SphereSlice&) = delete;
 
     // Main API
-    void solve_range(int ncut, double* begin, double* end) const;
-    void set_cut_begin_end(int icut, double new_begin, double new_end);
+    void solve_range(const int ncut, double* begin, double* end) const;
+    void set_cut_begin_end(const int icut, double new_begin, double new_end);
 
     // Auxiliary API, could also be useful and there is no need to really
     // make this private. Having it public also facilitates testing.
@@ -61,26 +61,26 @@ class SphereSlice {
     void solve_range_1(double* begin, double* end) const;
     void solve_range_2(double* begin, double* end) const;
 
-    void solve_full(int id_axis, double* begin, double* end,
-        int id_cut0 = -1, int id_cut1 = -1) const;
-    void solve_full_low(int id_axis, double* begin, double* end,
+    void solve_full(const int id_axis, double* begin, double* end,
+        const int id_cut0 = -1, const int id_cut1 = -1) const;
+    void solve_full_low(const int id_axis, double* begin, double* end,
         double* point_begin = nullptr, double* point_end = nullptr) const;
 
-    void solve_plane(int id_axis, int id_cut0, double frac_cut,
-        double* begin, double* end, int id_cut1 = -1) const;
-    void solve_plane_low(int id_axis, int id_cut, double frac_cut,
+    void solve_plane(const int id_axis, const int id_cut0, const double frac_cut,
+        double* begin, double* end, const int id_cut1 = -1) const;
+    void solve_plane_low(const int id_axis, const int id_cut, const double frac_cut,
         double* begin, double* end,
         double* point_begin = nullptr, double* point_end = nullptr) const;
 
-    void solve_line(int id_axis, int id_cut0, int id_cut1,
-        double frac_cut0, double frac_cut1, double* begin, double* end) const;
-    void solve_line_low(int id_axis, int id_cut0, int id_cut1,
-        double frac_cut0, double frac_cut1, double* begin, double* end,
+    void solve_line(const int id_axis, const int id_cut0, const int id_cut1,
+        const double frac_cut0, const double frac_cut1, double* begin, double* end) const;
+    void solve_line_low(const int id_axis, const int id_cut0, const int id_cut1,
+        const double frac_cut0, const double frac_cut1, double* begin, double* end,
         double* point_begin = nullptr, double* point_end = nullptr) const;
-    double compute_plane_intersection(int id_cut0, int id_cut1,
-        double cut0, double cut1, double* other_center) const;
+    double compute_plane_intersection(const int id_cut0, int const id_cut1,
+        const double cut0, const double cut1, double* other_center) const;
 
-    bool inside_cuts(int id_cut, double* point) const;
+    bool inside_cuts(const int id_cut, const double* point) const;
 
  private:
     // Constant independent data members

@@ -86,11 +86,11 @@ class Cell {
     //! Returns all real-space vectors.
     const double* get_rvecs() const {return rvecs;}
     //! Returns a real-space vector.
-    const double* get_rvec(int ivec) const;
+    const double* get_rvec(const int ivec) const;
     //! Returns all reciprocal-space vectors.
     const double* get_gvecs() const {return gvecs;}
     //! Returns a reciprocal-space vector.
-    const double* get_gvec(int ivec) const;
+    const double* get_gvec(const int ivec) const;
     //! Returns the volume (or area or length) of the cell.
     double get_volume() const {return volume;}
     //! Returns the lengths of the real-space vectors.
@@ -241,7 +241,7 @@ class Cell {
         This function effectively defines a supercell that is guaranteed to
         enclose the cutoff sphere.
      */
-    int set_ranges_rcut(const double* center, double rcut, int* ranges_begin,
+    int set_ranges_rcut(const double* center, const double rcut, int* ranges_begin,
         int* ranges_end) const;
 
 
@@ -275,7 +275,7 @@ class Cell {
         @return
             The number rows in the
       */
-    size_t select_inside_rcut(const double* center, double rcut, const int* shape,
+    size_t select_inside_rcut(const double* center, const double rcut, const int* shape,
         const bool* pbc, std::vector<int>* bars) const;
 
  private:
@@ -314,7 +314,7 @@ class Cell {
         `i` is returned if `i` lies in `[0,shape[`. If `pbc` is false and `i` falls out of
         that range, `-1` is returned.
  */
-int smart_wrap(int i, int shape, bool pbc);
+int smart_wrap(int i, const int shape, const bool pbc);
 
 
 }  // namespace celllists

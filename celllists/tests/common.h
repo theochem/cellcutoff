@@ -38,14 +38,14 @@ namespace cl = celllists;
 #define NREP 100
 #define NPOINT 1000
 
-unsigned int fill_random_double(unsigned int seed, double* array, int size,
-    double low = -0.5, double high = 0.5);
-unsigned int fill_random_int(unsigned int seed, int* array, int size,
-    int begin, int end);
-unsigned int fill_random_permutation(unsigned int seed, int* array, int size);
-std::unique_ptr<cl::Cell> create_random_cell_nvec(unsigned int seed, int nvec,
-    double scale = 1.0, bool cuboid = false);
-unsigned int random_point(unsigned int seed,  const double* center, double rcut,
-    double* point, double* norm);
+unsigned int fill_random_double(const unsigned int seed, double* array, const int size,
+    const double low = -0.5, const double high = 0.5);
+unsigned int fill_random_int(const unsigned int seed, int* array, const int size,
+    const int begin, const int end);
+unsigned int fill_random_permutation(const unsigned int seed, int* array, const int size);
+std::unique_ptr<cl::Cell> create_random_cell_nvec(const unsigned int seed, const int nvec,
+    const double scale = 1.0, const bool cuboid = false);
+unsigned int random_point(const unsigned int seed,  const double* center,
+    const double rcut, double* point, double* norm);
 
 #endif  // CELLLISTS_TESTS_COMMON_H_
