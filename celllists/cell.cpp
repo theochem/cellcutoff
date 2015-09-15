@@ -253,7 +253,7 @@ void Cell::select_inside_low(SphereSlice* slice, const int* shape,
     // Solve the hard problem elsewhere.
     double begin_exact = 0.0;
     double end_exact = 0.0;
-    slice->solve_range(ivec, begin_exact, end_exact);
+    slice->solve_range(ivec, &begin_exact, &end_exact);
     int begin = static_cast<int>(floor(begin_exact));
     int end = static_cast<int>(ceil(end_exact));
     // Truncate this range if there are non-periodic bounds

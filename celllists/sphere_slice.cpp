@@ -102,7 +102,7 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
 }
 
 
-void SphereSlice::solve_range(int ncut, double &begin, double &end) const {
+void SphereSlice::solve_range(int ncut, double* begin, double* end) const {
     switch (ncut) {
         case 0:
             solve_range_0(begin, end);
@@ -120,20 +120,20 @@ void SphereSlice::solve_range(int ncut, double &begin, double &end) const {
 }
 
 
-void SphereSlice::solve_range_0(double &begin, double &end) const {
+void SphereSlice::solve_range_0(double* begin, double* end) const {
     // Start out with NaNs in begin and end, as to indicate that they are not
     // found yet.
-    begin = NAN;
-    end = NAN;
+    *begin = NAN;
+    *end = NAN;
     solve_full(0, begin, end);
 }
 
 
-void SphereSlice::solve_range_1(double &begin, double &end) const {
+void SphereSlice::solve_range_1(double* begin, double* end) const {
     // Start out with NaNs in begin and end, as to identify the unsolvable case.
     // (See end of function.)
-    begin = NAN;
-    end = NAN;
+    *begin = NAN;
+    *end = NAN;
 
     // Find solutions for all sensible combinations of constraints
     // * Case A: cut_begin[0]
@@ -143,16 +143,16 @@ void SphereSlice::solve_range_1(double &begin, double &end) const {
     // * Case C: Whole-sphere solution, only accepted when within cut0_normal bounds
     solve_full(1, begin, end, 0, -1);
 
-    if (std::isnan(begin) || std::isnan(end))
+    if (std::isnan(*begin) || std::isnan(*end))
         throw no_solution_found("No solution found in solve_range_1.");
 }
 
 
-void SphereSlice::solve_range_2(double &begin, double &end) const {
+void SphereSlice::solve_range_2(double* begin, double* end) const {
     // Start out with NaNs in begin and end, as to identify the unsolvable case.
     // (See end of function.)
-    begin = NAN;
-    end = NAN;
+    *begin = NAN;
+    *end = NAN;
 
     // Find solutions for all sensible combinations of constraints
     // * Case A: cut_begin[0], cut_begin[1]
@@ -174,7 +174,7 @@ void SphereSlice::solve_range_2(double &begin, double &end) const {
     // * Case I: Whole-sphere solution, only if within cut0_normal and cut1_normal bounds
     solve_full(2, begin, end, 0, 1);
 
-    if (std::isnan(begin) || std::isnan(end))
+    if (std::isnan(*begin) || std::isnan(*end))
         throw no_solution_found("No solution found in solve_range_2.");
 }
 
@@ -190,16 +190,16 @@ void SphereSlice::set_cut_begin_end(int icut, double new_begin, double new_end) 
 }
 
 
-void SphereSlice::solve_full(int id_axis, double &begin, double &end,
+void SphereSlice::solve_full(int id_axis, double* begin, double* end,
     int id_cut0, int id_cut1) const {
 
     double work_begin, work_end;
     if ((id_cut0 == -1) && (id_cut1 == -1)) {
-        solve_full_low(id_axis, work_begin, work_end);
+        solve_full_low(id_axis, &work_begin, &work_end);
     } else {
         double point_begin[3];
         double point_end[3];
-        solve_full_low(id_axis, work_begin, work_end, point_begin, point_end);
+        solve_full_low(id_axis, &work_begin, &work_end, point_begin, point_end);
         // Reject solution if not between cut0 and/or cut1 planes
         if (!inside_cuts(id_cut0, point_begin))
             work_begin = NAN;
@@ -214,14 +214,14 @@ void SphereSlice::solve_full(int id_axis, double &begin, double &end,
 }
 
 
-void SphereSlice::solve_full_low(int id_axis, double &begin,
-    double &end, double* point_begin, double* point_end) const {
+void SphereSlice::solve_full_low(int id_axis, double* begin,
+    double* end, double* point_begin, double* point_end) const {
 
     // Check the axis
     CHECK_ID(id_axis);
     // Everything is precomputed...
-    begin = sphere_frac_begin[id_axis];
-    end = sphere_frac_end[id_axis];
+    *begin = sphere_frac_begin[id_axis];
+    *end = sphere_frac_end[id_axis];
     if (point_begin != nullptr)
         vec3::copy(sphere_point_begin+3*id_axis, point_begin);
     if (point_end != nullptr)
@@ -230,15 +230,15 @@ void SphereSlice::solve_full_low(int id_axis, double &begin,
 
 
 void SphereSlice::solve_plane(int id_axis, int id_cut0, double frac_cut0,
-    double &begin, double &end, int id_cut1) const {
+    double* begin, double* end, int id_cut1) const {
 
     double work_begin, work_end;
     if (id_cut1 == -1) {
-        solve_plane_low(id_axis, id_cut0, frac_cut0, work_begin, work_end);
+        solve_plane_low(id_axis, id_cut0, frac_cut0, &work_begin, &work_end);
     } else {
         double point_begin[3];
         double point_end[3];
-        solve_plane_low(id_axis, id_cut0, frac_cut0, work_begin, work_end,
+        solve_plane_low(id_axis, id_cut0, frac_cut0, &work_begin, &work_end,
                         point_begin, point_end);
         // Reject solution if not between cut1 planes
         if (std::isfinite(work_begin)) {
@@ -255,7 +255,7 @@ void SphereSlice::solve_plane(int id_axis, int id_cut0, double frac_cut0,
 
 
 void SphereSlice::solve_plane_low(int id_axis, int id_cut, double frac_cut,
-    double &begin, double &end, double* point_begin, double* point_end) const {
+    double* begin, double* end, double* point_begin, double* point_end) const {
 
     // Get the axis
     CHECK_ID(id_axis);
@@ -277,8 +277,8 @@ void SphereSlice::solve_plane_low(int id_axis, int id_cut, double frac_cut,
     double circle_radius_sq = radius_sq - lost_radius_sq;
     // Check if an intersecting circle exists, if not return;
     if (circle_radius_sq < 0) {
-        begin = NAN;
-        end = NAN;
+        *begin = NAN;
+        *end = NAN;
         return;
     }
     // Compute the circle radius
@@ -300,16 +300,17 @@ void SphereSlice::solve_plane_low(int id_axis, int id_cut, double frac_cut,
 
 
 void SphereSlice::solve_line(int id_axis, int id_cut0, int id_cut1,
-    double frac_cut0, double frac_cut1, double &begin, double &end) const {
+    double frac_cut0, double frac_cut1, double* begin, double* end) const {
 
     double work_begin, work_end;
-    solve_line_low(id_axis, id_cut0, id_cut1, frac_cut0, frac_cut1, work_begin, work_end);
+    solve_line_low(id_axis, id_cut0, id_cut1, frac_cut0, frac_cut1,
+        &work_begin, &work_end);
     update_begin_end(work_begin, work_end, begin, end);
 }
 
 
 void SphereSlice::solve_line_low(int id_axis, int id_cut0, int id_cut1,
-    double frac_cut0, double frac_cut1, double &begin, double &end,
+    double frac_cut0, double frac_cut1, double* begin, double* end,
     double* point_begin, double* point_end) const {
 
     // Run some checks on the ID arguments.
@@ -334,8 +335,8 @@ void SphereSlice::solve_line_low(int id_axis, int id_cut0, int id_cut1,
     // Compute the remaining line radius
     double line_radius_sq = radius_sq - lost_radius_sq;
     if (line_radius_sq < 0) {
-        begin = NAN;
-        end = NAN;
+        *begin = NAN;
+        *end = NAN;
         return;
     }
     double line_radius = sqrt(line_radius_sq);
@@ -392,43 +393,44 @@ bool SphereSlice::inside_cuts(int id_cut, double* point) const {
 
 
 void compute_begin_end(const double* other_center, const double* ortho,
-    const double* axis, double &begin, double &end,
+    const double* axis, double* begin, double* end,
     double* point_begin, double* point_end) {
     // Compute projection on axis, optionally compute points;
     if (point_begin == nullptr) {
-        begin = (other_center[0] - ortho[0])*axis[0] +
-                (other_center[1] - ortho[1])*axis[1] +
-                (other_center[2] - ortho[2])*axis[2];
+        *begin = (other_center[0] - ortho[0])*axis[0] +
+                 (other_center[1] - ortho[1])*axis[1] +
+                 (other_center[2] - ortho[2])*axis[2];
     } else {
         vec3::copy(other_center, point_begin);
         vec3::iadd(point_begin, ortho, -1);
-        begin = vec3::dot(point_begin, axis);
+        *begin = vec3::dot(point_begin, axis);
     }
     if (point_end == nullptr) {
-        end = (other_center[0] + ortho[0])*axis[0] +
-              (other_center[1] + ortho[1])*axis[1] +
-              (other_center[2] + ortho[2])*axis[2];
+        *end = (other_center[0] + ortho[0])*axis[0] +
+               (other_center[1] + ortho[1])*axis[1] +
+               (other_center[2] + ortho[2])*axis[2];
     } else {
         vec3::copy(other_center, point_end);
         vec3::iadd(point_end, ortho, +1);
-        end = vec3::dot(point_end, axis);
+        *end = vec3::dot(point_end, axis);
     }
 }
 
 
-void update_begin_end(double work_begin, double work_end, double &begin, double &end) {
+void update_begin_end(const double work_begin, const double work_end,
+    double* begin, double* end) {
     if (!std::isnan(work_begin)) {
-        if (std::isnan(begin)) {
-            begin = work_begin;
-        } else if (work_begin < begin) {
-            begin = work_begin;
+        if (std::isnan(*begin)) {
+            *begin = work_begin;
+        } else if (work_begin < *begin) {
+            *begin = work_begin;
         }
     }
     if (!std::isnan(work_end)) {
-        if (std::isnan(end)) {
-            end = work_end;
-        } else if (work_end > end) {
-            end = work_end;
+        if (std::isnan(*end)) {
+            *end = work_end;
+        } else if (work_end > *end) {
+            *end = work_end;
         }
     }
 }

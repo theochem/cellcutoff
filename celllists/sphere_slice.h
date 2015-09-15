@@ -52,30 +52,30 @@ class SphereSlice {
     SphereSlice& operator=(const SphereSlice&) = delete;
 
     // Main API
-    void solve_range(int ncut, double &begin, double &end) const;
+    void solve_range(int ncut, double* begin, double* end) const;
     void set_cut_begin_end(int icut, double new_begin, double new_end);
 
     // Auxiliary API, could also be useful and there is no need to really
     // make this private. Having it public also facilitates testing.
-    void solve_range_0(double &begin, double &end) const;
-    void solve_range_1(double &begin, double &end) const;
-    void solve_range_2(double &begin, double &end) const;
+    void solve_range_0(double* begin, double* end) const;
+    void solve_range_1(double* begin, double* end) const;
+    void solve_range_2(double* begin, double* end) const;
 
-    void solve_full(int id_axis, double &begin, double &end,
+    void solve_full(int id_axis, double* begin, double* end,
         int id_cut0 = -1, int id_cut1 = -1) const;
-    void solve_full_low(int id_axis, double &begin, double &end,
+    void solve_full_low(int id_axis, double* begin, double* end,
         double* point_begin = nullptr, double* point_end = nullptr) const;
 
     void solve_plane(int id_axis, int id_cut0, double frac_cut,
-        double &begin, double &end, int id_cut1 = -1) const;
+        double* begin, double* end, int id_cut1 = -1) const;
     void solve_plane_low(int id_axis, int id_cut, double frac_cut,
-        double &begin, double &end,
+        double* begin, double* end,
         double* point_begin = nullptr, double* point_end = nullptr) const;
 
     void solve_line(int id_axis, int id_cut0, int id_cut1,
-        double frac_cut0, double frac_cut1, double &begin, double &end) const;
+        double frac_cut0, double frac_cut1, double* begin, double* end) const;
     void solve_line_low(int id_axis, int id_cut0, int id_cut1,
-        double frac_cut0, double frac_cut1, double &begin, double &end,
+        double frac_cut0, double frac_cut1, double* begin, double* end,
         double* point_begin = nullptr, double* point_end = nullptr) const;
     double compute_plane_intersection(int id_cut0, int id_cut1,
         double cut0, double cut1, double* other_center) const;
@@ -109,10 +109,11 @@ class SphereSlice {
 };
 
 void compute_begin_end(const double* other_center, const double* ortho,
-    const double* axis, double &begin, double &end,
+    const double* axis, double* begin, double* end,
     double* point_begin, double* point_end);
 
-void update_begin_end(double work_begin, double work_end, double &begin, double &end);
+void update_begin_end(const double work_begin, const double work_end,
+    double* begin, double* end);
 
 
 }  // namespace celllists

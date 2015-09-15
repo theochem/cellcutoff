@@ -23,6 +23,7 @@
 #include <cstdlib>
 #include <memory>
 #include <stdexcept>
+#include <utility>
 
 #include <gtest/gtest.h>
 
@@ -61,31 +62,25 @@ class SphereSliceTest : public ::testing::Test {
             radius));
     }
 
-    void random_cut(unsigned int seed, cl::SphereSlice &slice, int id_cut,
-        double &cut, double &cut_min, double &cut_max) {
+    void random_cut(unsigned int seed, const cl::SphereSlice &slice, int id_cut,
+        double *cut, double *cut_min, double *cut_max) {
         // Do a solve_full_low, to know over which range we can cut
         slice.solve_full_low(id_cut, cut_min, cut_max, nullptr, nullptr);
-        double x;
-        fill_random_double(seed, &x, 1, 0.0, 1.0);
-        cut = cut_min + x*(cut_max - cut_min);
+        fill_random_double(seed, cut, 1, *cut_min, *cut_max);
     }
 
-    void random_slice(unsigned int seed, cl::SphereSlice &slice, int id_cut,
-        double &cut_begin, double &cut_end, double &cut_min, double &cut_max) {
+    void random_slice(unsigned int seed, const cl::SphereSlice &slice, int id_cut,
+        double *cut_begin, double *cut_end, double *cut_min, double *cut_max) {
         // Do a solve_full_low, to know over which range we can make a
         // disc-like slice that still intersects with the sphere.
         slice.solve_full_low(id_cut, cut_min, cut_max, nullptr, nullptr);
-        EXPECT_LT(cut_min, cut_max);
+        EXPECT_LT(*cut_min, *cut_max);
         // Select two cut positions between cut_min and cut_max
         double cuts[2];
-        fill_random_double(seed, cuts, 2, 0.0, 1.0);
-        if (cuts[1] < cuts[0]) {
-            double tmp = cuts[0];
-            cuts[0] = cuts[1];
-            cuts[1] = tmp;
-        }
-        cut_begin = cuts[0]*(cut_max - cut_min) + cut_min;
-        cut_end = cuts[1]*(cut_max - cut_min) + cut_min;
+        fill_random_double(seed, cuts, 2, *cut_min, *cut_max);
+        if (cuts[1] < cuts[0]) std::swap(cuts[0], cuts[1]);
+        *cut_begin = cuts[0];
+        *cut_end = cuts[1];
     }
 
     double my_center[3];
@@ -100,24 +95,24 @@ TEST_F(SphereSliceTest, domain) {
     EXPECT_THROW(cl::SphereSlice(my_center, degenerate_normals, 5.0), std::domain_error);
     cl::SphereSlice slice(my_center, easy_normals, 5.0);
     double begin, end;
-    EXPECT_THROW(slice.solve_range(-1, begin, end), std::domain_error);
-    EXPECT_THROW(slice.solve_range(3, begin, end), std::domain_error);
+    EXPECT_THROW(slice.solve_range(-1, &begin, &end), std::domain_error);
+    EXPECT_THROW(slice.solve_range(3, &begin, &end), std::domain_error);
     EXPECT_THROW(slice.set_cut_begin_end(-1, 1, 2), std::domain_error);
     EXPECT_THROW(slice.set_cut_begin_end(2, 1, 2), std::domain_error);
     EXPECT_THROW(slice.set_cut_begin_end(0, 1, -2), std::domain_error);
     EXPECT_THROW(slice.set_cut_begin_end(1, 2, 1), std::domain_error);
-    EXPECT_THROW(slice.solve_full_low(-1, begin, end, nullptr, nullptr), std::domain_error);
-    EXPECT_THROW(slice.solve_full_low(3, begin, end, nullptr, nullptr), std::domain_error);
-    EXPECT_THROW(slice.solve_plane_low(-1, 0, 0.0, begin, end, nullptr, nullptr), std::domain_error);
-    EXPECT_THROW(slice.solve_plane_low(3, 0, 0.0, begin, end, nullptr, nullptr), std::domain_error);
-    EXPECT_THROW(slice.solve_plane_low(0, -1, 0.0, begin, end, nullptr, nullptr), std::domain_error);
-    EXPECT_THROW(slice.solve_plane_low(0, 3, 0.0, begin, end, nullptr, nullptr), std::domain_error);
-    EXPECT_THROW(slice.solve_line_low(-1, 0, 1, 0.0, 0.0, begin, end, nullptr, nullptr), std::domain_error);
-    EXPECT_THROW(slice.solve_line_low(3, 0, 1, 0.0, 0.0, begin, end, nullptr, nullptr), std::domain_error);
-    EXPECT_THROW(slice.solve_line_low(0, -1, 1, 0.0, 0.0, begin, end, nullptr, nullptr), std::domain_error);
-    EXPECT_THROW(slice.solve_line_low(0, 3, 1, 0.0, 0.0, begin, end, nullptr, nullptr), std::domain_error);
-    EXPECT_THROW(slice.solve_line_low(0, 1, -1, 0.0, 0.0, begin, end, nullptr, nullptr), std::domain_error);
-    EXPECT_THROW(slice.solve_line_low(0, 1, 3, 0.0, 0.0, begin, end, nullptr, nullptr), std::domain_error);
+    EXPECT_THROW(slice.solve_full_low(-1, &begin, &end, nullptr, nullptr), std::domain_error);
+    EXPECT_THROW(slice.solve_full_low(3, &begin, &end, nullptr, nullptr), std::domain_error);
+    EXPECT_THROW(slice.solve_plane_low(-1, 0, 0.0, &begin, &end, nullptr, nullptr), std::domain_error);
+    EXPECT_THROW(slice.solve_plane_low(3, 0, 0.0, &begin, &end, nullptr, nullptr), std::domain_error);
+    EXPECT_THROW(slice.solve_plane_low(0, -1, 0.0, &begin, &end, nullptr, nullptr), std::domain_error);
+    EXPECT_THROW(slice.solve_plane_low(0, 3, 0.0, &begin, &end, nullptr, nullptr), std::domain_error);
+    EXPECT_THROW(slice.solve_line_low(-1, 0, 1, 0.0, 0.0, &begin, &end, nullptr, nullptr), std::domain_error);
+    EXPECT_THROW(slice.solve_line_low(3, 0, 1, 0.0, 0.0, &begin, &end, nullptr, nullptr), std::domain_error);
+    EXPECT_THROW(slice.solve_line_low(0, -1, 1, 0.0, 0.0, &begin, &end, nullptr, nullptr), std::domain_error);
+    EXPECT_THROW(slice.solve_line_low(0, 3, 1, 0.0, 0.0, &begin, &end, nullptr, nullptr), std::domain_error);
+    EXPECT_THROW(slice.solve_line_low(0, 1, -1, 0.0, 0.0, &begin, &end, nullptr, nullptr), std::domain_error);
+    EXPECT_THROW(slice.solve_line_low(0, 1, 3, 0.0, 0.0, &begin, &end, nullptr, nullptr), std::domain_error);
     EXPECT_THROW(slice.compute_plane_intersection(-1, 0, 0.0, 0.0, nullptr), std::domain_error);
     EXPECT_THROW(slice.compute_plane_intersection(3, 0, 0.0, 0.0, nullptr), std::domain_error);
     EXPECT_THROW(slice.compute_plane_intersection(0, -1, 0.0, 0.0, nullptr), std::domain_error);
@@ -127,7 +122,7 @@ TEST_F(SphereSliceTest, domain) {
 TEST_F(SphereSliceTest, solve_full_low_example1) {
     cl::SphereSlice slice(my_center, easy_normals, 5.0);
     double begin, end;
-    slice.solve_range(0, begin, end);
+    slice.solve_range(0, &begin, &end);
     EXPECT_DOUBLE_EQ(-4.6, begin);
     EXPECT_DOUBLE_EQ(5.4, end);
 }
@@ -135,7 +130,7 @@ TEST_F(SphereSliceTest, solve_full_low_example1) {
 TEST_F(SphereSliceTest, solve_plane_low_example_ortho) {
     cl::SphereSlice slice(my_center, easy_normals, 5.0);
     double begin, end;
-    slice.solve_plane_low(1, 0, 3.4, begin, end, nullptr, nullptr);
+    slice.solve_plane_low(1, 0, 3.4, &begin, &end, nullptr, nullptr);
     EXPECT_DOUBLE_EQ(-6.0, begin);
     EXPECT_DOUBLE_EQ(2.0, end);
 }
@@ -144,7 +139,7 @@ TEST_F(SphereSliceTest, solve_plane_low_example_angle) {
     easy_normals[3] = 1.0;
     cl::SphereSlice slice(my_center, easy_normals, 5.0);
     double begin, end;
-    slice.solve_plane_low(1, 0, 3.4, begin, end, nullptr, nullptr);
+    slice.solve_plane_low(1, 0, 3.4, &begin, &end, nullptr, nullptr);
     EXPECT_DOUBLE_EQ(-2.6, begin);
     EXPECT_DOUBLE_EQ(5.4, end);
 }
@@ -152,7 +147,7 @@ TEST_F(SphereSliceTest, solve_plane_low_example_angle) {
 TEST_F(SphereSliceTest, solve_plane_low_example_nonexisting) {
     cl::SphereSlice slice(my_center, easy_normals, 5.0);
     double begin, end;
-    slice.solve_plane_low(1, 0, 50.0, begin, end, nullptr, nullptr);
+    slice.solve_plane_low(1, 0, 50.0, &begin, &end, nullptr, nullptr);
     EXPECT_TRUE(std::isnan(begin));
     EXPECT_TRUE(std::isnan(end));
 }
@@ -161,7 +156,7 @@ TEST_F(SphereSliceTest, solve_range_1_example1) {
     cl::SphereSlice slice(my_center, easy_normals, 5.0);
     double begin, end;
     slice.set_cut_begin_end(0, 0.0, 1.0);
-    slice.solve_range(1, begin, end);
+    slice.solve_range(1, &begin, &end);
     EXPECT_DOUBLE_EQ(-7.0, begin);
     EXPECT_DOUBLE_EQ(3.0, end);
 }
@@ -170,7 +165,7 @@ TEST_F(SphereSliceTest, solve_range_1_example2) {
     cl::SphereSlice slice(my_center, easy_normals, 5.0);
     double begin, end;
     slice.set_cut_begin_end(0, 3.4, 4.4);
-    slice.solve_range(1, begin, end);
+    slice.solve_range(1, &begin, &end);
     EXPECT_DOUBLE_EQ(-6.0, begin);
     EXPECT_DOUBLE_EQ(2.0, end);
 }
@@ -179,7 +174,7 @@ TEST_F(SphereSliceTest, solve_range_1_example3) {
     cl::SphereSlice slice(my_center, easy_normals, 5.0);
     double begin, end;
     slice.set_cut_begin_end(0, -3.6, -2.6);
-    slice.solve_range(1, begin, end);
+    slice.solve_range(1, &begin, &end);
     EXPECT_DOUBLE_EQ(-6.0, begin);
     EXPECT_DOUBLE_EQ(2.0, end);
 }
@@ -188,13 +183,13 @@ TEST_F(SphereSliceTest, solve_range_1_example_nofound) {
     cl::SphereSlice slice(my_center, easy_normals, 5.0);
     double begin, end;
     slice.set_cut_begin_end(0, -10, -9);
-    EXPECT_THROW(slice.solve_range(1, begin, end), cl::no_solution_found);
+    EXPECT_THROW(slice.solve_range(1, &begin, &end), cl::no_solution_found);
 }
 
 TEST_F(SphereSliceTest, solve_line_low_example_ortho) {
     cl::SphereSlice slice(my_center, easy_normals, sqrt(14));
     double begin, end;
-    slice.solve_line_low(2, 0, 1, 3.4, -1.0, begin, end, nullptr, nullptr);
+    slice.solve_line_low(2, 0, 1, 3.4, -1.0, &begin, &end, nullptr, nullptr);
     EXPECT_DOUBLE_EQ(-1.0, begin);
     EXPECT_DOUBLE_EQ(3.0, end);
 }
@@ -203,7 +198,7 @@ TEST_F(SphereSliceTest, solve_line_low_example_angle) {
     easy_normals[1] = 1.0;
     cl::SphereSlice slice(my_center, easy_normals, sqrt(14));
     double begin, end;
-    slice.solve_line_low(2, 0, 1, 1.4, 0.0, begin, end, nullptr, nullptr);
+    slice.solve_line_low(2, 0, 1, 1.4, 0.0, &begin, &end, nullptr, nullptr);
     EXPECT_DOUBLE_EQ(-2.0, begin);
     EXPECT_DOUBLE_EQ(4.0, end);
 }
@@ -211,7 +206,7 @@ TEST_F(SphereSliceTest, solve_line_low_example_angle) {
 TEST_F(SphereSliceTest, solve_line_low_example_nonexisting) {
     cl::SphereSlice slice(my_center, easy_normals, sqrt(14));
     double begin, end;
-    slice.solve_line_low(2, 0, 1, 50.0, 30.0, begin, end, nullptr, nullptr);
+    slice.solve_line_low(2, 0, 1, 50.0, 30.0, &begin, &end, nullptr, nullptr);
     EXPECT_TRUE(std::isnan(begin));
     EXPECT_TRUE(std::isnan(end));
 }
@@ -221,7 +216,7 @@ TEST_F(SphereSliceTest, solve_range_2_example1) {
     double begin, end;
     slice.set_cut_begin_end(0, 0.0, 1.0);
     slice.set_cut_begin_end(1, -2.2, 1.0);
-    slice.solve_range(2, begin, end);
+    slice.solve_range(2, &begin, &end);
     EXPECT_DOUBLE_EQ(-4.0, begin);
     EXPECT_DOUBLE_EQ(6.0, end);
 }
@@ -231,7 +226,7 @@ TEST_F(SphereSliceTest, solve_range_2_example2) {
     double begin, end;
     slice.set_cut_begin_end(0, 3.4, 4.0);
     slice.set_cut_begin_end(1, -2.2, 1.0);
-    slice.solve_range(2, begin, end);
+    slice.solve_range(2, &begin, &end);
     EXPECT_DOUBLE_EQ(-3.0, begin);
     EXPECT_DOUBLE_EQ(5.0, end);
 }
@@ -241,7 +236,7 @@ TEST_F(SphereSliceTest, solve_range_2_example3) {
     double begin, end;
     slice.set_cut_begin_end(0, -5.0, -2.6);
     slice.set_cut_begin_end(1, -2.2, 1.0);
-    slice.solve_range(2, begin, end);
+    slice.solve_range(2, &begin, &end);
     EXPECT_DOUBLE_EQ(-3.0, begin);
     EXPECT_DOUBLE_EQ(5.0, end);
 }
@@ -251,7 +246,7 @@ TEST_F(SphereSliceTest, solve_range_2_example4) {
     double begin, end;
     slice.set_cut_begin_end(0, 0.0, 1.0);
     slice.set_cut_begin_end(1, -6.2, -5.0);
-    slice.solve_range(2, begin, end);
+    slice.solve_range(2, &begin, &end);
     EXPECT_DOUBLE_EQ(-3.0, begin);
     EXPECT_DOUBLE_EQ(5.0, end);
 }
@@ -262,7 +257,7 @@ TEST_F(SphereSliceTest, solve_range_2_example5) {
     // 0.4, -2.0, 1.0
     slice.set_cut_begin_end(0, 0.0, 1.0);
     slice.set_cut_begin_end(1, 1.0, 2.0);
-    slice.solve_range(2, begin, end);
+    slice.solve_range(2, &begin, &end);
     EXPECT_DOUBLE_EQ(-3.0, begin);
     EXPECT_DOUBLE_EQ(5.0, end);
 }
@@ -273,7 +268,7 @@ TEST_F(SphereSliceTest, solve_range_2_example6) {
     // 0.4, -2.0, 1.0
     slice.set_cut_begin_end(0, 1.4, 2.0);
     slice.set_cut_begin_end(1, 0.0, 1.0);
-    slice.solve_range(2, begin, end);
+    slice.solve_range(2, &begin, &end);
     EXPECT_DOUBLE_EQ(-2.0, begin);
     EXPECT_DOUBLE_EQ(4.0, end);
 }
@@ -283,7 +278,7 @@ TEST_F(SphereSliceTest, solve_range_2_example7) {
     double begin, end;
     slice.set_cut_begin_end(0, 1.4, 2.0);
     slice.set_cut_begin_end(1, -5.2, -4.0);
-    slice.solve_range(2, begin, end);
+    slice.solve_range(2, &begin, &end);
     EXPECT_DOUBLE_EQ(-2.0, begin);
     EXPECT_DOUBLE_EQ(4.0, end);
 }
@@ -293,7 +288,7 @@ TEST_F(SphereSliceTest, solve_range_2_example8) {
     double begin, end;
     slice.set_cut_begin_end(0, -2.0, -0.6);
     slice.set_cut_begin_end(1, 0.0, 1.0);
-    slice.solve_range(2, begin, end);
+    slice.solve_range(2, &begin, &end);
     EXPECT_DOUBLE_EQ(-2.0, begin);
     EXPECT_DOUBLE_EQ(4.0, end);
 }
@@ -303,7 +298,7 @@ TEST_F(SphereSliceTest, solve_range_2_example9) {
     double begin, end;
     slice.set_cut_begin_end(0, -2.0, -0.6);
     slice.set_cut_begin_end(1, -5.2, -4.0);
-    slice.solve_range(2, begin, end);
+    slice.solve_range(2, &begin, &end);
     EXPECT_DOUBLE_EQ(-2.0, begin);
     EXPECT_DOUBLE_EQ(4.0, end);
 }
@@ -313,7 +308,7 @@ TEST_F(SphereSliceTest, solve_range_2_example_nofound) {
     double begin, end;
     slice.set_cut_begin_end(0, 20.0, 30.0);
     slice.set_cut_begin_end(1, -5.2, -4.0);
-    EXPECT_THROW(slice.solve_range(2, begin, end), cl::no_solution_found);
+    EXPECT_THROW(slice.solve_range(2, &begin, &end), cl::no_solution_found);
 }
 
 TEST_F(SphereSliceTest, compute_plane_intersection_example1) {
@@ -340,7 +335,7 @@ TEST_F(SphereSliceTest, solve_full_low_random) {
         double begin, end;
         double point_begin[3];
         double point_end[3];
-        slice->solve_full_low(0, begin, end, point_begin, point_end);
+        slice->solve_full_low(0, &begin, &end, point_begin, point_end);
 
         // order of begin and end must be right
         EXPECT_LE(begin, end);
@@ -353,7 +348,7 @@ TEST_F(SphereSliceTest, solve_full_low_random) {
 
         // Check consistency when not using point_begin, point_end.
         double begin_bis, end_bis;
-        slice->solve_full_low(0, begin_bis, end_bis, nullptr, nullptr);
+        slice->solve_full_low(0, &begin_bis, &end_bis, nullptr, nullptr);
         EXPECT_DOUBLE_EQ(begin, begin_bis);
         EXPECT_DOUBLE_EQ(end, end_bis);
 
@@ -387,14 +382,14 @@ TEST_F(SphereSliceTest, solve_range_0_random) {
 
         // Do a solve_full_low
         double begin, end;
-        slice->solve_full_low(0, begin, end, nullptr, nullptr);
+        slice->solve_full_low(0, &begin, &end, nullptr, nullptr);
 
         // order of begin and end must be right
         EXPECT_LE(begin, end);
 
         // Do a solve_range_zero
         double begin_bis, end_bis;
-        slice->solve_range_0(begin_bis, end_bis);
+        slice->solve_range_0(&begin_bis, &end_bis);
 
         // Should be the same
         EXPECT_EQ(begin, begin_bis);
@@ -422,13 +417,13 @@ TEST_F(SphereSliceTest, solve_plane_low_random) {
 
         // Select randomized place to cut the sphere
         double cut, cut_min, cut_max;
-        random_cut(irep+12345, *slice, id_cut, cut, cut_min, cut_max);
+        random_cut(irep+12345, *slice, id_cut, &cut, &cut_min, &cut_max);
 
         // Actual computation
         double begin, end;
         double point_begin[3];
         double point_end[3];
-        slice->solve_plane_low(id_axis, id_cut, cut, begin, end, point_begin, point_end);
+        slice->solve_plane_low(id_axis, id_cut, cut, &begin, &end, point_begin, point_end);
 
         // It should have worked...
         EXPECT_FALSE(std::isnan(begin));
@@ -495,7 +490,7 @@ TEST_F(SphereSliceTest, solve_plane_low_random) {
 
         // Call without point_* arguments
         double begin_bis, end_bis;
-        slice->solve_plane_low(id_axis, id_cut, cut, begin_bis, end_bis, nullptr, nullptr);
+        slice->solve_plane_low(id_axis, id_cut, cut, &begin_bis, &end_bis, nullptr, nullptr);
 
         // Result should be the same
         EXPECT_DOUBLE_EQ(begin, begin_bis);
@@ -518,12 +513,12 @@ TEST_F(SphereSliceTest, solve_range_1_random) {
 
         double cut_begin, cut_end;
         double cut_min, cut_max;
-        random_slice(irep*2+1, *slice, 0, cut_begin, cut_end, cut_min, cut_max);
+        random_slice(irep*2+1, *slice, 0, &cut_begin, &cut_end, &cut_min, &cut_max);
 
         // Do the computation, this should always work!
         double axis_begin, axis_end;
         slice->set_cut_begin_end(0, cut_begin, cut_end);
-        slice->solve_range_1(axis_begin, axis_end);
+        slice->solve_range_1(&axis_begin, &axis_end);
 
         // order of begin and end must be right
         EXPECT_LE(axis_begin, axis_end);
@@ -531,14 +526,14 @@ TEST_F(SphereSliceTest, solve_range_1_random) {
         // Check if the solution of solve_range_1 is better or as good as the
         // solutions of the separate parts
         double axis_begin0, axis_end0;
-        slice->solve_plane_low(1, 0, cut_begin, axis_begin0, axis_end0, nullptr, nullptr);
+        slice->solve_plane_low(1, 0, cut_begin, &axis_begin0, &axis_end0, nullptr, nullptr);
         EXPECT_FALSE(std::isnan(axis_begin0));
         EXPECT_FALSE(std::isnan(axis_end0));
         EXPECT_LE(axis_begin0, axis_end0);
         EXPECT_LE(axis_begin, axis_begin0);
         EXPECT_GE(axis_end, axis_end0);
         double axis_begin1, axis_end1;
-        slice->solve_plane_low(1, 0, cut_end, axis_begin1, axis_end1, nullptr, nullptr);
+        slice->solve_plane_low(1, 0, cut_end, &axis_begin1, &axis_end1, nullptr, nullptr);
         EXPECT_FALSE(std::isnan(axis_begin1));
         EXPECT_FALSE(std::isnan(axis_end1));
         EXPECT_LE(axis_begin1, axis_end1);
@@ -548,7 +543,7 @@ TEST_F(SphereSliceTest, solve_range_1_random) {
         double point_end[3];
         // If the sphere solution is in the proper range, it is the solution
         double axis_begin_sphere, axis_end_sphere;
-        slice->solve_full_low(1, axis_begin_sphere, axis_end_sphere, point_begin, point_end);
+        slice->solve_full_low(1, &axis_begin_sphere, &axis_end_sphere, point_begin, point_end);
         EXPECT_LE(axis_begin_sphere, axis_end_sphere);
         double proj_begin = vec3::dot(cut_normal, point_begin);
         if ((proj_begin > cut_begin) && (proj_begin < cut_end)) {
@@ -613,8 +608,8 @@ TEST_F(SphereSliceTest, solve_line_low_random) {
         // Select randomized places to cut the sphere
         double cut0, cut0_min, cut0_max;
         double cut1, cut1_min, cut1_max;
-        random_cut(irep+12345, *slice, id_cut0, cut0, cut0_min, cut0_max);
-        random_cut(irep*2+114, *slice, id_cut1, cut1, cut1_min, cut1_max);
+        random_cut(irep+12345, *slice, id_cut0, &cut0, &cut0_min, &cut0_max);
+        random_cut(irep*2+114, *slice, id_cut1, &cut1, &cut1_min, &cut1_max);
 
         // Compute the distance from the origin to the intersection
         double delta_cut0 = cut0 - vec3::dot(center, cut0_normal);
@@ -626,7 +621,7 @@ TEST_F(SphereSliceTest, solve_line_low_random) {
         double begin, end;
         double point_begin[3];
         double point_end[3];
-        slice->solve_line_low(id_axis, id_cut0, id_cut1, cut0, cut1, begin, end,
+        slice->solve_line_low(id_axis, id_cut0, id_cut1, cut0, cut1, &begin, &end,
             point_begin, point_end);
 
         if (dist_line_center > radius) {
@@ -676,8 +671,8 @@ TEST_F(SphereSliceTest, solve_line_low_random) {
 
         // Call without point_* arguments
         double begin_bis, end_bis;
-        slice->solve_line_low(id_axis, id_cut0, id_cut1, cut0, cut1, begin_bis,
-            end_bis, nullptr, nullptr);
+        slice->solve_line_low(id_axis, id_cut0, id_cut1, cut0, cut1, &begin_bis,
+            &end_bis, nullptr, nullptr);
 
         // Result should be the same
         EXPECT_DOUBLE_EQ(begin, begin_bis);
@@ -704,16 +699,16 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
 
         // Take two random slices to form a random bar
         double cut0_begin, cut0_end, cut0_min, cut0_max;
-        random_slice(irep*3+1, *slice, 0, cut0_begin, cut0_end, cut0_min, cut0_max);
+        random_slice(irep*3+1, *slice, 0, &cut0_begin, &cut0_end, &cut0_min, &cut0_max);
         double cut1_begin, cut1_end, cut1_min, cut1_max;
-        random_slice(irep*3+2, *slice, 1, cut1_begin, cut1_end, cut1_min, cut1_max);
+        random_slice(irep*3+2, *slice, 1, &cut1_begin, &cut1_end, &cut1_min, &cut1_max);
 
         // Do the computation
         double axis_begin, axis_end;
         slice->set_cut_begin_end(0, cut0_begin, cut0_end);
         slice->set_cut_begin_end(1, cut1_begin, cut1_end);
         try {
-            slice->solve_range_2(axis_begin, axis_end);
+            slice->solve_range_2(&axis_begin, &axis_end);
         } catch (cl::no_solution_found) {
             // The rest of this iteration of the test makes no sense.
             continue;
@@ -729,7 +724,7 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
         // * case A: cut0_begin  cut1_begin
         double axis_begin_a, axis_end_a;
         double point_begin_a[3], point_end_a[3];
-        slice->solve_line_low(2, 0, 1, cut0_begin, cut1_begin, axis_begin_a, axis_end_a, point_begin_a, point_end_a);
+        slice->solve_line_low(2, 0, 1, cut0_begin, cut1_begin, &axis_begin_a, &axis_end_a, point_begin_a, point_end_a);
         exists = std::isfinite(axis_begin_a) && std::isfinite(axis_end_a);
         if (exists) {
             EXPECT_LE(axis_begin_a, axis_end_a);
@@ -740,7 +735,7 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
         // * case B: cut0_begin  cut1_end
         double axis_begin_b, axis_end_b;
         double point_begin_b[3], point_end_b[3];
-        slice->solve_line_low(2, 0, 1, cut0_begin, cut1_end, axis_begin_b, axis_end_b, point_begin_b, point_end_b);
+        slice->solve_line_low(2, 0, 1, cut0_begin, cut1_end, &axis_begin_b, &axis_end_b, point_begin_b, point_end_b);
         exists = std::isfinite(axis_begin_b) && std::isfinite(axis_end_b);
         if (exists) {
             EXPECT_LE(axis_begin_b, axis_end_b);
@@ -751,7 +746,7 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
         // * case C: cut0_end    cut1_begin
         double axis_begin_c, axis_end_c;
         double point_begin_c[3], point_end_c[3];
-        slice->solve_line_low(2, 0, 1, cut0_end, cut1_begin, axis_begin_c, axis_end_c, point_begin_c, point_end_c);
+        slice->solve_line_low(2, 0, 1, cut0_end, cut1_begin, &axis_begin_c, &axis_end_c, point_begin_c, point_end_c);
         exists = std::isfinite(axis_begin_c) && std::isfinite(axis_end_c);
         if (exists) {
             EXPECT_LE(axis_begin_c, axis_end_c);
@@ -762,7 +757,7 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
         // * case D: cut0_end    cut1_end
         double axis_begin_d, axis_end_d;
         double point_begin_d[3], point_end_d[3];
-        slice->solve_line_low(2, 0, 1, cut0_end, cut1_end, axis_begin_d, axis_end_d, point_begin_d, point_end_d);
+        slice->solve_line_low(2, 0, 1, cut0_end, cut1_end, &axis_begin_d, &axis_end_d, point_begin_d, point_end_d);
         exists = std::isfinite(axis_begin_d) && std::isfinite(axis_end_d);
         if (exists) {
             EXPECT_LE(axis_begin_d, axis_end_d);
@@ -774,7 +769,7 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
         double axis_begin_e, axis_end_e;
         double frac1_begin_e, frac1_end_e;
         double point_begin_e[3], point_end_e[3];
-        slice->solve_plane_low(2, 0, cut0_begin, axis_begin_e, axis_end_e, point_begin_e, point_end_e);
+        slice->solve_plane_low(2, 0, cut0_begin, &axis_begin_e, &axis_end_e, point_begin_e, point_end_e);
         exists = std::isfinite(axis_begin_e) && std::isfinite(axis_end_e);
         if (exists) {
             EXPECT_LE(axis_begin_e, axis_end_e);
@@ -790,7 +785,7 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
         double axis_begin_f, axis_end_f;
         double frac1_begin_f, frac1_end_f;
         double point_begin_f[3], point_end_f[3];
-        slice->solve_plane_low(2, 0, cut0_end, axis_begin_f, axis_end_f, point_begin_f, point_end_f);
+        slice->solve_plane_low(2, 0, cut0_end, &axis_begin_f, &axis_end_f, point_begin_f, point_end_f);
         exists = std::isfinite(axis_begin_f) && std::isfinite(axis_end_f);
         if (exists) {
             EXPECT_LE(axis_begin_f, axis_end_f);
@@ -806,7 +801,7 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
         double axis_begin_g, axis_end_g;
         double frac0_begin_g, frac0_end_g;
         double point_begin_g[3], point_end_g[3];
-        slice->solve_plane_low(2, 1, cut1_begin, axis_begin_g, axis_end_g, point_begin_g, point_end_g);
+        slice->solve_plane_low(2, 1, cut1_begin, &axis_begin_g, &axis_end_g, point_begin_g, point_end_g);
         exists = std::isfinite(axis_begin_g) && std::isfinite(axis_end_g);
         if (exists) {
             EXPECT_LE(axis_begin_g, axis_end_g);
@@ -822,7 +817,7 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
         double axis_begin_h, axis_end_h;
         double frac0_begin_h, frac0_end_h;
         double point_begin_h[3], point_end_h[3];
-        slice->solve_plane_low(2, 1, cut1_end, axis_begin_h, axis_end_h, point_begin_h, point_end_h);
+        slice->solve_plane_low(2, 1, cut1_end, &axis_begin_h, &axis_end_h, point_begin_h, point_end_h);
         exists = std::isfinite(axis_begin_h) && std::isfinite(axis_end_h);
         if (exists) {
             EXPECT_LE(axis_begin_h, axis_end_h);
@@ -841,7 +836,7 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
         double frac1_begin_i, frac1_end_i;
         double point_begin_i[3], point_end_i[3];
 
-        slice->solve_full_low(2, axis_begin_i, axis_end_i, point_begin_i, point_end_i);
+        slice->solve_full_low(2, &axis_begin_i, &axis_end_i, point_begin_i, point_end_i);
         EXPECT_FALSE(std::isnan(axis_begin_i));
         EXPECT_FALSE(std::isnan(axis_end_i));
         EXPECT_LE(axis_begin_i, axis_end_i);
@@ -899,7 +894,7 @@ TEST(ComputeBeginEndTest, example1) {
     double begin, end;
     double point_begin[3];
     double point_end[3];
-    cl::compute_begin_end(center, ortho, axis, begin, end, point_begin, point_end);
+    cl::compute_begin_end(center, ortho, axis, &begin, &end, point_begin, point_end);
     EXPECT_DOUBLE_EQ(1.5, point_begin[0]);
     EXPECT_DOUBLE_EQ(-1.7, point_begin[1]);
     EXPECT_DOUBLE_EQ(-3.5, point_begin[2]);
@@ -911,7 +906,7 @@ TEST(ComputeBeginEndTest, example1) {
 
     // Also compare to the output of a call without point_* arguments.
     double begin_bis, end_bis;
-    cl::compute_begin_end(center, ortho, axis, begin_bis, end_bis, nullptr, nullptr);
+    cl::compute_begin_end(center, ortho, axis, &begin_bis, &end_bis, nullptr, nullptr);
 
     EXPECT_DOUBLE_EQ(begin, begin_bis);
     EXPECT_DOUBLE_EQ(end, end_bis);
