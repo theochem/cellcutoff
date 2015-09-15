@@ -276,14 +276,14 @@ class Cell {
             The number rows in the
       */
     size_t select_inside_rcut(const double* center, double rcut, const int* shape,
-        const bool* pbc, std::vector<int> &bars) const;
+        const bool* pbc, std::vector<int>* bars) const;
 
  private:
     /** @brief
             TODO
      */
     void select_inside_low(SphereSlice* slice, const int* shape,
-        const bool* pbc, std::vector<int> &prefix, std::vector<int> &bars)
+        const bool* pbc, std::vector<int>* prefix, std::vector<int>* bars)
         const;
 
     const int nvec;        //!< number of defined cell vectors

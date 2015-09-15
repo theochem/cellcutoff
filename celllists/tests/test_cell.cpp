@@ -737,10 +737,10 @@ TEST_P(CellTestP, select_inside_rcut_domain) {
     int shape[3] = {10, 10, 10};
     bool pbc[3] = {true, true, true};
     std::vector<int> bars;
-    EXPECT_THROW(mycell->select_inside_rcut(center, 0.0, shape, pbc, bars), std::domain_error);
-    EXPECT_THROW(mycell->select_inside_rcut(center, -1.0, shape, pbc, bars), std::domain_error);
+    EXPECT_THROW(mycell->select_inside_rcut(center, 0.0, shape, pbc, &bars), std::domain_error);
+    EXPECT_THROW(mycell->select_inside_rcut(center, -1.0, shape, pbc, &bars), std::domain_error);
     cl::Cell zero_cell(nullptr, 0);
-    EXPECT_THROW(zero_cell.select_inside_rcut(center, 1.0, shape, pbc, bars), std::domain_error);
+    EXPECT_THROW(zero_cell.select_inside_rcut(center, 1.0, shape, pbc, &bars), std::domain_error);
 }
 
 TEST_F(CellTest1, select_inside_rcut_example) {
@@ -752,7 +752,7 @@ TEST_F(CellTest1, select_inside_rcut_example) {
 
     // Call
     std::vector<int> bars;
-    size_t nbar = mycell->select_inside_rcut(center, rcut, shape, pbc, bars);
+    size_t nbar = mycell->select_inside_rcut(center, rcut, shape, pbc, &bars);
     EXPECT_EQ(1, nbar);
     EXPECT_EQ(2, bars.size());
 
@@ -773,7 +773,7 @@ TEST_F(CellTest2, select_inside_rcut_example) {
 
     // Call
     std::vector<int> bars;
-    size_t nbar = mycell->select_inside_rcut(center, rcut, shape, pbc, bars);
+    size_t nbar = mycell->select_inside_rcut(center, rcut, shape, pbc, &bars);
     EXPECT_EQ(6, nbar);
     EXPECT_EQ(6*3, bars.size());
 
@@ -798,7 +798,7 @@ TEST_F(CellTest3, select_inside_rcut_example) {
 
     // Call
     std::vector<int> bars;
-    size_t nbar = mycell->select_inside_rcut(center, rcut, shape, pbc, bars);
+    size_t nbar = mycell->select_inside_rcut(center, rcut, shape, pbc, &bars);
     EXPECT_EQ(8, nbar);
     EXPECT_EQ(8*4, bars.size());
 
@@ -833,7 +833,7 @@ TEST_P(CellTestP, select_inside_rcut_random) {
 
         // Compute the bars.
         std::vector<int> bars;
-        size_t nbar = cell->select_inside_rcut(center, rcut, shape, pbc, bars);
+        size_t nbar = cell->select_inside_rcut(center, rcut, shape, pbc, &bars);
         EXPECT_EQ(nbar*(nvec+1), bars.size());
         nbar_total += nbar;
 
@@ -930,7 +930,7 @@ TEST_P(CellTestP, select_inside_rcut_corners) {
 
         // Compute the bars.
         std::vector<int> bars;
-        size_t nbar = cell->select_inside_rcut(center, rcut, shape, pbc, bars);
+        size_t nbar = cell->select_inside_rcut(center, rcut, shape, pbc, &bars);
         EXPECT_EQ(nbar*(nvec+1), bars.size());
         nbar_total += nbar;
 

@@ -246,10 +246,10 @@ int Cell::set_ranges_rcut(const double* center, double rcut, int* ranges_begin,
 
 
 void Cell::select_inside_low(SphereSlice* slice, const int* shape,
-    const bool* pbc, std::vector<int> &prefix, std::vector<int> &bars) const {
+    const bool* pbc, std::vector<int>* prefix, std::vector<int>* bars) const {
 
     // Get the vector index for which the range is currently searched
-    int ivec = static_cast<int>(prefix.size());
+    int ivec = static_cast<int>(prefix->size());
     // Solve the hard problem elsewhere.
     double begin_exact = 0.0;
     double end_exact = 0.0;
@@ -264,29 +264,29 @@ void Cell::select_inside_low(SphereSlice* slice, const int* shape,
 
     if (ivec == nvec - 1) {
         // If we are dealing with the last recursion, just store the bar.
-        for (auto& i : prefix)
-            bars.push_back(i);
-        bars.push_back(begin);
-        bars.push_back(end);
+        for (auto& i : *prefix)
+            bars->push_back(i);
+        bars->push_back(begin);
+        bars->push_back(end);
     } else {
         // If this is not yet the last recursion, iterate over the range of integer
         // fractional coordinates, and go one recursion deeper in each iteration.
         for (int i = begin; i < end; i++) {
             // Make sure the following recursion knows the indices of the current bar.
-            prefix.push_back(i);
+            prefix->push_back(i);
             // Make a new cut in the spere slice.
             slice->set_cut_begin_end(ivec, i, i+1);
             // Make recursion
             select_inside_low(slice, shape, pbc, prefix, bars);
             // Remove the last element of prefix again
-            prefix.pop_back();
+            prefix->pop_back();
         }
     }
 }
 
 
 size_t Cell::select_inside_rcut(const double* center, double rcut,
-    const int* shape, const bool* pbc, std::vector<int> &bars) const {
+    const int* shape, const bool* pbc, std::vector<int>* bars) const {
     if (nvec == 0) {
         throw std::domain_error("The cell must be at least 1D periodic.");
     }
@@ -300,8 +300,8 @@ size_t Cell::select_inside_rcut(const double* center, double rcut,
     // Prefix is used to keep track of current bar indices while going into recursion.
     std::vector<int> prefix;
     // Compute bars and return the number of bars
-    select_inside_low(&sphere_slice, shape, pbc, prefix, bars);
-    return bars.size()/(nvec+1);
+    select_inside_low(&sphere_slice, shape, pbc, &prefix, bars);
+    return bars->size()/(nvec+1);
 }
 
 
