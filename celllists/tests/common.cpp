@@ -152,3 +152,5 @@ TEST(CommonTest, domain) {
   EXPECT_THROW(create_random_cell_nvec(0, 0, 1, false), std::domain_error);
   EXPECT_THROW(create_random_cell_nvec(4, 0, 1, false), std::domain_error);
 }
+
+// vim: textwidth=90 et ts=2 sw=2

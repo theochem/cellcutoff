@@ -49,3 +49,5 @@ unsigned int random_point(const unsigned int seed,  const double* center,
     const double rcut, double* point, double* norm);
 
 #endif  // CELLLISTS_TESTS_COMMON_H_
+
+// vim: textwidth=90 et ts=2 sw=2

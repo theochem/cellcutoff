@@ -912,3 +912,5 @@ TEST(ComputeBeginEndTest, example1) {
   EXPECT_DOUBLE_EQ(begin, begin_bis);
   EXPECT_DOUBLE_EQ(end, end_bis);
 }
+
+// vim: textwidth=90 et ts=2 sw=2

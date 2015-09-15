@@ -327,3 +327,5 @@ int smart_wrap(int i, const int shape, const bool pbc) {
 
 
 }  // namespace celllists
+
+// vim: textwidth=90 et ts=2 sw=2

@@ -119,3 +119,5 @@ void update_begin_end(const double work_begin, const double work_end,
 }  // namespace celllists
 
 #endif  // CELLLISTS_SPHERE_SLICE_H_
+
+// vim: textwidth=90 et ts=2 sw=2

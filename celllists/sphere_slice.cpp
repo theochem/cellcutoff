@@ -441,3 +441,5 @@ void update_begin_end(const double work_begin, const double work_end,
 
 
 }  // namespace celllists
+
+// vim: textwidth=90 et ts=2 sw=2

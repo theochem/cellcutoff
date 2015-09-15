@@ -1026,3 +1026,5 @@ TEST(SmartWrap, examples) {
   EXPECT_EQ(-1, cl::smart_wrap(10, 5, false));
   EXPECT_EQ(-1, cl::smart_wrap(12, 5, false));
 }
+
+// vim: textwidth=90 et ts=2 sw=2

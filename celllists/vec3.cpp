@@ -121,3 +121,5 @@ void tmatvec(const double* mat, const double* vec, double* output) {
 
 }  // namespace vec3
 }  // namespace celllists
+
+// vim: textwidth=90 et ts=2 sw=2
