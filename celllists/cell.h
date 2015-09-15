@@ -72,7 +72,7 @@ class Cell {
                 TODO
          */
         void select_inside_low(SphereSlice* slice, const int* shape,
-            const bool* pbc, std::vector<int> &bars, std::vector<int> &prefix)
+            const bool* pbc, std::vector<int> &prefix, std::vector<int> &bars)
             const;
     public:
         /** @brief
@@ -90,7 +90,7 @@ class Cell {
 
 
         /** @brief
-                Wrap a (relative) vector back into the cell ]-0.5, 0.5].
+                In-place wrap a (relative) vector back into the cell ]-0.5, 0.5].
 
             @param delta
                 A pointer to 3 doubles with the (relative) vector. It will be
@@ -105,7 +105,7 @@ class Cell {
             images. For more details see:
             http://scicomp.stackexchange.com/questions/3107/minimum-image-convention-for-triclinic-unit-cell
         */
-        void wrap(double* delta) const;
+        void iwrap(double* delta) const;
 
 
         /** @brief
@@ -171,7 +171,8 @@ class Cell {
 
 
         /** @brief
-                Add an integer linear combination of cell vectors to delta.
+                In-place addition of an integer linear combination of cell vectors to
+                delta.
 
             @param delta
                 A pointer to 3 doubles for the real-space vector to which the
@@ -181,7 +182,7 @@ class Cell {
                 A pointer to 3 doubles with the coefficients of the linear
                 combination.
          */
-        void add_rvec(double* delta, const int* coeffs) const;
+        void iadd_rvec(double* delta, const int* coeffs) const;
 
 
         //! Returns the number of periodic dimensions.

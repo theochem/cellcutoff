@@ -144,8 +144,7 @@ Cell::Cell(const double* _rvecs, int _nvec): nvec(_nvec) {
 }
 
 
-void Cell::wrap(double* delta) const {
-    // Wrap the relative vector back into the cell in the range ]-0.5, 0.5].
+void Cell::iwrap(double* delta) const {
     double x;
     if (nvec == 0) return;
     // Compute the first fractional coordinates, subtract one half and ceil. The round
@@ -188,7 +187,7 @@ void Cell::to_gcart(const double* gfrac, double* gcart) const {
 }
 
 
-void Cell::add_rvec(double* delta, const int* coeffs) const {
+void Cell::iadd_rvec(double* delta, const int* coeffs) const {
     // Simply adds an linear combination of real cell vectors to delta.
     if (nvec == 0) return;
     vec3::iadd(delta, rvecs, coeffs[0]);
@@ -261,7 +260,7 @@ int Cell::set_ranges_rcut(const double* center, double rcut, int* ranges_begin,
 
 
 void Cell::select_inside_low(SphereSlice* slice, const int* shape,
-    const bool* pbc, std::vector<int> &bars, std::vector<int> &prefix) const {
+    const bool* pbc, std::vector<int> &prefix, std::vector<int> &bars) const {
 
     // Get the vector index for which the range is currently searched
     int ivec = static_cast<int>(prefix.size());
@@ -292,7 +291,7 @@ void Cell::select_inside_low(SphereSlice* slice, const int* shape,
             // Make a new cut in the spere slice.
             slice->set_cut_begin_end(ivec, i, i+1);
             // Make recursion
-            select_inside_low(slice, shape, pbc, bars, prefix);
+            select_inside_low(slice, shape, pbc, prefix, bars);
             // Remove the last element of prefix again
             prefix.pop_back();
         }
@@ -315,7 +314,7 @@ size_t Cell::select_inside_rcut(const double* center, double rcut,
     // Prefix is used to keep track of current bar indices while going into recursion.
     std::vector<int> prefix;
     // Compute bars and return the number of bars
-    select_inside_low(&sphere_slice, shape, pbc, bars, prefix);
+    select_inside_low(&sphere_slice, shape, pbc, prefix, bars);
     return bars.size()/(nvec+1);
 }
 

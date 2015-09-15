@@ -162,58 +162,58 @@ TEST_P(CellTestP, constructor_simple) {
 }
 
 
-// wrap
-// ----
+// iwrap
+// -----
 
-TEST_F(CellTest1, wrap_example) {
+TEST_F(CellTest1, iwrap_example) {
     double delta[3] = {2.5, 4.3, 3.0};
-    mycell->wrap(delta);
+    mycell->iwrap(delta);
     EXPECT_EQ(0.5, delta[0]);
     EXPECT_EQ(4.3, delta[1]);
     EXPECT_EQ(3.0, delta[2]);
 }
 
-TEST_F(CellTest2, wrap_example) {
+TEST_F(CellTest2, iwrap_example) {
     double delta[3] = {2.0, 5.3, 3.0};
-    mycell->wrap(delta);
+    mycell->iwrap(delta);
     EXPECT_EQ(0.0, delta[0]);
     EXPECT_EQ(5.3, delta[1]);
     EXPECT_EQ(-1.0, delta[2]);
 }
 
-TEST_F(CellTest3, wrap_example) {
+TEST_F(CellTest3, iwrap_example) {
     double delta[3] = {2.0, 0.3, 3.0};
-    mycell->wrap(delta);
+    mycell->iwrap(delta);
     EXPECT_EQ(0.0, delta[0]);
     EXPECT_EQ(0.3, delta[1]);
     EXPECT_EQ(-1.0, delta[2]);
 }
 
-TEST_F(CellTest1, wrap_edges) {
+TEST_F(CellTest1, iwrap_edges) {
     double delta[3] = {-1.0, -0.5, -2.0};
-    mycell->wrap(delta);
+    mycell->iwrap(delta);
     EXPECT_EQ(1.0, delta[0]);
     EXPECT_EQ(-0.5, delta[1]);
     EXPECT_EQ(-2.0, delta[2]);
 }
 
-TEST_F(CellTest2, wrap_edges) {
+TEST_F(CellTest2, iwrap_edges) {
     double delta[3] = {-1.0, -0.5, -2.0};
-    mycell->wrap(delta);
+    mycell->iwrap(delta);
     EXPECT_EQ(1.0, delta[0]);
     EXPECT_EQ(-0.5, delta[1]);
     EXPECT_EQ(2.0, delta[2]);
 }
 
-TEST_F(CellTest3, wrap_edges) {
+TEST_F(CellTest3, iwrap_edges) {
     double delta[3] = {-1.0, -0.5, -2.0};
-    mycell->wrap(delta);
+    mycell->iwrap(delta);
     EXPECT_EQ(1.0, delta[0]);
     EXPECT_EQ(0.5, delta[1]);
     EXPECT_EQ(2.0, delta[2]);
 }
 
-TEST_P(CellTestP, wrap_random) {
+TEST_P(CellTestP, iwrap_random) {
     int num_wrapped = 0;
     for (int irep=0; irep < NREP; irep++) {
         std::unique_ptr<Cell> cell(create_random_cell(irep));
@@ -228,7 +228,7 @@ TEST_P(CellTestP, wrap_random) {
         }
 
         // Actual test
-        cell->wrap(delta);
+        cell->iwrap(delta);
         cell->to_rfrac(delta, frac);
         for (int ivec=0; ivec < nvec; ivec++) {
             EXPECT_LT(frac[ivec], 0.5);
@@ -239,7 +239,7 @@ TEST_P(CellTestP, wrap_random) {
     EXPECT_LT((NREP*nvec)/3, num_wrapped);
 }
 
-TEST_P(CellTestP, wrap_consistency) {
+TEST_P(CellTestP, iwrap_consistency) {
     for (int irep=0; irep < NREP; irep++) {
         std::unique_ptr<Cell> cell(create_random_cell(irep));
         int coeffs[nvec];
@@ -250,8 +250,8 @@ TEST_P(CellTestP, wrap_consistency) {
         fill_random_double(irep, frac, 3);
         cell->to_rcart(frac, cart1);
         cell->to_rcart(frac, cart2);
-        cell->add_rvec(cart2, coeffs);
-        cell->wrap(cart2);
+        cell->iadd_rvec(cart2, coeffs);
+        cell->iwrap(cart2);
         EXPECT_NEAR(cart2[0], cart1[0], 1e-10);
         EXPECT_NEAR(cart2[1], cart1[1], 1e-10);
         EXPECT_NEAR(cart2[2], cart1[2], 1e-10);
@@ -402,10 +402,10 @@ TEST_P(CellTestP, to_gcart_to_gfrac_consistency) {
     }
 }
 
-// add_rvec
-// --------
+// iadd_rvec
+// ---------
 
-TEST_P(CellTestP, add_rvec_consistency) {
+TEST_P(CellTestP, iadd_rvec_consistency) {
     for (int irep=0; irep < NREP; irep++) {
         std::unique_ptr<Cell> cell(create_random_cell(irep));
         int coeffs[nvec];
@@ -418,7 +418,7 @@ TEST_P(CellTestP, add_rvec_consistency) {
         cart2[0] = cart1[0];
         cart2[1] = cart1[1];
         cart2[2] = cart1[2];
-        cell->add_rvec(cart2, coeffs);
+        cell->iadd_rvec(cart2, coeffs);
         cell->to_rfrac(cart1, frac1);
         cell->to_rfrac(cart2, frac2);
         for (int ivec=0; ivec < nvec; ivec++) {

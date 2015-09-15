@@ -25,6 +25,15 @@
 namespace celllists {
 namespace vec3 {
 
+/* Some notes:
+
+    - Usually, the output argument is last. The in-place functions do the opposite with
+      the input-output argument.
+
+    - This is intentionally not made object-oriented to allow for simple pointer
+      arithmetics, e.g. norm(rvecs+3);
+
+*/
 
 double norm(const double* vec);
 double normsq(const double* vec);

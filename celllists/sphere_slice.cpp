@@ -127,7 +127,7 @@ void SphereSlice::solve_full_low(int id_axis, double &begin,
 
 
 void SphereSlice::solve_full(int id_axis, double &begin, double &end,
-    int id_cut0=-1, int id_cut1=-1) const {
+    int id_cut0, int id_cut1) const {
 
     double work_begin, work_end;
     if ((id_cut0 == -1) && (id_cut1 == -1)) {
@@ -196,7 +196,7 @@ void SphereSlice::solve_plane_low(int id_axis, int id_cut, double frac_cut,
 
 
 void SphereSlice::solve_plane(int id_axis, int id_cut0, double frac_cut0,
-    double &begin, double &end, int id_cut1=-1) const {
+    double &begin, double &end, int id_cut1) const {
 
     double work_begin, work_end;
     if (id_cut1 == -1) {
