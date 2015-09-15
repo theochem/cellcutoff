@@ -145,22 +145,19 @@ Cell::Cell(const double* _rvecs, int _nvec): nvec(_nvec) {
 }
 
 
-void Cell::iwrap(double* delta) const {
-    double x;
-    if (nvec == 0) return;
-    // Compute the first fractional coordinates, subtract one half and ceil. The round
-    // founction is intentionally not used here! The half-ways case is always up instead
-    // of away from zero.
-    x = ceil(vec3::dot(gvecs, delta) - 0.5);
-    vec3::iadd(delta, rvecs, -x);
-    if (nvec == 1) return;
-    // Compute the second fractional coordinates, subtract one half and ceil.
-    x = ceil(vec3::dot(gvecs+3, delta) - 0.5);
-    vec3::iadd(delta, rvecs+3, -x);
-    if (nvec == 2) return;
-    // Compute the third fractional coordinates, subtract one half and ceil.
-    x = ceil(vec3::dot(gvecs+6, delta) - 0.5);
-    vec3::iadd(delta, rvecs+6, -x);
+const double* Cell::get_rvec(int ivec) const {
+    if ((ivec < 0) || (ivec >= 3)) {
+        throw std::domain_error("ivec must be 0, 1 or 2.");
+    }
+    return rvecs + 3*ivec;
+}
+
+
+const double* Cell::get_gvec(int ivec) const {
+    if ((ivec < 0) || (ivec >= 3)) {
+        throw std::domain_error("ivec must be 0, 1 or 2.");
+    }
+    return gvecs + 3*ivec;
 }
 
 
@@ -188,6 +185,25 @@ void Cell::to_gcart(const double* gfrac, double* gcart) const {
 }
 
 
+void Cell::iwrap(double* delta) const {
+    double x;
+    if (nvec == 0) return;
+    // Compute the first fractional coordinates, subtract one half and ceil. The round
+    // founction is intentionally not used here! The half-ways case is always up instead
+    // of away from zero.
+    x = ceil(vec3::dot(gvecs, delta) - 0.5);
+    vec3::iadd(delta, rvecs, -x);
+    if (nvec == 1) return;
+    // Compute the second fractional coordinates, subtract one half and ceil.
+    x = ceil(vec3::dot(gvecs+3, delta) - 0.5);
+    vec3::iadd(delta, rvecs+3, -x);
+    if (nvec == 2) return;
+    // Compute the third fractional coordinates, subtract one half and ceil.
+    x = ceil(vec3::dot(gvecs+6, delta) - 0.5);
+    vec3::iadd(delta, rvecs+6, -x);
+}
+
+
 void Cell::iadd_rvec(double* delta, const int* coeffs) const {
     // Simply adds an linear combination of real cell vectors to delta.
     if (nvec == 0) return;
@@ -196,22 +212,6 @@ void Cell::iadd_rvec(double* delta, const int* coeffs) const {
     vec3::iadd(delta, rvecs+3, coeffs[1]);
     if (nvec == 2) return;
     vec3::iadd(delta, rvecs+6, coeffs[2]);
-}
-
-
-const double* Cell::get_rvec(int ivec) const {
-    if ((ivec < 0) || (ivec >= 3)) {
-        throw std::domain_error("ivec must be 0, 1 or 2.");
-    }
-    return rvecs + 3*ivec;
-}
-
-
-const double* Cell::get_gvec(int ivec) const {
-    if ((ivec < 0) || (ivec >= 3)) {
-        throw std::domain_error("ivec must be 0, 1 or 2.");
-    }
-    return gvecs + 3*ivec;
 }
 
 

@@ -60,22 +60,6 @@ class singular_cell_vectors : public std::domain_error {
     right-handed
  */
 class Cell {
-    private:
-        const int nvec;        //!< number of defined cell vectors
-        double rvecs[9];       //!< real-space vectors,       one per row, row-major
-        double gvecs[9];       //!< reciprocal-space vectors, one per row, row-major
-        double volume;         //!< volume (or area or length) of the cell
-        double rlengths[3];    //!< real-space vector lengths
-        double glengths[3];    //!< reciprocal-space vector lengths
-        double rspacings[3];   //!< spacing between real-space crystal planes
-        double gspacings[3];   //!< spacing between reciprocal-space crystal planes
-
-        /** @brief
-                TODO
-         */
-        void select_inside_low(SphereSlice* slice, const int* shape,
-            const bool* pbc, std::vector<int> &prefix, std::vector<int> &bars)
-            const;
     public:
         /** @brief
                 Construct a Cell object.
@@ -96,24 +80,43 @@ class Cell {
         Cell(Cell&&) = delete;
         Cell& operator=(const Cell&) = delete;
 
+        //! Returns the number of periodic dimensions.
+        int get_nvec() const {return nvec;};
+        //! Returns all real-space vectors.
+        const double* get_rvecs() const {return rvecs;};
+        //! Returns a real-space vector.
+        const double* get_rvec(int ivec) const;
+        //! Returns all reciprocal-space vectors.
+        const double* get_gvecs() const {return gvecs;};
+        //! Returns a reciprocal-space vector.
+        const double* get_gvec(int ivec) const;
+        //! Returns the volume (or area or length) of the cell.
+        double get_volume() const {return volume;};
+        //! Returns the lengths of the real-space vectors.
+        const double* get_rlengths() const {return rlengths;};
+        //! Returns the lengths of the reciprocal-space vectors.
+        const double* get_glengths() const {return glengths;};
+        //! Returns the spacings between the real-space crystal plane
+        const double* get_rspacings() const {return rspacings;};
+        //! Returns the spacings between the reciprocal-space crystal plane
+        const double* get_gspacings() const {return gspacings;};
+
+
         /** @brief
-                In-place wrap a (relative) vector back into the cell ]-0.5, 0.5].
+                Test if cell is cubic
 
-            @param delta
-                A pointer to 3 doubles with the (relative) vector. It will be
-                modified in-place.
+            The cell must also be aligned with Cartesian axes, i.e a to x, b to y and c to
+            z. No small errors allowed.
+          */
+        bool is_cubic() const;
 
-            After calling the wrap method, the fractional coordinates of delta will be
-            in the range [-0.5, 0.5[.
+        /** @brief
+                Test if cell is cuboid (orthorombic)
 
-            This is an approximate implementation of the minimum image convention that
-            sometimes fails in very skewed cells, i.e. the wrapped vector is not always
-            the shortest relative vector between a reference point and all of its periodic
-            images. For more details see:
-            http://scicomp.stackexchange.com/questions/3107/minimum-image-convention-for-triclinic-unit-cell
-        */
-        void iwrap(double* delta) const;
-
+            The cell must also be aligned with Cartesian axes, i.e a to x, b to y and c to
+            z. No small errors allowed.
+          */
+        bool is_cuboid() const;
 
         /** @brief
                 Convert Cartesian real-space coordinates to fractional.
@@ -178,6 +181,25 @@ class Cell {
 
 
         /** @brief
+                In-place wrap a (relative) vector back into the cell ]-0.5, 0.5].
+
+            @param delta
+                A pointer to 3 doubles with the (relative) vector. It will be
+                modified in-place.
+
+            After calling the wrap method, the fractional coordinates of delta will be
+            in the range [-0.5, 0.5[.
+
+            This is an approximate implementation of the minimum image convention that
+            sometimes fails in very skewed cells, i.e. the wrapped vector is not always
+            the shortest relative vector between a reference point and all of its periodic
+            images. For more details see:
+            http://scicomp.stackexchange.com/questions/3107/minimum-image-convention-for-triclinic-unit-cell
+        */
+        void iwrap(double* delta) const;
+
+
+        /** @brief
                 In-place addition of an integer linear combination of cell vectors to
                 delta.
 
@@ -190,45 +212,6 @@ class Cell {
                 combination.
          */
         void iadd_rvec(double* delta, const int* coeffs) const;
-
-
-        //! Returns the number of periodic dimensions.
-        int get_nvec() const {return nvec;};
-        //! Returns all real-space vectors.
-        const double* get_rvecs() const {return rvecs;};
-        //! Returns a real-space vector.
-        const double* get_rvec(int ivec) const;
-        //! Returns all reciprocal-space vectors.
-        const double* get_gvecs() const {return gvecs;};
-        //! Returns a reciprocal-space vector.
-        const double* get_gvec(int ivec) const;
-        //! Returns the volume (or area or length) of the cell.
-        double get_volume() const {return volume;};
-        //! Returns the lengths of the real-space vectors.
-        const double* get_rlengths() const {return rlengths;};
-        //! Returns the lengths of the reciprocal-space vectors.
-        const double* get_glengths() const {return glengths;};
-        //! Returns the spacings between the real-space crystal plane
-        const double* get_rspacings() const {return rspacings;};
-        //! Returns the spacings between the reciprocal-space crystal plane
-        const double* get_gspacings() const {return gspacings;};
-
-
-        /** @brief
-                Test if cell is cubic
-
-            The cell must also be aligned with Cartesian axes, i.e a to x, b to y and c to
-            z. No small errors allowed.
-          */
-        bool is_cubic() const;
-
-        /** @brief
-                Test if cell is cuboid (orthorombic)
-
-            The cell must also be aligned with Cartesian axes, i.e a to x, b to y and c to
-            z. No small errors allowed.
-          */
-        bool is_cuboid() const;
 
 
         /** @brief
@@ -293,6 +276,23 @@ class Cell {
           */
         size_t select_inside_rcut(const double* center, double rcut, const int* shape,
             const bool* pbc, std::vector<int> &bars) const;
+
+    private:
+        /** @brief
+                TODO
+         */
+        void select_inside_low(SphereSlice* slice, const int* shape,
+            const bool* pbc, std::vector<int> &prefix, std::vector<int> &bars)
+            const;
+
+        const int nvec;        //!< number of defined cell vectors
+        double rvecs[9];       //!< real-space vectors,       one per row, row-major
+        double gvecs[9];       //!< reciprocal-space vectors, one per row, row-major
+        double volume;         //!< volume (or area or length) of the cell
+        double rlengths[3];    //!< real-space vector lengths
+        double glengths[3];    //!< reciprocal-space vector lengths
+        double rspacings[3];   //!< spacing between real-space crystal planes
+        double gspacings[3];   //!< spacing between reciprocal-space crystal planes
 };
 
 /**

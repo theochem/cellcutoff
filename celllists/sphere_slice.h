@@ -39,6 +39,46 @@ class no_solution_found : public std::domain_error {
 };
 
 class SphereSlice {
+    public:
+        SphereSlice(const double* center, const double* normals, double radius);
+
+        // Copy-constructor, move-constructor and assignment make no sense as SphereSlice
+        // is almost constant after construction! Just pass references or pointers
+        // instead.
+        SphereSlice(const SphereSlice& that) = delete;
+        SphereSlice(SphereSlice&&) = delete;
+        SphereSlice& operator=(const SphereSlice&) = delete;
+
+        // Main API
+        void solve_range(int ncut, double &begin, double &end) const;
+        void set_cut_begin_end(int icut, double new_begin, double new_end);
+
+        // Auxiliary API, could also be useful and there is no need to really
+        // make this private. Having it public also facilitates testing.
+        void solve_range_0(double &begin, double &end) const;
+        void solve_range_1(double &begin, double &end) const;
+        void solve_range_2(double &begin, double &end) const;
+
+        void solve_full(int id_axis, double &begin, double &end,
+            int id_cut0=-1, int id_cut1=-1) const;
+        void solve_full_low(int id_axis, double &begin, double &end,
+            double* point_begin, double* point_end) const;
+
+        void solve_plane(int id_axis, int id_cut0, double frac_cut,
+            double &begin, double &end, int id_cut1=-1) const;
+        void solve_plane_low(int id_axis, int id_cut, double frac_cut,
+            double &begin, double &end, double* point_begin, double* point_end)
+            const;
+
+        void solve_line(int id_axis, int id_cut0, int id_cut1,
+            double frac_cut0, double frac_cut1, double &begin, double &end) const;
+        void solve_line_low(int id_axis, int id_cut0, int id_cut1,
+            double frac_cut0, double frac_cut1, double &begin, double &end,
+            double* point_begin, double* point_end) const;
+        double compute_plane_intersection(int id_cut0, int id_cut1,
+            double cut0, double cut1, double* other_center) const;
+
+        bool inside_cuts(int id_cut, double* point) const;
     private:
         // Constant independent data members
         const double* center;
@@ -63,46 +103,6 @@ class SphereSlice {
         double dots[9];
         double denoms[9];
         double cut_ortho[27];
-    public:
-        SphereSlice(const double* center, const double* normals, double radius);
-
-        // Copy-constructor, move-constructor and assignment make no sense as SphereSlice
-        // is almost constant after construction! Just pass references or pointers
-        // instead.
-        SphereSlice(const SphereSlice& that) = delete;
-        SphereSlice(SphereSlice&&) = delete;
-        SphereSlice& operator=(const SphereSlice&) = delete;
-
-        // Main API
-        void solve_range(int ncut, double &begin, double &end) const;
-        void set_cut_begin_end(int icut, double new_begin, double new_end);
-
-        // Auxiliary API, could also be useful and there is no need to really
-        // make this private. Having it public also facilitates testing.
-        bool inside_cuts(int id_cut, double* point) const;
-
-        void solve_full_low(int id_axis, double &begin, double &end,
-            double* point_begin, double* point_end) const;
-        void solve_full(int id_axis, double &begin, double &end,
-            int id_cut0=-1, int id_cut1=-1) const;
-
-        void solve_plane_low(int id_axis, int id_cut, double frac_cut,
-            double &begin, double &end, double* point_begin, double* point_end)
-            const;
-        void solve_plane(int id_axis, int id_cut0, double frac_cut,
-            double &begin, double &end, int id_cut1=-1) const;
-
-        double compute_plane_intersection(int id_cut0, int id_cut1,
-            double cut0, double cut1, double* other_center) const;
-        void solve_line_low(int id_axis, int id_cut0, int id_cut1,
-            double frac_cut0, double frac_cut1, double &begin, double &end,
-            double* point_begin, double* point_end) const;
-        void solve_line(int id_axis, int id_cut0, int id_cut1,
-            double frac_cut0, double frac_cut1, double &begin, double &end) const;
-
-        void solve_range_0(double &begin, double &end) const;
-        void solve_range_1(double &begin, double &end) const;
-        void solve_range_2(double &begin, double &end) const;
 };
 
 void compute_begin_end(const double* other_center, const double* ortho,
