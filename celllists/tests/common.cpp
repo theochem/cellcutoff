@@ -99,10 +99,13 @@ unsigned int fill_random_permutation(unsigned int seed, int* array, int size) {
 }
 
 //! Random cell with a volume larger than (0.1*scale)**nvec
-std::unique_ptr<cl::Cell> create_random_cell_nvec(unsigned int seed, int nvec, double scale, bool cuboid) {
+std::unique_ptr<cl::Cell> create_random_cell_nvec(unsigned int seed, int nvec,
+    double scale, bool cuboid) {
+    // Range check
     if ((nvec <= 0) || (nvec > 3)) {
         throw std::domain_error("A random cell must be 1D, 2D or 2D periodic.");
     }
+    // Randomly construct a cell till a decent one (sufficient volume) is found.
     double rvecs[nvec*3];
     while (true) {
         seed = fill_random_double(seed, rvecs, nvec*3, -scale, +scale);
@@ -128,9 +131,9 @@ std::unique_ptr<cl::Cell> create_random_cell_nvec(unsigned int seed, int nvec, d
 
 //! Compute a random point in a cubic box centered around center. Also computes distance.
 unsigned int random_point(unsigned int seed, double* point, double rcut, const double* center,
-    double &norm) {
+    double* norm) {
     seed = fill_random_double(seed, point, 3, -rcut, rcut);
-    norm = vec3::norm(point);
+    *norm = vec3::norm(point);
     vec3::iadd(point, center);
     return seed;
 }

@@ -39,6 +39,6 @@ unsigned int fill_random_permutation(unsigned int seed, int* array, int size);
 std::unique_ptr<cl::Cell> create_random_cell_nvec(unsigned int seed, int nvec,
     double scale = 1.0, bool cuboid = false);
 unsigned int random_point(unsigned int seed, double* point, double rcut,
-    const double* center, double &norm);
+    const double* center, double* norm);
 
 #endif  // CELLLISTS_TESTS_COMMON_H_

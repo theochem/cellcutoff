@@ -356,7 +356,7 @@ TEST_F(SphereSliceTest, solve_full_low_random) {
             // Random point
             double point[3];
             double norm;
-            random_point(ipoint, point, radius, center, norm);
+            random_point(ipoint, point, radius, center, &norm);
 
             // If the point is in the sphere, test if reduced coordinate falls
             // in the range [begin,end].
@@ -560,7 +560,7 @@ TEST_F(SphereSliceTest, solve_range_1_random) {
             // Random point
             double point[3];
             double norm;
-            random_point(ipoint, point, radius, center, norm);
+            random_point(ipoint, point, radius, center, &norm);
             ASSERT_NEAR(norm, vec3::distance(point, center), 1e-10);
             if (norm < radius) {
                 // Projection on axis should always be in the "sphere range"
@@ -857,7 +857,7 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
             // Random point
             double point[3];
             double norm;
-            random_point(ipoint, point, radius, center, norm);
+            random_point(ipoint, point, radius, center, &norm);
             ASSERT_NEAR(norm, vec3::distance(point, center), 1e-10);
             if (norm < radius) {
                 // Projection on axis should always be in the "sphere range"

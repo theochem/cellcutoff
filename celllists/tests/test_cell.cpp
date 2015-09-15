@@ -713,7 +713,7 @@ TEST_P(CellTestP, set_ranges_rcut_random) {
         for (int ipoint=0; ipoint < NPOINT; ipoint++) {
             double point[3];
             double norm;
-            random_point(ipoint+irep*NPOINT, point, rcut, center, norm);
+            random_point(ipoint+irep*NPOINT, point, rcut, center, &norm);
             if (norm <= rcut) {
                 double frac[3];
                 cell->to_rfrac(point, frac);
