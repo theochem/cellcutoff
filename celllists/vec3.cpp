@@ -93,4 +93,20 @@ void delta(const double* begin, const double* end, double* output) {
     output[2] = end[2] - begin[2];
 }
 
+//! Compute a matrix-vector product
+void matvec(const double* mat, const double* vec, double* output) {
+    output[0] = mat[0]*vec[0] + mat[1]*vec[1] + mat[2]*vec[2];
+    output[1] = mat[3]*vec[0] + mat[4]*vec[1] + mat[5]*vec[2];
+    output[2] = mat[6]*vec[0] + mat[7]*vec[1] + mat[8]*vec[2];
+
+}
+
+//! Compute a matrix^T-vector product
+void tmatvec(const double* mat, const double* vec, double* output) {
+    output[0] = mat[0]*vec[0] + mat[3]*vec[1] + mat[6]*vec[2];
+    output[1] = mat[1]*vec[0] + mat[4]*vec[1] + mat[7]*vec[2];
+    output[2] = mat[2]*vec[0] + mat[5]*vec[1] + mat[8]*vec[2];
+
+}
+
 }

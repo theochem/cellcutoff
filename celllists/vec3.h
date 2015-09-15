@@ -34,6 +34,8 @@ void iscale(double* vec, double scale);
 void copy(const double* source, double* dest);
 void iadd(double* output, const double* term, double scale=1);
 void delta(const double* begin, const double* end, double* output);
+void matvec(const double* mat, const double* vec, double* output);
+void tmatvec(const double* mat, const double* vec, double* output);
 
 }
 

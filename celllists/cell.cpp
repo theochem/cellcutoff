@@ -163,33 +163,25 @@ void Cell::wrap(double* delta) const {
 
 void Cell::to_rfrac(const double* rcart, double* rfrac) const {
     // Transfrom to real-space fractional coordinates
-    rfrac[0] = vec3::dot(gvecs, rcart);
-    rfrac[1] = vec3::dot(gvecs+3, rcart);
-    rfrac[2] = vec3::dot(gvecs+6, rcart);
+    vec3::matvec(gvecs, rcart, rfrac);
 }
 
 
 void Cell::to_rcart(const double* rfrac, double* rcart) const {
     // Transfrom to real-space Cartesian coordinates
-    rcart[0] = rvecs[0]*rfrac[0] + rvecs[3]*rfrac[1] + rvecs[6]*rfrac[2];
-    rcart[1] = rvecs[1]*rfrac[0] + rvecs[4]*rfrac[1] + rvecs[7]*rfrac[2];
-    rcart[2] = rvecs[2]*rfrac[0] + rvecs[5]*rfrac[1] + rvecs[8]*rfrac[2];
+    vec3::tmatvec(rvecs, rfrac, rcart);
 }
 
 
 void Cell::to_gfrac(const double* gcart, double* gfrac) const {
     // Transform to reciprocal space Cartesian coordinates
-    gfrac[0] = vec3::dot(rvecs, gcart);
-    gfrac[1] = vec3::dot(rvecs+3, gcart);
-    gfrac[2] = vec3::dot(rvecs+6, gcart);
+    vec3::matvec(rvecs, gcart, gfrac);
 }
 
 
 void Cell::to_gcart(const double* gfrac, double* gcart) const {
     // Transform to reciprocal-space Cartesian coordinates
-    gcart[0] = gvecs[0]*gfrac[0] + gvecs[3]*gfrac[1] + gvecs[6]*gfrac[2];
-    gcart[1] = gvecs[1]*gfrac[0] + gvecs[4]*gfrac[1] + gvecs[7]*gfrac[2];
-    gcart[2] = gvecs[2]*gfrac[0] + gvecs[5]*gfrac[1] + gvecs[8]*gfrac[2];
+    vec3::tmatvec(gvecs, gfrac, gcart);
 }
 
 
