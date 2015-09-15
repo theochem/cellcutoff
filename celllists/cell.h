@@ -83,6 +83,7 @@ class Cell {
         */
         Cell(const double* _rvecs, int _nvec);
 
+
         /** @brief
                 Wrap a (relative) vector back into the cell ]-0.5, 0.5].
 
@@ -101,6 +102,7 @@ class Cell {
         */
         void wrap(double* delta) const;
 
+
         /** @brief
                 Convert Cartesian real-space coordinates to fractional.
 
@@ -111,9 +113,10 @@ class Cell {
                 A pointer to 3 doubles in which the output is written.
 
             This effectively computes the dot products of the Cartesian vector with the
-            reciprocal cell vectors.
+            reciprocal-space cell vectors.
          */
         void to_rfrac(const double* cart, double* frac) const;
+
 
         /** @brief
                 Convert fractional real-space coordinates to Cartesian.
@@ -129,6 +132,7 @@ class Cell {
          */
         void to_rcart(const double* frac, double* cart) const;
 
+
         /** @brief
                 Convert fractional reciprocal-space coordinates to Cartesian.
 
@@ -138,8 +142,12 @@ class Cell {
 
             @param dots
                 A pointer to 3 doubles to which the output is written.
+
+            This effectively computes the dot products of the Cartesian vector with the
+            real-space cell vectors.
          */
         void to_gfrac(const double* gcart, double* gfrac) const;
+
 
         /** @brief
                 Convert fractional reciprocal-space coordinates to Cartesian.
@@ -150,8 +158,12 @@ class Cell {
 
             @param gvec
                 A pointer to 3 doubles to which the output is written
+
+            This effectively computes a linear combination of reciprocal-space cell
+            vectors.
          */
         void to_gcart(const double* gfrac, double* gcart) const;
+
 
         /** @brief
                 Add an integer linear combination of cell vectors to delta.
@@ -165,6 +177,7 @@ class Cell {
                 combination.
          */
         void add_rvec(double* delta, const int* coeffs) const;
+
 
         //! Returns the number of periodic dimensions.
         int get_nvec() const {return nvec;};
@@ -183,6 +196,7 @@ class Cell {
         //! Returns the spacing between the i-th reciprocal crystal plane
         double get_gspacing(int ivec) const;
 
+
         /** @brief
                 Test if cell is cubic
 
@@ -198,6 +212,7 @@ class Cell {
             z. No small errors allowed.
           */
         bool is_cuboid() const;
+
 
         /** @brief
                 Get the ranges of cells within a cutoff radius.
@@ -227,6 +242,7 @@ class Cell {
          */
         int set_ranges_rcut(const double* center, double rcut, int* ranges_begin,
             int* ranges_end) const;
+
 
         /** @brief
                 Selects a list of cells inside a cutoff sphere.
