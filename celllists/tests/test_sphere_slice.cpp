@@ -37,9 +37,6 @@ using namespace celllists;
 
 class SphereSliceTest : public ::testing::Test {
     public:
-        double my_center[3];
-        double easy_normals[9];
-
         void SetUp() {
             my_center[0] = 0.4;
             my_center[1] = -2.0;
@@ -89,6 +86,8 @@ class SphereSliceTest : public ::testing::Test {
             cut_end = cuts[1]*(cut_max - cut_min) + cut_min;
         }
 
+        double my_center[3];
+        double easy_normals[9];
 };
 
 

@@ -39,15 +39,6 @@ using namespace celllists;
 
 class CellTest : public ::testing::Test {
     public:
-        int nvec;
-        std::unique_ptr<Cell> mycell;
-        double myrvecs[9];
-        double singrvecs[9];
-
-        std::unique_ptr<Cell> create_random_cell(unsigned int seed, double scale=1.0, bool cuboid=false) {
-            return create_random_cell_nvec(seed, nvec, scale, cuboid);
-        }
-
         virtual void SetUp() = 0;
 
         void set_up_data() {
@@ -74,6 +65,15 @@ class CellTest : public ::testing::Test {
                 singrvecs[7] = 0.8;
             }
         }
+
+        std::unique_ptr<Cell> create_random_cell(unsigned int seed, double scale=1.0, bool cuboid=false) {
+            return create_random_cell_nvec(seed, nvec, scale, cuboid);
+        }
+
+        int nvec;
+        std::unique_ptr<Cell> mycell;
+        double myrvecs[9];
+        double singrvecs[9];
 };
 
 class CellTestP : public CellTest,
