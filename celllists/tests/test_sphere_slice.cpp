@@ -46,10 +46,10 @@ class SphereSliceTest : public ::testing::Test {
         SphereSlice* create_random_problem(unsigned int seed, double radius,
             double* center, double* normals)
         {
-            fill_random_double(seed, center, 3);
+            seed = fill_random_double(seed, center, 3);
             double vol;
             do {
-                fill_random_double(1342+seed, normals, 9);
+                seed = fill_random_double(seed, normals, 9);
                 vol = fabs(vec3::triple(normals, normals+3, normals+6));
             } while (vol < 0.001);
             return new SphereSlice(center, normals, radius);

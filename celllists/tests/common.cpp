@@ -21,55 +21,79 @@
 
 #include <stdexcept>
 #include <algorithm>
-#include <cstdlib>
+#include <random>
+#include <limits>
 #include <cmath>
 #include <gtest/gtest.h>
 #include "common.h"
 #include "celllists/vec3.h"
 
 
+unsigned int get_next_seed(std::minstd_rand gen) {
+    std::uniform_int_distribution<unsigned int>
+        dis_seed(0, std::numeric_limits<unsigned int>::max());
+    return dis_seed(gen);
+}
+
+
 //! Fills an array of doubles with random numbers in range ]-0.5*scale, 0.5*scale]
-int fill_random_double(unsigned int seed, double* array, int size,
+unsigned int fill_random_double(unsigned int seed, double* array, int size,
     double low, double high) {
 
+    // Parameter check
     if (size <= 0)
         throw std::domain_error("Array size must be strictly positive.");
 
-    srand(seed);
+    // Fill the array with random data for given seed.
+    std::minstd_rand gen(seed);
+    std::uniform_real_distribution<double> dis(low, high);
     for (int i=0; i < size; i++)
-        array[i] = (rand() + 1.0)/(RAND_MAX + 1.0)*(high - low) + low;
-    return rand();
+        array[i] = dis(gen);
+
+    // Generate a different seed for the next call
+    return get_next_seed(gen);
 }
 
 //! Fills an array of int with random numbers in range [-range, range]
-int fill_random_int(unsigned int seed, int* array, int size,
+unsigned int fill_random_int(unsigned int seed, int* array, int size,
     int begin, int end) {
 
+    // Parameter check
     if (size <= 0)
         throw std::domain_error("Array size must be strictly positive.");
     if (begin > end)
         throw std::domain_error("Begin cannot be larger than end.");
-    srand(seed);
-    for (int i=0; i < size; i++)
-        array[i] = (rand() % (end - begin)) + begin;
-    return rand();
-}
 
-int myrandom(int i) { return rand()%i; }
+    // Fill the array with random data for given seed.
+    std::minstd_rand gen(seed);
+    std::uniform_int_distribution<int> dis(begin, end);
+    for (int i=0; i < size; i++)
+        array[i] = dis(gen);
+
+    // Generate a different seed for the next call
+    return get_next_seed(gen);
+}
 
 //! Fills and array of int with a random permutation
-int fill_random_permutation(unsigned int seed, int* array, int size) {
+unsigned int fill_random_permutation(unsigned int seed, int* array, int size) {
 
+    // Parameter check
     if (size <= 0)
         throw std::domain_error("Array size must be strictly positive.");
+
+    // Fill the array with integers in order.
     for (int i=0; i < size; i++)
         array[i] = static_cast<int>(i);
-    srand(seed);
-    std::random_shuffle(array, array+size, myrandom);
-    return rand();
+
+    // Make a random permutation
+    std::minstd_rand gen(seed);
+    std::shuffle(array, array+size, gen);
+
+    // Generate a different seed for the next call
+    return get_next_seed(gen);
 }
 
-//! Random cell with a volume larger than 0.01
+//! Random cell with a volume larger than (0.1*scale)**nvec
 Cell* create_random_cell_nvec(unsigned int seed, int nvec, double scale, bool cuboid) {
     if ((nvec <= 0) || (nvec > 3)) {
         throw std::domain_error("A random cell must be 1D, 2D or 2D periodic.");
@@ -99,11 +123,12 @@ Cell* create_random_cell_nvec(unsigned int seed, int nvec, double scale, bool cu
 }
 
 //! Compute a random point in a cubic box centered around center. Also computes distance.
-void random_point(unsigned int seed, double* point, double rcut, const double* center,
+unsigned int random_point(unsigned int seed, double* point, double rcut, const double* center,
     double &norm) {
-    fill_random_double(seed, point, 3, -rcut, rcut);
+    seed = fill_random_double(seed, point, 3, -rcut, rcut);
     norm = vec3::norm(point);
     vec3::iadd(point, center);
+    return seed;
 }
 
 
