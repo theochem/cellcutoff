@@ -43,7 +43,7 @@ Cell::Cell(const double* _rvecs, int _nvec): nvec(_nvec) {
     // compute the volume
     switch(nvec) {
         case 0:
-            volume = 0.0;
+            volume = NAN;
             break;
         case 1:
             volume = vec3::norm(rvecs);
@@ -65,7 +65,7 @@ Cell::Cell(const double* _rvecs, int _nvec): nvec(_nvec) {
 
     // If the volume is zero and nvec > 0, raise an error. In this case, the
     // reciprocal cell vectors can not be computed.
-    if ((volume == 0.0) && (nvec > 0)) {
+    if (volume == 0.0) {
         throw singular_cell_vectors("The cell vectors are degenerate");
     }
 

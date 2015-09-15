@@ -435,7 +435,7 @@ TEST_P(CellTestP, add_rvec_consistency) {
 
 // get_nvec() is already tested above
 
-TEST_P(CellTestP, get_rvec) {
+TEST_P(CellTestP, get_rvec_rvecs_gvecs) {
     double rvecs[nvec*3];
     std::unique_ptr<Cell> cell;
     while (true) {
@@ -539,6 +539,15 @@ TEST_F(CellTest3, get_example) {
     EXPECT_NEAR(0.5, mycell->get_gspacings()[0], 1e-10);
     EXPECT_NEAR(1.0, mycell->get_gspacings()[1], 1e-10);
     EXPECT_NEAR(0.25, mycell->get_gspacings()[2], 1e-10);
+}
+
+TEST_P(CellTestP, signed_volume) {
+    for (int irep=0; irep < NREP; irep++) {
+        std::unique_ptr<Cell> cell(create_random_cell(irep));
+        double sv = vec3::triple(cell->get_rvec(0), cell->get_rvec(1), cell->get_rvec(2));
+        EXPECT_NEAR(cell->get_volume(), fabs(sv), 1e-10);
+        if (nvec < 3) EXPECT_LT(0.0, sv);
+    }
 }
 
 // is_cubic and is_cuboid
