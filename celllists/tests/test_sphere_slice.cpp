@@ -43,7 +43,7 @@ class SphereSliceTest : public ::testing::Test {
             easy_normals[8] = 1.0;
         }
 
-        SphereSlice* create_random_problem(unsigned int seed, double radius,
+        std::unique_ptr<SphereSlice> create_random_problem(unsigned int seed, double radius,
             double* center, double* normals)
         {
             seed = fill_random_double(seed, center, 3);
@@ -52,23 +52,23 @@ class SphereSliceTest : public ::testing::Test {
                 seed = fill_random_double(seed, normals, 9);
                 vol = fabs(vec3::triple(normals, normals+3, normals+6));
             } while (vol < 0.001);
-            return new SphereSlice(center, normals, radius);
+            return std::unique_ptr<SphereSlice>(new SphereSlice(center, normals, radius));
         }
 
-        void random_cut(unsigned int seed, SphereSlice* slice, int id_cut,
+        void random_cut(unsigned int seed, SphereSlice &slice, int id_cut,
             double &cut, double &cut_min, double &cut_max) {
             // Do a solve_full_low, to know over which range we can cut
-            slice->solve_full_low(id_cut, cut_min, cut_max, nullptr, nullptr);
+            slice.solve_full_low(id_cut, cut_min, cut_max, nullptr, nullptr);
             double x;
             fill_random_double(seed, &x, 1, 0.0, 1.0);
             cut = cut_min + x*(cut_max - cut_min);
         }
 
-        void random_slice(unsigned int seed, SphereSlice* slice, int id_cut,
+        void random_slice(unsigned int seed, SphereSlice &slice, int id_cut,
             double &cut_begin, double &cut_end, double &cut_min, double &cut_max) {
             // Do a solve_full_low, to know over which range we can make a
             // disc-like slice that still intersects with the sphere.
-            slice->solve_full_low(id_cut, cut_min, cut_max, nullptr, nullptr);
+            slice.solve_full_low(id_cut, cut_min, cut_max, nullptr, nullptr);
             EXPECT_LT(cut_min, cut_max);
             // Select two cut positions between cut_min and cut_max
             double cuts[2];
@@ -326,7 +326,7 @@ TEST_F(SphereSliceTest, solve_full_low_random) {
         double radius = (irep+1)*0.1;
         double center[3];
         double normals[9];
-        SphereSlice* slice = create_random_problem(irep, radius, center, normals);
+        std::unique_ptr<SphereSlice> slice(create_random_problem(irep, radius, center, normals));
 
         // Do a solve_full_low
         double begin, end;
@@ -375,7 +375,7 @@ TEST_F(SphereSliceTest, solve_range_0_random) {
         double radius = (irep+1)*0.1;
         double center[3];
         double normals[9];
-        SphereSlice* slice = create_random_problem(irep, radius, center, normals);
+        std::unique_ptr<SphereSlice> slice(create_random_problem(irep, radius, center, normals));
 
         // Do a solve_full_low
         double begin, end;
@@ -400,7 +400,7 @@ TEST_F(SphereSliceTest, solve_plane_low_random) {
         double radius = (irep+1)*0.1;
         double center[3];
         double normals[9];
-        SphereSlice* slice = create_random_problem(irep, radius, center, normals);
+        std::unique_ptr<SphereSlice> slice(create_random_problem(irep, radius, center, normals));
 
         // Select the random ids for cut_normal and axis
         int permutation[3];
@@ -414,7 +414,7 @@ TEST_F(SphereSliceTest, solve_plane_low_random) {
 
         // Select randomized place to cut the sphere
         double cut, cut_min, cut_max;
-        random_cut(irep+12345, slice, id_cut, cut, cut_min, cut_max);
+        random_cut(irep+12345, *slice, id_cut, cut, cut_min, cut_max);
 
         // Actual computation
         double begin, end;
@@ -492,9 +492,6 @@ TEST_F(SphereSliceTest, solve_plane_low_random) {
         // Result should be the same
         EXPECT_DOUBLE_EQ(begin, begin_bis);
         EXPECT_DOUBLE_EQ(end, end_bis);
-
-        // Clean up
-        delete slice;
     }
 }
 
@@ -505,7 +502,7 @@ TEST_F(SphereSliceTest, solve_range_1_random) {
         double radius = (irep+1)*0.1;
         double center[3];
         double normals[9];
-        SphereSlice* slice = create_random_problem(irep, radius, center, normals);
+        std::unique_ptr<SphereSlice> slice(create_random_problem(irep, radius, center, normals));
 
         // Name some normals for convenience
         double* cut_normal = normals;
@@ -513,7 +510,7 @@ TEST_F(SphereSliceTest, solve_range_1_random) {
 
         double cut_begin, cut_end;
         double cut_min, cut_max;
-        random_slice(irep*2+1, slice, 0, cut_begin, cut_end, cut_min, cut_max);
+        random_slice(irep*2+1, *slice, 0, cut_begin, cut_end, cut_min, cut_max);
 
         // Do the computation, this should always work!
         double axis_begin, axis_end;
@@ -578,7 +575,6 @@ TEST_F(SphereSliceTest, solve_range_1_random) {
                 }
             }
         }
-        delete slice;
     }
     // Sufficiency check
     EXPECT_LT((NREP*NPOINT)/10, num_inside);
@@ -592,7 +588,7 @@ TEST_F(SphereSliceTest, solve_line_low_random) {
         double radius = (irep+1)*0.1;
         double center[3];
         double normals[9];
-        SphereSlice* slice = create_random_problem(irep, radius, center, normals);
+        std::unique_ptr<SphereSlice> slice(create_random_problem(irep, radius, center, normals));
 
         // Select the random ids for cut_normal and axis
         int permutation[3];
@@ -609,8 +605,8 @@ TEST_F(SphereSliceTest, solve_line_low_random) {
         // Select randomized places to cut the sphere
         double cut0, cut0_min, cut0_max;
         double cut1, cut1_min, cut1_max;
-        random_cut(irep+12345, slice, id_cut0, cut0, cut0_min, cut0_max);
-        random_cut(irep*2+114, slice, id_cut1, cut1, cut1_min, cut1_max);
+        random_cut(irep+12345, *slice, id_cut0, cut0, cut0_min, cut0_max);
+        random_cut(irep*2+114, *slice, id_cut1, cut1, cut1_min, cut1_max);
 
         // Compute the distance from the origin to the intersection
         double delta_cut0 = cut0 - vec3::dot(center, cut0_normal);
@@ -678,9 +674,6 @@ TEST_F(SphereSliceTest, solve_line_low_random) {
         // Result should be the same
         EXPECT_DOUBLE_EQ(begin, begin_bis);
         EXPECT_DOUBLE_EQ(end, end_bis);
-
-        // Clean up
-        delete slice;
     }
     // Sufficiency check
     EXPECT_LT(NREP/3, num_inside);
@@ -694,7 +687,7 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
         double radius = (irep+1)*0.1;
         double center[3];
         double normals[9];
-        SphereSlice* slice = create_random_problem(irep, radius, center, normals);
+        std::unique_ptr<SphereSlice> slice(create_random_problem(irep, radius, center, normals));
 
         // Name some normals for convenience
         double* cut0_normal = normals;
@@ -703,9 +696,9 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
 
         // Take two random slices to form a random bar
         double cut0_begin, cut0_end, cut0_min, cut0_max;
-        random_slice(irep*3+1, slice, 0, cut0_begin, cut0_end, cut0_min, cut0_max);
+        random_slice(irep*3+1, *slice, 0, cut0_begin, cut0_end, cut0_min, cut0_max);
         double cut1_begin, cut1_end, cut1_min, cut1_max;
-        random_slice(irep*3+2, slice, 1, cut1_begin, cut1_end, cut1_min, cut1_max);
+        random_slice(irep*3+2, *slice, 1, cut1_begin, cut1_end, cut1_min, cut1_max);
 
         // Do the computation
         double axis_begin, axis_end;
@@ -883,7 +876,6 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
                 }
             }
         }
-        delete slice;
     }
     // Sufficiency check
     EXPECT_LT((NREP*NPOINT)/20, num_inside);
