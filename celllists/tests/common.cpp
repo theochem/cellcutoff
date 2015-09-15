@@ -133,13 +133,13 @@ unsigned int random_point(unsigned int seed, double* point, double rcut, const d
 
 
 TEST(CommonTest, domain) {
-    EXPECT_THROW(fill_random_double(0, NULL, 0, 0.0, 1.0), std::domain_error);
-    EXPECT_THROW(fill_random_double(0, NULL, -1, 0.0, 1.0), std::domain_error);
-    EXPECT_THROW(fill_random_int(0, NULL, 0, 0, 1), std::domain_error);
-    EXPECT_THROW(fill_random_int(0, NULL, -1, 0, 1), std::domain_error);
-    EXPECT_THROW(fill_random_int(0, NULL, 1, 1, 0), std::domain_error);
-    EXPECT_THROW(fill_random_permutation(0, NULL, 0), std::domain_error);
-    EXPECT_THROW(fill_random_permutation(0, NULL, -1), std::domain_error);
+    EXPECT_THROW(fill_random_double(0, nullptr, 0, 0.0, 1.0), std::domain_error);
+    EXPECT_THROW(fill_random_double(0, nullptr, -1, 0.0, 1.0), std::domain_error);
+    EXPECT_THROW(fill_random_int(0, nullptr, 0, 0, 1), std::domain_error);
+    EXPECT_THROW(fill_random_int(0, nullptr, -1, 0, 1), std::domain_error);
+    EXPECT_THROW(fill_random_int(0, nullptr, 1, 1, 0), std::domain_error);
+    EXPECT_THROW(fill_random_permutation(0, nullptr, 0), std::domain_error);
+    EXPECT_THROW(fill_random_permutation(0, nullptr, -1), std::domain_error);
     EXPECT_THROW(create_random_cell_nvec(-1, 0, 1, false), std::domain_error);
     EXPECT_THROW(create_random_cell_nvec(0, 0, 1, false), std::domain_error);
     EXPECT_THROW(create_random_cell_nvec(4, 0, 1, false), std::domain_error);

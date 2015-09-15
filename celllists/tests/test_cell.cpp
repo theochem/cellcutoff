@@ -442,7 +442,7 @@ TEST_P(CellTestP, add_rvec_consistency) {
 
 TEST_P(CellTestP, get_rvec) {
     double rvecs[nvec*3];
-    Cell* cell = NULL;
+    Cell* cell = nullptr;
     while (true) {
         try {
             fill_random_double(1487, rvecs, nvec*3, -2.0, 2.0);
@@ -460,7 +460,7 @@ TEST_P(CellTestP, get_rvec) {
 
 TEST_P(CellTestP, get_domain) {
     double rvecs[nvec*3];
-    Cell* cell = NULL;
+    Cell* cell = nullptr;
     fill_random_double(1487, rvecs, nvec*3, -2.0, 2.0);
     cell = new Cell(rvecs, nvec);
     EXPECT_THROW(cell->get_rvec(-1, 0), std::domain_error);
@@ -729,7 +729,7 @@ TEST_P(CellTestP, select_inside_rcut_domain) {
     std::vector<int> bars;
     EXPECT_THROW(mycell->select_inside_rcut(center, 0.0, shape, pbc, bars), std::domain_error);
     EXPECT_THROW(mycell->select_inside_rcut(center, -1.0, shape, pbc, bars), std::domain_error);
-    Cell zero_cell = Cell(NULL, 0);
+    Cell zero_cell = Cell(nullptr, 0);
     EXPECT_THROW(zero_cell.select_inside_rcut(center, 1.0, shape, pbc, bars), std::domain_error);
 }
 

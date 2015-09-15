@@ -116,9 +116,9 @@ void SphereSlice::solve_full_low(int id_axis, double &begin,
     // Everything is precomputed...
     begin = sphere_frac_begin[id_axis];
     end = sphere_frac_end[id_axis];
-    if (point_begin != NULL)
+    if (point_begin != nullptr)
         vec3::copy(sphere_point_begin+3*id_axis, point_begin);
-    if (point_end != NULL)
+    if (point_end != nullptr)
         vec3::copy(sphere_point_end+3*id_axis, point_end);
 }
 
@@ -128,7 +128,7 @@ void SphereSlice::solve_full(int id_axis, double &begin, double &end,
 
     double work_begin, work_end;
     if ((id_cut0 == -1) && (id_cut1 == -1)) {
-        solve_full_low(id_axis, work_begin, work_end, NULL, NULL);
+        solve_full_low(id_axis, work_begin, work_end, nullptr, nullptr);
     } else {
         double point_begin[3];
         double point_end[3];
@@ -197,7 +197,7 @@ void SphereSlice::solve_plane(int id_axis, int id_cut0, double frac_cut0,
 
     double work_begin, work_end;
     if (id_cut1 == -1) {
-        solve_plane_low(id_axis, id_cut0, frac_cut0, work_begin, work_end, NULL, NULL);
+        solve_plane_low(id_axis, id_cut0, frac_cut0, work_begin, work_end, nullptr, nullptr);
     } else {
         double point_begin[3];
         double point_end[3];
@@ -260,7 +260,7 @@ void SphereSlice::solve_line(int id_axis, int id_cut0, int id_cut1,
     double frac_cut0, double frac_cut1, double &begin, double &end) const {
 
     double work_begin, work_end;
-    solve_line_low(id_axis, id_cut0, id_cut1, frac_cut0, frac_cut1, work_begin, work_end, NULL, NULL);
+    solve_line_low(id_axis, id_cut0, id_cut1, frac_cut0, frac_cut1, work_begin, work_end, nullptr, nullptr);
     update_begin_end(work_begin, work_end, begin, end);
 }
 
@@ -281,7 +281,7 @@ double SphereSlice::compute_plane_intersection(int id_cut0, int id_cut1,
     double denom = denoms[id_cut0 + 3*id_cut1]; // TODO precompute
     double ratio0 = (cut1*dot01 - cut0*dot11)/denom;
     double ratio1 = (cut0*dot01 - cut1*dot00)/denom;
-    if (other_center != NULL) {
+    if (other_center != nullptr) {
         other_center[0] = cut0_normal[0]*ratio0 + cut1_normal[0]*ratio1;
         other_center[1] = cut0_normal[1]*ratio0 + cut1_normal[1]*ratio1;
         other_center[2] = cut0_normal[2]*ratio0 + cut1_normal[2]*ratio1;
@@ -386,7 +386,7 @@ void compute_begin_end(const double* other_center, const double* ortho,
      double* point_begin, double* point_end) {
 
     // Compute projection on axis, optionally compute points;
-    if (point_begin==NULL) {
+    if (point_begin==nullptr) {
         begin = (other_center[0] - ortho[0])*axis[0] +
                 (other_center[1] - ortho[1])*axis[1] +
                 (other_center[2] - ortho[2])*axis[2];
@@ -395,7 +395,7 @@ void compute_begin_end(const double* other_center, const double* ortho,
         vec3::iadd(point_begin, ortho, -1);
         begin = vec3::dot(point_begin, axis);
     }
-    if (point_end==NULL) {
+    if (point_end==nullptr) {
         end = (other_center[0] + ortho[0])*axis[0] +
               (other_center[1] + ortho[1])*axis[1] +
               (other_center[2] + ortho[2])*axis[2];
