@@ -106,9 +106,9 @@ std::unique_ptr<cl::Cell> create_random_cell_nvec(unsigned int seed, int nvec,
         throw std::domain_error("A random cell must be 1D, 2D or 2D periodic.");
     }
     // Randomly construct a cell till a decent one (sufficient volume) is found.
-    double rvecs[nvec*3];
+    double rvecs[9];
     while (true) {
-        seed = fill_random_double(seed, rvecs, nvec*3, -scale, +scale);
+        seed = fill_random_double(seed, rvecs, 9, -scale, +scale);
         if (cuboid) {
             rvecs[1] = 0.0;
             rvecs[2] = 0.0;
@@ -130,8 +130,8 @@ std::unique_ptr<cl::Cell> create_random_cell_nvec(unsigned int seed, int nvec,
 }
 
 //! Compute a random point in a cubic box centered around center. Also computes distance.
-unsigned int random_point(unsigned int seed, double* point, double rcut, const double* center,
-    double* norm) {
+unsigned int random_point(unsigned int seed,  const double* center, double rcut,
+    double* point, double* norm) {
     seed = fill_random_double(seed, point, 3, -rcut, rcut);
     *norm = vec3::norm(point);
     vec3::iadd(point, center);

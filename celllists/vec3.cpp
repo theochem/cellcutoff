@@ -83,6 +83,13 @@ void copy(const double* source, double* dest) {
     dest[2] = source[2];
 }
 
+//! Add to the first argument the second argument
+void iadd(double* output, const double* term) {
+    output[0] += term[0];
+    output[1] += term[1];
+    output[2] += term[2];
+}
+
 //! Add to the first argument a rescaled second argument
 void iadd(double* output, const double* term, double scale) {
     output[0] += scale*term[0];

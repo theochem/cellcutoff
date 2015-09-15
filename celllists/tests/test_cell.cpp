@@ -249,7 +249,7 @@ TEST_P(CellTestP, iwrap_random) {
 TEST_P(CellTestP, iwrap_consistency) {
     for (int irep=0; irep < NREP; irep++) {
         std::unique_ptr<cl::Cell> cell(create_random_cell(irep));
-        int coeffs[nvec];
+        int coeffs[3];
         fill_random_int(irep, coeffs, nvec, -5, 5);
         double frac[3];
         double cart1[3];
@@ -415,8 +415,8 @@ TEST_P(CellTestP, to_gcart_to_gfrac_consistency) {
 TEST_P(CellTestP, iadd_rvec_consistency) {
     for (int irep=0; irep < NREP; irep++) {
         std::unique_ptr<cl::Cell> cell(create_random_cell(irep));
-        int coeffs[nvec];
-        fill_random_int(irep, coeffs, nvec, -5, 5);
+        int coeffs[3];
+        fill_random_int(irep, coeffs, 3, -5, 5);
         double cart1[3];
         double cart2[3];
         double frac1[3];
@@ -443,11 +443,11 @@ TEST_P(CellTestP, iadd_rvec_consistency) {
 // get_nvec() is already tested above
 
 TEST_P(CellTestP, get_rvec_rvecs_gvecs) {
-    double rvecs[nvec*3];
+    double rvecs[9];
     std::unique_ptr<cl::Cell> cell;
     while (true) {
         try {
-            fill_random_double(1487, rvecs, nvec*3, -2.0, 2.0);
+            fill_random_double(1487, rvecs, 9, -2.0, 2.0);
             cell.reset(new cl::Cell(rvecs, nvec));
             break;
         } catch (cl::singular_cell_vectors) {}
@@ -694,8 +694,8 @@ TEST_F(CellTest3, set_ranges_rcut_edge) {
 
 TEST_P(CellTestP, set_ranges_rcut_domain) {
     double center[3] = {6.3, 2.2, -5.8};
-    int ranges_begin[nvec];
-    int ranges_end[nvec];
+    int ranges_begin[3];
+    int ranges_end[3];
     EXPECT_THROW(mycell->set_ranges_rcut(center, -1.0, ranges_begin, ranges_end), std::domain_error);
     EXPECT_THROW(mycell->set_ranges_rcut(center, 0.0, ranges_begin, ranges_end), std::domain_error);
 }
@@ -705,15 +705,15 @@ TEST_P(CellTestP, set_ranges_rcut_random) {
     for (int irep=0; irep < NREP; irep++) {
         std::unique_ptr<cl::Cell> cell(create_random_cell(irep));
         double center[3];
-        int ranges_begin[nvec];
-        int ranges_end[nvec];
+        int ranges_begin[3];
+        int ranges_end[3];
         double rcut = 0.3*(irep+1);
         fill_random_double(irep+2, center, 3, -5.0, 5.0);
         cell->set_ranges_rcut(center, rcut, ranges_begin, ranges_end);
         for (int ipoint=0; ipoint < NPOINT; ipoint++) {
             double point[3];
             double norm;
-            random_point(ipoint+irep*NPOINT, point, rcut, center, &norm);
+            random_point(ipoint+irep*NPOINT, center, rcut, point, &norm);
             if (norm <= rcut) {
                 double frac[3];
                 cell->to_rfrac(point, frac);
@@ -824,9 +824,9 @@ TEST_P(CellTestP, select_inside_rcut_random) {
         double center[3];
         fill_random_double(47332+irep, center, 3, -1.0, 1.0);
         // - Alternating values for shape and pbc
-        int shape[nvec];
-        bool pbc[nvec];
-        for (int ivec=0; ivec < nvec; ivec++) {
+        int shape[3];
+        bool pbc[3];
+        for (int ivec=0; ivec < 3; ivec++) {
             shape[ivec] = ((irep*(ivec+1)) % 5) + 1;
             pbc[ivec] = (irep >> ivec) % 2;
         }
@@ -921,9 +921,9 @@ TEST_P(CellTestP, select_inside_rcut_corners) {
         double center[3];
         fill_random_double(47332+irep, center, 3, -2.0, 2.0);
         // - Alternating values for shape and pbc
-        int shape[nvec];
-        bool pbc[nvec];
-        for (int ivec=0; ivec < nvec; ivec++) {
+        int shape[3];
+        bool pbc[3];
+        for (int ivec=0; ivec < 3; ivec++) {
             shape[ivec] = ((irep*(ivec+1)) % 5) + 1;
             pbc[ivec] = true;
         }

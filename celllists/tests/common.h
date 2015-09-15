@@ -28,6 +28,13 @@
 
 namespace cl = celllists;
 
+/* Some notes:
+
+    - Usually, the output argument is last. The exception in this module is the size
+      of the output argument, which comes after the actual output argument.
+
+*/
+
 #define NREP 100
 #define NPOINT 1000
 
@@ -38,7 +45,7 @@ unsigned int fill_random_int(unsigned int seed, int* array, int size,
 unsigned int fill_random_permutation(unsigned int seed, int* array, int size);
 std::unique_ptr<cl::Cell> create_random_cell_nvec(unsigned int seed, int nvec,
     double scale = 1.0, bool cuboid = false);
-unsigned int random_point(unsigned int seed, double* point, double rcut,
-    const double* center, double* norm);
+unsigned int random_point(unsigned int seed,  const double* center, double rcut,
+    double* point, double* norm);
 
 #endif  // CELLLISTS_TESTS_COMMON_H_
