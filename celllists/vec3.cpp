@@ -19,8 +19,9 @@
 //--
 
 
-#include <cmath>
 #include "celllists/vec3.h"
+
+#include <cmath>
 
 
 namespace celllists {

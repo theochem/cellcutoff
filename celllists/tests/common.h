@@ -22,6 +22,8 @@
 #ifndef CELLLISTTEST_COMMON_H_
 #define CELLLISTTEST_COMMON_H_
 
+#include <memory>
+
 #include "celllists/cell.h"
 
 using namespace celllists;

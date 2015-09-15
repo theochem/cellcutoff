@@ -26,6 +26,8 @@
 
 #include <exception>
 #include <string>
+#include <vector>
+
 #include "celllists/sphere_slice.h"
 
 

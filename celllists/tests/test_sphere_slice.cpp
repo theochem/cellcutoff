@@ -19,12 +19,16 @@
 //--
 
 
-#include <stdexcept>
-#include <cstdlib>
-#include <gtest/gtest.h>
 #include <cmath>
+#include <cstdlib>
+#include <memory>
+#include <stdexcept>
+
+#include <gtest/gtest.h>
+
 #include "celllists/sphere_slice.h"
 #include "celllists/vec3.h"
+
 #include "common.h"
 
 

@@ -19,11 +19,15 @@
 //--
 
 
-#include <stdexcept>
-#include <gtest/gtest.h>
 #include <cmath>
+#include <memory>
+#include <stdexcept>
+
+#include <gtest/gtest.h>
+
 #include "celllists/cell.h"
 #include "celllists/vec3.h"
+
 #include "common.h"
 
 

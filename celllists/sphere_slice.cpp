@@ -19,9 +19,11 @@
 //--
 
 
-#include <cmath>
-#include <stdexcept>
 #include "celllists/sphere_slice.h"
+
+#include <cmath>
+#include <memory>
+
 #include "celllists/vec3.h"
 
 

@@ -24,6 +24,8 @@
 #ifndef CELLLISTS_SPHERE_SLICE_H_
 #define CELLLISTS_SPHERE_SLICE_H_
 
+#include <stdexcept>
+
 
 namespace celllists {
 

@@ -19,13 +19,16 @@
 //--
 
 
-#include <stdexcept>
-#include <algorithm>
-#include <random>
-#include <limits>
-#include <cmath>
-#include <gtest/gtest.h>
 #include "common.h"
+
+#include <algorithm>
+#include <cmath>
+#include <limits>
+#include <random>
+#include <stdexcept>
+
+#include <gtest/gtest.h>
+
 #include "celllists/vec3.h"
 
 

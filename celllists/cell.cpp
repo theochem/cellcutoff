@@ -19,10 +19,11 @@
 //--
 
 
+#include "celllists/cell.h"
+
 #include <cmath>
 #include <stdexcept>
-#include <vector>
-#include "celllists/cell.h"
+
 #include "celllists/vec3.h"
 
 
