@@ -23,6 +23,7 @@
 #include <stdexcept>
 #include <vector>
 #include "celllists/cell.h"
+#include "celllists/vec3.h"
 
 
 Cell::Cell(const double* _rvecs, int _nvec): nvec(_nvec) {
@@ -42,15 +43,12 @@ Cell::Cell(const double* _rvecs, int _nvec): nvec(_nvec) {
             volume = 0.0;
             break;
         case 1:
-            volume = sqrt(
-                rvecs[0]*rvecs[0]+rvecs[1]*rvecs[1]+rvecs[2]*rvecs[2]
-            );
+            volume = vec3::norm(rvecs);
             break;
         case 2:
             double tmp;
-            tmp = rvecs[0]*rvecs[3]+rvecs[1]*rvecs[4]+rvecs[2]*rvecs[5];
-            tmp = (rvecs[0]*rvecs[0]+rvecs[1]*rvecs[1]+rvecs[2]*rvecs[2])*
-                  (rvecs[3]*rvecs[3]+rvecs[4]*rvecs[4]+rvecs[5]*rvecs[5]) - tmp*tmp;
+            tmp = vec3::dot(rvecs, rvecs+3);
+            tmp = vec3::normsq(rvecs)*vec3::normsq(rvecs+3) - tmp*tmp;
             if (tmp > 0) {
                 volume = sqrt(tmp);
             } else {
@@ -58,11 +56,7 @@ Cell::Cell(const double* _rvecs, int _nvec): nvec(_nvec) {
             }
             break;
         case 3:
-            volume = fabs(
-                rvecs[0]*(rvecs[4]*rvecs[8]-rvecs[5]*rvecs[7])+
-                rvecs[1]*(rvecs[5]*rvecs[6]-rvecs[3]*rvecs[8])+
-                rvecs[2]*(rvecs[3]*rvecs[7]-rvecs[4]*rvecs[6])
-            );
+            volume = fabs(vec3::triple(rvecs, rvecs+3, rvecs+6));
             break;
     }
 
@@ -107,64 +101,40 @@ Cell::Cell(const double* _rvecs, int _nvec): nvec(_nvec) {
             rvecs[8] = 0.0;
             rvecs[ismall+6] = 1.0;
             // 3) compute the cross product of vector 3 and 1
-            rvecs[3] = rvecs[2]*rvecs[7] - rvecs[1]*rvecs[8];
-            rvecs[4] = rvecs[0]*rvecs[8] - rvecs[2]*rvecs[6];
-            rvecs[5] = rvecs[1]*rvecs[6] - rvecs[0]*rvecs[7];
+            vec3::cross(rvecs+6, rvecs, rvecs+3);
             // 4) normalize
-            double norm = sqrt(rvecs[3]*rvecs[3] + rvecs[4]*rvecs[4] + rvecs[5]*rvecs[5]);
-            rvecs[3] /= norm;
-            rvecs[4] /= norm;
-            rvecs[5] /= norm;
+            double norm = vec3::norm(rvecs+3);
+            vec3::iscale(rvecs+3, 1.0/norm);
             // the rest is done in case 2, so no break here!
         }
         case 2:
             // Add one rvec that is normalized and orthogonal to the two given
             // rvecs. The three vectors will be right-handed.
             // 1) compute the cross product of vector 1 and 2
-            rvecs[6] = rvecs[1]*rvecs[5] - rvecs[2]*rvecs[4];
-            rvecs[7] = rvecs[2]*rvecs[3] - rvecs[0]*rvecs[5];
-            rvecs[8] = rvecs[0]*rvecs[4] - rvecs[1]*rvecs[3];
+            vec3::cross(rvecs, rvecs+3, rvecs+6);
             // 2) normalize
-            double norm = sqrt(rvecs[6]*rvecs[6] + rvecs[7]*rvecs[7] + rvecs[8]*rvecs[8]);
-            rvecs[6] /= norm;
-            rvecs[7] /= norm;
-            rvecs[8] /= norm;
+            double norm = vec3::norm(rvecs+6);
+            vec3::iscale(rvecs+6, 1.0/norm);
     }
 
     // Now we assume that rvecs contains a set of three well-behaved
     // non-degenerate vectors. Cramer's rule is used to compute the reciprocal
     // space vectors. This is fairly ugly in terms of numerical stability but
     // it keeps things simple.
-    gvecs[0] = rvecs[4]*rvecs[8] - rvecs[5]*rvecs[7];
-    gvecs[1] = rvecs[5]*rvecs[6] - rvecs[3]*rvecs[8];
-    gvecs[2] = rvecs[3]*rvecs[7] - rvecs[4]*rvecs[6];
-    gvecs[3] = rvecs[7]*rvecs[2] - rvecs[8]*rvecs[1];
-    gvecs[4] = rvecs[8]*rvecs[0] - rvecs[6]*rvecs[2];
-    gvecs[5] = rvecs[6]*rvecs[1] - rvecs[7]*rvecs[0];
-    gvecs[6] = rvecs[1]*rvecs[5] - rvecs[2]*rvecs[4];
-    gvecs[7] = rvecs[2]*rvecs[3] - rvecs[0]*rvecs[5];
-    gvecs[8] = rvecs[0]*rvecs[4] - rvecs[1]*rvecs[3];
-    // determinant
-    double det = gvecs[0]*rvecs[0] + gvecs[1]*rvecs[1] + gvecs[2]*rvecs[2];
+    vec3::cross(rvecs+3, rvecs+6, gvecs);
+    vec3::cross(rvecs+6, rvecs, gvecs+3);
+    vec3::cross(rvecs, rvecs+3, gvecs+6);
+    // inverse of determinant
+    double denom = 1.0/vec3::dot(gvecs, rvecs);
     // inverse
-    gvecs[0] /= det;
-    gvecs[1] /= det;
-    gvecs[2] /= det;
-    gvecs[3] /= det;
-    gvecs[4] /= det;
-    gvecs[5] /= det;
-    gvecs[6] /= det;
-    gvecs[7] /= det;
-    gvecs[8] /= det;
+    vec3::iscale(gvecs, denom);
+    vec3::iscale(gvecs+3, denom);
+    vec3::iscale(gvecs+6, denom);
 
     // compute the spacings and the lengths of the cell vectors
     for (int ivec=2; ivec>=0; ivec--) {
-        rlengths[ivec] = sqrt(rvecs[3*ivec]*rvecs[3*ivec] +
-                              rvecs[3*ivec+1]*rvecs[3*ivec+1] +
-                              rvecs[3*ivec+2]*rvecs[3*ivec+2]);
-        glengths[ivec] = sqrt(gvecs[3*ivec]*gvecs[3*ivec] +
-                              gvecs[3*ivec+1]*gvecs[3*ivec+1] +
-                              gvecs[3*ivec+2]*gvecs[3*ivec+2]);
+        rlengths[ivec] = vec3::norm(rvecs+3*ivec);
+        glengths[ivec] = vec3::norm(gvecs+3*ivec);
         rspacings[ivec] = 1.0/glengths[ivec];
         gspacings[ivec] = 1.0/rlengths[ivec];
     }
@@ -178,30 +148,24 @@ void Cell::wrap(double* delta) const {
     // Compute the first fractional coordinates, subtract one half and ceil. The round
     // founction is intentionally not used here! The half-ways case is always up instead
     // of away from zero.
-    x = ceil(gvecs[0]*delta[0] + gvecs[1]*delta[1] + gvecs[2]*delta[2] - 0.5);
-    delta[0] -= x*rvecs[0];
-    delta[1] -= x*rvecs[1];
-    delta[2] -= x*rvecs[2];
+    x = ceil(vec3::dot(gvecs, delta) - 0.5);
+    vec3::iadd(delta, rvecs, -x);
     if (nvec == 1) return;
     // Compute the second fractional coordinates, subtract one half and ceil.
-    x = ceil(gvecs[3]*delta[0] + gvecs[4]*delta[1] + gvecs[5]*delta[2] - 0.5);
-    delta[0] -= x*rvecs[3];
-    delta[1] -= x*rvecs[4];
-    delta[2] -= x*rvecs[5];
+    x = ceil(vec3::dot(gvecs+3, delta) - 0.5);
+    vec3::iadd(delta, rvecs+3, -x);
     if (nvec == 2) return;
     // Compute the third fractional coordinates, subtract one half and ceil.
-    x = ceil(gvecs[6]*delta[0] + gvecs[7]*delta[1] + gvecs[8]*delta[2] - 0.5);
-    delta[0] -= x*rvecs[6];
-    delta[1] -= x*rvecs[7];
-    delta[2] -= x*rvecs[8];
+    x = ceil(vec3::dot(gvecs+6, delta) - 0.5);
+    vec3::iadd(delta, rvecs+6, -x);
 }
 
 
 void Cell::to_rfrac(const double* rcart, double* rfrac) const {
     // Transfrom to real-space fractional coordinates
-    rfrac[0] = gvecs[0]*rcart[0] + gvecs[1]*rcart[1] + gvecs[2]*rcart[2];
-    rfrac[1] = gvecs[3]*rcart[0] + gvecs[4]*rcart[1] + gvecs[5]*rcart[2];
-    rfrac[2] = gvecs[6]*rcart[0] + gvecs[7]*rcart[1] + gvecs[8]*rcart[2];
+    rfrac[0] = vec3::dot(gvecs, rcart);
+    rfrac[1] = vec3::dot(gvecs+3, rcart);
+    rfrac[2] = vec3::dot(gvecs+6, rcart);
 }
 
 
@@ -215,9 +179,9 @@ void Cell::to_rcart(const double* rfrac, double* rcart) const {
 
 void Cell::to_gfrac(const double* gcart, double* gfrac) const {
     // Transform to reciprocal space Cartesian coordinates
-    gfrac[0] = rvecs[0]*gcart[0] + rvecs[1]*gcart[1] + rvecs[2]*gcart[2];
-    gfrac[1] = rvecs[3]*gcart[0] + rvecs[4]*gcart[1] + rvecs[5]*gcart[2];
-    gfrac[2] = rvecs[6]*gcart[0] + rvecs[7]*gcart[1] + rvecs[8]*gcart[2];
+    gfrac[0] = vec3::dot(rvecs, gcart);
+    gfrac[1] = vec3::dot(rvecs+3, gcart);
+    gfrac[2] = vec3::dot(rvecs+6, gcart);
 }
 
 
@@ -232,17 +196,11 @@ void Cell::to_gcart(const double* gfrac, double* gcart) const {
 void Cell::add_rvec(double* delta, const int* coeffs) const {
     // Simply adds an linear combination of real cell vectors to delta.
     if (nvec == 0) return;
-    delta[0] += coeffs[0]*rvecs[0];
-    delta[1] += coeffs[0]*rvecs[1];
-    delta[2] += coeffs[0]*rvecs[2];
+    vec3::iadd(delta, rvecs, coeffs[0]);
     if (nvec == 1) return;
-    delta[0] += coeffs[1]*rvecs[3];
-    delta[1] += coeffs[1]*rvecs[4];
-    delta[2] += coeffs[1]*rvecs[5];
+    vec3::iadd(delta, rvecs+3, coeffs[1]);
     if (nvec == 2) return;
-    delta[0] += coeffs[2]*rvecs[6];
-    delta[1] += coeffs[2]*rvecs[7];
-    delta[2] += coeffs[2]*rvecs[8];
+    vec3::iadd(delta, rvecs+6, coeffs[2]);
 }
 
 

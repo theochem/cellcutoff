@@ -116,16 +116,10 @@ void SphereSlice::solve_full_low(int id_axis, double &begin,
     // Everything is precomputed...
     begin = sphere_frac_begin[id_axis];
     end = sphere_frac_end[id_axis];
-    if (point_begin != NULL) {
-        point_begin[0] = sphere_point_begin[3*id_axis];
-        point_begin[1] = sphere_point_begin[3*id_axis+1];
-        point_begin[2] = sphere_point_begin[3*id_axis+2];
-    }
-    if (point_end != NULL) {
-        point_end[0] = sphere_point_end[3*id_axis];
-        point_end[1] = sphere_point_end[3*id_axis+1];
-        point_end[2] = sphere_point_end[3*id_axis+2];
-    }
+    if (point_begin != NULL)
+        vec3::copy(sphere_point_begin+3*id_axis, point_begin);
+    if (point_end != NULL)
+        vec3::copy(sphere_point_end+3*id_axis, point_end);
 }
 
 
