@@ -94,7 +94,7 @@ unsigned int fill_random_permutation(unsigned int seed, int* array, int size) {
 }
 
 //! Random cell with a volume larger than (0.1*scale)**nvec
-Cell* create_random_cell_nvec(unsigned int seed, int nvec, double scale, bool cuboid) {
+std::unique_ptr<Cell> create_random_cell_nvec(unsigned int seed, int nvec, double scale, bool cuboid) {
     if ((nvec <= 0) || (nvec > 3)) {
         throw std::domain_error("A random cell must be 1D, 2D or 2D periodic.");
     }
@@ -114,10 +114,9 @@ Cell* create_random_cell_nvec(unsigned int seed, int nvec, double scale, bool cu
             }
         }
         try {
-            Cell* cell = new Cell(rvecs, nvec);
+            std::unique_ptr<Cell> cell(new Cell(rvecs, nvec));
             if (cell->get_volume() > pow(0.1*scale, nvec))
                 return cell;
-            delete cell;
         } catch (singular_cell_vectors) { }
     }
 }

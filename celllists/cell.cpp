@@ -341,7 +341,7 @@ size_t Cell::select_inside_rcut(const double* center, double rcut,
     }
 
     // For all the heavy work, precomputes a lot.
-    SphereSlice sphere_slice = SphereSlice(center, gvecs, rcut);
+    SphereSlice sphere_slice(center, gvecs, rcut);
 
     // Prefix is used to keep track of current bar indices while going into recursion.
     int prefix[nvec-1];
