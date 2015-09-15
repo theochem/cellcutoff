@@ -29,10 +29,11 @@
 
 #include <gtest/gtest.h>
 
-#include "celllists/vec3.h"
+#include <celllists/vec3.h>
 
 
-using namespace celllists;
+namespace cl = celllists;
+namespace vec3 = celllists::vec3;
 
 
 unsigned int get_next_seed(std::minstd_rand gen) {
@@ -63,7 +64,6 @@ unsigned int fill_random_double(unsigned int seed, double* array, int size,
 //! Fills an array of int with random numbers in range [-range, range]
 unsigned int fill_random_int(unsigned int seed, int* array, int size,
     int begin, int end) {
-
     // Parameter check
     if (size <= 0)
         throw std::domain_error("Array size must be strictly positive.");
@@ -82,7 +82,6 @@ unsigned int fill_random_int(unsigned int seed, int* array, int size,
 
 //! Fills and array of int with a random permutation
 unsigned int fill_random_permutation(unsigned int seed, int* array, int size) {
-
     // Parameter check
     if (size <= 0)
         throw std::domain_error("Array size must be strictly positive.");
@@ -100,7 +99,7 @@ unsigned int fill_random_permutation(unsigned int seed, int* array, int size) {
 }
 
 //! Random cell with a volume larger than (0.1*scale)**nvec
-std::unique_ptr<Cell> create_random_cell_nvec(unsigned int seed, int nvec, double scale, bool cuboid) {
+std::unique_ptr<cl::Cell> create_random_cell_nvec(unsigned int seed, int nvec, double scale, bool cuboid) {
     if ((nvec <= 0) || (nvec > 3)) {
         throw std::domain_error("A random cell must be 1D, 2D or 2D periodic.");
     }
@@ -120,10 +119,10 @@ std::unique_ptr<Cell> create_random_cell_nvec(unsigned int seed, int nvec, doubl
             }
         }
         try {
-            std::unique_ptr<Cell> cell(new Cell(rvecs, nvec));
+            std::unique_ptr<cl::Cell> cell(new cl::Cell(rvecs, nvec));
             if (cell->get_volume() > pow(0.1*scale, nvec))
                 return cell;
-        } catch (singular_cell_vectors) { }
+        } catch (cl::singular_cell_vectors) { }
     }
 }
 
