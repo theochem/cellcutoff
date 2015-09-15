@@ -53,7 +53,7 @@ set_property(TARGET celllists PROPERTY SOVERSION ${CELLLISTS_SOVERSION})
 set_property(TARGET celllists PROPERTY CXX_STANDARD 11)
 
 # Install include files
-install (FILES ${HEADER_FILES} DESTINATION include/cellists)
+install (FILES ${HEADER_FILES} DESTINATION include/celllists)
 
 # Install library
 install (TARGETS celllists DESTINATION lib)
