@@ -199,57 +199,19 @@ void Cell::add_rvec(double* delta, const int* coeffs) const {
 }
 
 
-double Cell::get_rvec(int ivec, int icomp) const {
+const double* Cell::get_rvec(int ivec) const {
     if ((ivec < 0) || (ivec >= 3)) {
         throw std::domain_error("ivec must be 0, 1 or 2.");
     }
-    if ((icomp < 0) || (icomp >= 3)) {
-        throw std::domain_error("icomp must be 0, 1 or 2.");
-    }
-    return rvecs[3*ivec + icomp];
+    return rvecs + 3*ivec;
 }
 
 
-double Cell::get_gvec(int ivec, int icomp) const {
+const double* Cell::get_gvec(int ivec) const {
     if ((ivec < 0) || (ivec >= 3)) {
         throw std::domain_error("ivec must be 0, 1 or 2.");
     }
-    if ((icomp < 0) || (icomp >= 3)) {
-        throw std::domain_error("icomp must be 0, 1 or 2.");
-    }
-    return gvecs[3*ivec + icomp];
-}
-
-
-double Cell::get_rlength(int ivec) const {
-    if ((ivec < 0) || (ivec >= 3)) {
-        throw std::domain_error("ivec must be 0, 1 or 2.");
-    }
-    return rlengths[ivec];
-}
-
-
-double Cell::get_glength(int ivec) const {
-    if ((ivec < 0) || (ivec >= 3)) {
-        throw std::domain_error("ivec must be 0, 1 or 2.");
-    }
-    return glengths[ivec];
-}
-
-
-double Cell::get_rspacing(int ivec) const {
-    if ((ivec < 0) || (ivec >= 3)) {
-        throw std::domain_error("ivec must be 0, 1 or 2.");
-    }
-    return rspacings[ivec];
-}
-
-
-double Cell::get_gspacing(int ivec) const {
-    if ((ivec < 0) || (ivec >= 3)) {
-        throw std::domain_error("ivec must be 0, 1 or 2.");
-    }
-    return gspacings[ivec];
+    return gvecs + 3*ivec;
 }
 
 

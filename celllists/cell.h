@@ -186,20 +186,24 @@ class Cell {
 
         //! Returns the number of periodic dimensions.
         int get_nvec() const {return nvec;};
-        //! Returns a component of the real-space vector.
-        double get_rvec(int ivec, int icomp) const;
-        //! Returns a component of the reciprocal-space vector.
-        double get_gvec(int ivec, int icomp) const;
+        //! Returns all real-space vectors.
+        const double* get_rvecs() const {return rvecs;};
+        //! Returns a real-space vector.
+        const double* get_rvec(int ivec) const;
+        //! Returns all reciprocal-space vectors.
+        const double* get_gvecs() const {return gvecs;};
+        //! Returns a reciprocal-space vector.
+        const double* get_gvec(int ivec) const;
         //! Returns the volume (or area or length) of the cell.
         double get_volume() const {return volume;};
-        //! Returns the length of the i-th real-space cell vector
-        double get_rlength(int ivec) const;
-        //! Returns the length of the i-th reciprocal cell vector
-        double get_glength(int ivec) const;
-        //! Returns the spacing between the i-th real-space crystal plane
-        double get_rspacing(int ivec) const;
-        //! Returns the spacing between the i-th reciprocal crystal plane
-        double get_gspacing(int ivec) const;
+        //! Returns the lengths of the real-space vectors.
+        const double* get_rlengths() const {return rlengths;};
+        //! Returns the lengths of the reciprocal-space vectors.
+        const double* get_glengths() const {return glengths;};
+        //! Returns the spacings between the real-space crystal plane
+        const double* get_rspacings() const {return rspacings;};
+        //! Returns the spacings between the reciprocal-space crystal plane
+        const double* get_gspacings() const {return gspacings;};
 
 
         /** @brief
