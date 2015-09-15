@@ -99,7 +99,7 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
 
 
 bool SphereSlice::inside_cuts(int id_cut, double* point) const {
-    // if id_cut == 1, the test always passes, i.e. bounds are not imposed.
+    // if id_cut == -1, the test always passes, i.e. bounds are not imposed.
     if (id_cut == -1) return true;
     CHECK_ID(id_cut);
     const double* cut_normal = normals + 3*id_cut;
@@ -203,10 +203,14 @@ void SphereSlice::solve_plane(int id_axis, int id_cut0, double frac_cut0,
         double point_end[3];
         solve_plane_low(id_axis, id_cut0, frac_cut0, work_begin, work_end, point_begin, point_end);
         // Reject solution if not between cut1 planes
-        if (!inside_cuts(id_cut1, point_begin))
-            work_begin = NAN;
-        if (!inside_cuts(id_cut1, point_end))
-            work_end = NAN;
+        if (std::isfinite(work_begin)) {
+            if (!inside_cuts(id_cut1, point_begin))
+                work_begin = NAN;
+        }
+        if (std::isfinite(work_end)) {
+            if (!inside_cuts(id_cut1, point_end))
+                work_end = NAN;
+        }
     }
     update_begin_end(work_begin, work_end, begin, end);
 }
