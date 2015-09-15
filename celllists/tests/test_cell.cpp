@@ -736,7 +736,7 @@ TEST_P(CellTestP, select_inside_rcut_domain) {
     std::vector<int> bars;
     EXPECT_THROW(mycell->select_inside_rcut(center, 0.0, shape, pbc, bars), std::domain_error);
     EXPECT_THROW(mycell->select_inside_rcut(center, -1.0, shape, pbc, bars), std::domain_error);
-    Cell zero_cell = Cell(nullptr, 0);
+    Cell zero_cell(nullptr, 0);
     EXPECT_THROW(zero_cell.select_inside_rcut(center, 1.0, shape, pbc, bars), std::domain_error);
 }
 

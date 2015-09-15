@@ -97,7 +97,7 @@ TEST_F(SphereSliceTest, domain) {
     EXPECT_THROW(SphereSlice(my_center, easy_normals, -1.0), std::domain_error);
     const double degenerate_normals[9] = {1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0};
     EXPECT_THROW(SphereSlice(my_center, degenerate_normals, 5.0), std::domain_error);
-    SphereSlice slice = SphereSlice(my_center, easy_normals, 5.0);
+    SphereSlice slice(my_center, easy_normals, 5.0);
     double begin, end;
     EXPECT_THROW(slice.solve_range(-1, begin, end), std::domain_error);
     EXPECT_THROW(slice.solve_range(3, begin, end), std::domain_error);
@@ -124,7 +124,7 @@ TEST_F(SphereSliceTest, domain) {
 }
 
 TEST_F(SphereSliceTest, solve_full_low_example1) {
-    SphereSlice slice = SphereSlice(my_center, easy_normals, 5.0);
+    SphereSlice slice(my_center, easy_normals, 5.0);
     double begin, end;
     slice.solve_range(0, begin, end);
     EXPECT_DOUBLE_EQ(-4.6, begin);
@@ -132,7 +132,7 @@ TEST_F(SphereSliceTest, solve_full_low_example1) {
 }
 
 TEST_F(SphereSliceTest, solve_plane_low_example_ortho) {
-    SphereSlice slice = SphereSlice(my_center, easy_normals, 5.0);
+    SphereSlice slice(my_center, easy_normals, 5.0);
     double begin, end;
     slice.solve_plane_low(1, 0, 3.4, begin, end, nullptr, nullptr);
     EXPECT_DOUBLE_EQ(-6.0, begin);
@@ -141,7 +141,7 @@ TEST_F(SphereSliceTest, solve_plane_low_example_ortho) {
 
 TEST_F(SphereSliceTest, solve_plane_low_example_angle) {
     easy_normals[3] = 1.0;
-    SphereSlice slice = SphereSlice(my_center, easy_normals, 5.0);
+    SphereSlice slice(my_center, easy_normals, 5.0);
     double begin, end;
     slice.solve_plane_low(1, 0, 3.4, begin, end, nullptr, nullptr);
     EXPECT_DOUBLE_EQ(-2.6, begin);
@@ -149,7 +149,7 @@ TEST_F(SphereSliceTest, solve_plane_low_example_angle) {
 }
 
 TEST_F(SphereSliceTest, solve_plane_low_example_nonexisting) {
-    SphereSlice slice = SphereSlice(my_center, easy_normals, 5.0);
+    SphereSlice slice(my_center, easy_normals, 5.0);
     double begin, end;
     slice.solve_plane_low(1, 0, 50.0, begin, end, nullptr, nullptr);
     EXPECT_TRUE(std::isnan(begin));
@@ -157,7 +157,7 @@ TEST_F(SphereSliceTest, solve_plane_low_example_nonexisting) {
 }
 
 TEST_F(SphereSliceTest, solve_range_1_example1) {
-    SphereSlice slice = SphereSlice(my_center, easy_normals, 5.0);
+    SphereSlice slice(my_center, easy_normals, 5.0);
     double begin, end;
     slice.set_cut_begin_end(0, 0.0, 1.0);
     slice.solve_range(1, begin, end);
@@ -166,7 +166,7 @@ TEST_F(SphereSliceTest, solve_range_1_example1) {
 }
 
 TEST_F(SphereSliceTest, solve_range_1_example2) {
-    SphereSlice slice = SphereSlice(my_center, easy_normals, 5.0);
+    SphereSlice slice(my_center, easy_normals, 5.0);
     double begin, end;
     slice.set_cut_begin_end(0, 3.4, 4.4);
     slice.solve_range(1, begin, end);
@@ -175,7 +175,7 @@ TEST_F(SphereSliceTest, solve_range_1_example2) {
 }
 
 TEST_F(SphereSliceTest, solve_range_1_example3) {
-    SphereSlice slice = SphereSlice(my_center, easy_normals, 5.0);
+    SphereSlice slice(my_center, easy_normals, 5.0);
     double begin, end;
     slice.set_cut_begin_end(0, -3.6, -2.6);
     slice.solve_range(1, begin, end);
@@ -184,14 +184,14 @@ TEST_F(SphereSliceTest, solve_range_1_example3) {
 }
 
 TEST_F(SphereSliceTest, solve_range_1_example_nofound) {
-    SphereSlice slice = SphereSlice(my_center, easy_normals, 5.0);
+    SphereSlice slice(my_center, easy_normals, 5.0);
     double begin, end;
     slice.set_cut_begin_end(0, -10, -9);
     EXPECT_THROW(slice.solve_range(1, begin, end), no_solution_found);
 }
 
 TEST_F(SphereSliceTest, solve_line_low_example_ortho) {
-    SphereSlice slice = SphereSlice(my_center, easy_normals, sqrt(14));
+    SphereSlice slice(my_center, easy_normals, sqrt(14));
     double begin, end;
     slice.solve_line_low(2, 0, 1, 3.4, -1.0, begin, end, nullptr, nullptr);
     EXPECT_DOUBLE_EQ(-1.0, begin);
@@ -200,7 +200,7 @@ TEST_F(SphereSliceTest, solve_line_low_example_ortho) {
 
 TEST_F(SphereSliceTest, solve_line_low_example_angle) {
     easy_normals[1] = 1.0;
-    SphereSlice slice = SphereSlice(my_center, easy_normals, sqrt(14));
+    SphereSlice slice(my_center, easy_normals, sqrt(14));
     double begin, end;
     slice.solve_line_low(2, 0, 1, 1.4, 0.0, begin, end, nullptr, nullptr);
     EXPECT_DOUBLE_EQ(-2.0, begin);
@@ -208,7 +208,7 @@ TEST_F(SphereSliceTest, solve_line_low_example_angle) {
 }
 
 TEST_F(SphereSliceTest, solve_line_low_example_nonexisting) {
-    SphereSlice slice = SphereSlice(my_center, easy_normals, sqrt(14));
+    SphereSlice slice(my_center, easy_normals, sqrt(14));
     double begin, end;
     slice.solve_line_low(2, 0, 1, 50.0, 30.0, begin, end, nullptr, nullptr);
     EXPECT_TRUE(std::isnan(begin));
@@ -216,7 +216,7 @@ TEST_F(SphereSliceTest, solve_line_low_example_nonexisting) {
 }
 
 TEST_F(SphereSliceTest, solve_range_2_example1) {
-    SphereSlice slice = SphereSlice(my_center, easy_normals, 5.0);
+    SphereSlice slice(my_center, easy_normals, 5.0);
     double begin, end;
     slice.set_cut_begin_end(0, 0.0, 1.0);
     slice.set_cut_begin_end(1, -2.2, 1.0);
@@ -226,7 +226,7 @@ TEST_F(SphereSliceTest, solve_range_2_example1) {
 }
 
 TEST_F(SphereSliceTest, solve_range_2_example2) {
-    SphereSlice slice = SphereSlice(my_center, easy_normals, 5.0);
+    SphereSlice slice(my_center, easy_normals, 5.0);
     double begin, end;
     slice.set_cut_begin_end(0, 3.4, 4.0);
     slice.set_cut_begin_end(1, -2.2, 1.0);
@@ -236,7 +236,7 @@ TEST_F(SphereSliceTest, solve_range_2_example2) {
 }
 
 TEST_F(SphereSliceTest, solve_range_2_example3) {
-    SphereSlice slice = SphereSlice(my_center, easy_normals, 5.0);
+    SphereSlice slice(my_center, easy_normals, 5.0);
     double begin, end;
     slice.set_cut_begin_end(0, -5.0, -2.6);
     slice.set_cut_begin_end(1, -2.2, 1.0);
@@ -246,7 +246,7 @@ TEST_F(SphereSliceTest, solve_range_2_example3) {
 }
 
 TEST_F(SphereSliceTest, solve_range_2_example4) {
-    SphereSlice slice = SphereSlice(my_center, easy_normals, 5.0);
+    SphereSlice slice(my_center, easy_normals, 5.0);
     double begin, end;
     slice.set_cut_begin_end(0, 0.0, 1.0);
     slice.set_cut_begin_end(1, -6.2, -5.0);
@@ -256,7 +256,7 @@ TEST_F(SphereSliceTest, solve_range_2_example4) {
 }
 
 TEST_F(SphereSliceTest, solve_range_2_example5) {
-    SphereSlice slice = SphereSlice(my_center, easy_normals, 5.0);
+    SphereSlice slice(my_center, easy_normals, 5.0);
     double begin, end;
     // 0.4, -2.0, 1.0
     slice.set_cut_begin_end(0, 0.0, 1.0);
@@ -267,7 +267,7 @@ TEST_F(SphereSliceTest, solve_range_2_example5) {
 }
 
 TEST_F(SphereSliceTest, solve_range_2_example6) {
-    SphereSlice slice = SphereSlice(my_center, easy_normals, sqrt(14.0));
+    SphereSlice slice(my_center, easy_normals, sqrt(14.0));
     double begin, end;
     // 0.4, -2.0, 1.0
     slice.set_cut_begin_end(0, 1.4, 2.0);
@@ -278,7 +278,7 @@ TEST_F(SphereSliceTest, solve_range_2_example6) {
 }
 
 TEST_F(SphereSliceTest, solve_range_2_example7) {
-    SphereSlice slice = SphereSlice(my_center, easy_normals, sqrt(14.0));
+    SphereSlice slice(my_center, easy_normals, sqrt(14.0));
     double begin, end;
     slice.set_cut_begin_end(0, 1.4, 2.0);
     slice.set_cut_begin_end(1, -5.2, -4.0);
@@ -288,7 +288,7 @@ TEST_F(SphereSliceTest, solve_range_2_example7) {
 }
 
 TEST_F(SphereSliceTest, solve_range_2_example8) {
-    SphereSlice slice = SphereSlice(my_center, easy_normals, sqrt(14.0));
+    SphereSlice slice(my_center, easy_normals, sqrt(14.0));
     double begin, end;
     slice.set_cut_begin_end(0, -2.0, -0.6);
     slice.set_cut_begin_end(1, 0.0, 1.0);
@@ -298,7 +298,7 @@ TEST_F(SphereSliceTest, solve_range_2_example8) {
 }
 
 TEST_F(SphereSliceTest, solve_range_2_example9) {
-    SphereSlice slice = SphereSlice(my_center, easy_normals, sqrt(14.0));
+    SphereSlice slice(my_center, easy_normals, sqrt(14.0));
     double begin, end;
     slice.set_cut_begin_end(0, -2.0, -0.6);
     slice.set_cut_begin_end(1, -5.2, -4.0);
@@ -308,7 +308,7 @@ TEST_F(SphereSliceTest, solve_range_2_example9) {
 }
 
 TEST_F(SphereSliceTest, solve_range_2_example_nofound) {
-    SphereSlice slice = SphereSlice(my_center, easy_normals, 1.0);
+    SphereSlice slice(my_center, easy_normals, 1.0);
     double begin, end;
     slice.set_cut_begin_end(0, 20.0, 30.0);
     slice.set_cut_begin_end(1, -5.2, -4.0);
@@ -316,7 +316,7 @@ TEST_F(SphereSliceTest, solve_range_2_example_nofound) {
 }
 
 TEST_F(SphereSliceTest, compute_plane_intersection_example1) {
-    SphereSlice slice = SphereSlice(my_center, easy_normals, sqrt(14.0));
+    SphereSlice slice(my_center, easy_normals, sqrt(14.0));
 
     double line_center[3];
     double dist_sq = slice.compute_plane_intersection(0, 1, 3.0, 4.0, line_center);

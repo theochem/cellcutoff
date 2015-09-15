@@ -89,7 +89,12 @@ class Cell {
                 dimensions of a unit cell. `nvec` must be 0, 1, 2 or 3.
         */
         Cell(const double* _rvecs, int _nvec);
-
+        
+        // Copy-constructor, move-constructor and assignment make no sense as the Cell is
+        // constant after construction! Just pass references or pointers instead.
+        Cell(const Cell& that) = delete;
+        Cell(Cell&&) = delete;
+        Cell& operator=(const Cell&) = delete;
 
         /** @brief
                 In-place wrap a (relative) vector back into the cell ]-0.5, 0.5].

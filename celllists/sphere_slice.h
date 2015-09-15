@@ -66,6 +66,13 @@ class SphereSlice {
     public:
         SphereSlice(const double* center, const double* normals, double radius);
 
+        // Copy-constructor, move-constructor and assignment make no sense as SphereSlice
+        // is almost constant after construction! Just pass references or pointers
+        // instead.
+        SphereSlice(const SphereSlice& that) = delete;
+        SphereSlice(SphereSlice&&) = delete;
+        SphereSlice& operator=(const SphereSlice&) = delete;
+
         // Main API
         void solve_range(int ncut, double &begin, double &end) const;
         void set_cut_begin_end(int icut, double new_begin, double new_end);
