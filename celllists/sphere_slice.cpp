@@ -30,18 +30,17 @@
 namespace celllists {
 
 
-#define CHECK_ID(ARG) if ((ARG < 0) || (ARG >= 3)) throw std::domain_error(#ARG " must be 0, 1 or 2.")
+#define CHECK_ID(ARG) \
+        if ((ARG < 0) || (ARG >= 3)) throw std::domain_error(#ARG " must be 0, 1 or 2.")
 
 
 SphereSlice::SphereSlice(const double* center, const double* normals, double radius) :
     center(center), normals(normals), radius(radius) {
-
     // Check sanity of arguments
     if (radius <= 0)
         throw std::domain_error("radius must be strictly positive.");
     if (vec3::triple(normals, normals+3, normals+6) == 0.0)
         throw std::domain_error("The three normals must be linearly independent.");
-
     // Initialize variable data members
     cut_begin[0] = 0.0;
     cut_begin[1] = 0.0;
@@ -72,8 +71,7 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
         for (int id_cut=0; id_cut < 3; id_cut++) {
             denoms[id_axis + 3*id_cut] = (
                 dots[id_axis + 3*id_cut]*dots[id_axis + 3*id_cut] -
-                dots[id_axis + 3*id_axis]*dots[id_cut + 3*id_cut]
-            );
+                dots[id_axis + 3*id_axis]*dots[id_cut + 3*id_cut]);
         }
     }
     for (int id_axis=0; id_axis < 3; id_axis++) {
@@ -92,7 +90,8 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
                 // Subtract projection on cut_normal
                 //  -> in plane of axis and cut_normal
                 //  -> orthogonal to cut_normal
-                vec3::iadd(ortho, cut_normal, -vec3::dot(axis, cut_normal)/norms_sq[id_cut]);
+                vec3::iadd(ortho, cut_normal,
+                           -vec3::dot(axis, cut_normal)/norms_sq[id_cut]);
                 // Normalize
                 vec3::iscale(ortho, 1.0/vec3::norm(ortho));
             }
@@ -196,7 +195,7 @@ void SphereSlice::solve_full(int id_axis, double &begin, double &end,
 
     double work_begin, work_end;
     if ((id_cut0 == -1) && (id_cut1 == -1)) {
-        solve_full_low(id_axis, work_begin, work_end, nullptr, nullptr);
+        solve_full_low(id_axis, work_begin, work_end);
     } else {
         double point_begin[3];
         double point_end[3];
@@ -235,11 +234,12 @@ void SphereSlice::solve_plane(int id_axis, int id_cut0, double frac_cut0,
 
     double work_begin, work_end;
     if (id_cut1 == -1) {
-        solve_plane_low(id_axis, id_cut0, frac_cut0, work_begin, work_end, nullptr, nullptr);
+        solve_plane_low(id_axis, id_cut0, frac_cut0, work_begin, work_end);
     } else {
         double point_begin[3];
         double point_end[3];
-        solve_plane_low(id_axis, id_cut0, frac_cut0, work_begin, work_end, point_begin, point_end);
+        solve_plane_low(id_axis, id_cut0, frac_cut0, work_begin, work_end,
+                        point_begin, point_end);
         // Reject solution if not between cut1 planes
         if (std::isfinite(work_begin)) {
             if (!inside_cuts(id_cut1, point_begin))
@@ -303,7 +303,7 @@ void SphereSlice::solve_line(int id_axis, int id_cut0, int id_cut1,
     double frac_cut0, double frac_cut1, double &begin, double &end) const {
 
     double work_begin, work_end;
-    solve_line_low(id_axis, id_cut0, id_cut1, frac_cut0, frac_cut1, work_begin, work_end, nullptr, nullptr);
+    solve_line_low(id_axis, id_cut0, id_cut1, frac_cut0, frac_cut1, work_begin, work_end);
     update_begin_end(work_begin, work_end, begin, end);
 }
 
@@ -366,7 +366,7 @@ double SphereSlice::compute_plane_intersection(int id_cut0, int id_cut1,
     double dot00 = norms_sq[id_cut0];
     double dot01 = dots[id_cut0 + 3*id_cut1];
     double dot11 = norms_sq[id_cut1];
-    double denom = denoms[id_cut0 + 3*id_cut1]; // TODO precompute
+    double denom = denoms[id_cut0 + 3*id_cut1];
     double ratio0 = (cut1*dot01 - cut0*dot11)/denom;
     double ratio1 = (cut0*dot01 - cut1*dot00)/denom;
     if (other_center != nullptr) {
@@ -392,11 +392,10 @@ bool SphereSlice::inside_cuts(int id_cut, double* point) const {
 
 
 void compute_begin_end(const double* other_center, const double* ortho,
-     const double* axis, double &begin, double &end,
-     double* point_begin, double* point_end) {
-
+    const double* axis, double &begin, double &end,
+    double* point_begin, double* point_end) {
     // Compute projection on axis, optionally compute points;
-    if (point_begin==nullptr) {
+    if (point_begin == nullptr) {
         begin = (other_center[0] - ortho[0])*axis[0] +
                 (other_center[1] - ortho[1])*axis[1] +
                 (other_center[2] - ortho[2])*axis[2];
@@ -405,7 +404,7 @@ void compute_begin_end(const double* other_center, const double* ortho,
         vec3::iadd(point_begin, ortho, -1);
         begin = vec3::dot(point_begin, axis);
     }
-    if (point_end==nullptr) {
+    if (point_end == nullptr) {
         end = (other_center[0] + ortho[0])*axis[0] +
               (other_center[1] + ortho[1])*axis[1] +
               (other_center[2] + ortho[2])*axis[2];
@@ -435,4 +434,4 @@ void update_begin_end(double work_begin, double work_end, double &begin, double 
 }
 
 
-}
+}  // namespace celllists

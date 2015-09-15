@@ -21,8 +21,10 @@
 
 #include "celllists/cell.h"
 
+#include <algorithm>
 #include <cmath>
 #include <stdexcept>
+#include <vector>
 
 #include "celllists/vec3.h"
 
@@ -39,7 +41,7 @@ Cell::Cell(const double* _rvecs, int _nvec): nvec(_nvec) {
     std::copy(_rvecs, _rvecs+nvec*3, rvecs);
 
     // compute the volume
-    switch(nvec) {
+    switch (nvec) {
         case 0:
             volume = NAN;
             break;
@@ -62,7 +64,7 @@ Cell::Cell(const double* _rvecs, int _nvec): nvec(_nvec) {
         throw singular_cell_vectors("The cell vectors are degenerate");
 
     // complete the list of rvecs in case nvec < 3
-    switch(nvec) {
+    switch (nvec) {
         case 0:
             // Just put in the identity matrix.
             std::fill(rvecs, rvecs+9, 0.0);
@@ -119,7 +121,7 @@ Cell::Cell(const double* _rvecs, int _nvec): nvec(_nvec) {
     vec3::iscale(gvecs+6, denom);
 
     // compute the spacings and the lengths of the cell vectors
-    for (int ivec=2; ivec>=0; ivec--) {
+    for (int ivec = 2; ivec >= 0; ivec--) {
         rlengths[ivec] = vec3::norm(rvecs+3*ivec);
         glengths[ivec] = vec3::norm(gvecs+3*ivec);
         rspacings[ivec] = 1.0/glengths[ivec];
@@ -230,7 +232,7 @@ int Cell::set_ranges_rcut(const double* center, double rcut, int* ranges_begin,
     double frac[3];
     int ncell = 1;
     to_rfrac(center, frac);
-    for (int ivec=nvec-1; ivec>=0; ivec--) {
+    for (int ivec = nvec-1; ivec >= 0; ivec--) {
         // Use spacings between planes to find first plane before cutoff sphere and last
         // plane after cutoff sphere. To this end, we must divide rcut by the spacing
         // between planes.
@@ -262,7 +264,7 @@ void Cell::select_inside_low(SphereSlice* slice, const int* shape,
 
     if (ivec == nvec - 1) {
         // If we are dealing with the last recursion, just store the bar.
-        for (auto& i: prefix)
+        for (auto& i : prefix)
             bars.push_back(i);
         bars.push_back(begin);
         bars.push_back(end);
@@ -286,7 +288,7 @@ void Cell::select_inside_low(SphereSlice* slice, const int* shape,
 size_t Cell::select_inside_rcut(const double* center, double rcut,
     const int* shape, const bool* pbc, std::vector<int> &bars) const {
     if (nvec == 0) {
-        throw std::domain_error("The cell must be at least 1D periodic for select_inside_rcut.");
+        throw std::domain_error("The cell must be at least 1D periodic.");
     }
     if (rcut <= 0) {
         throw std::domain_error("rcut must be strictly positive.");
@@ -318,4 +320,4 @@ int smart_wrap(int i, int shape, bool pbc) {
 }
 
 
-}
+}  // namespace celllists
