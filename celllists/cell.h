@@ -111,6 +111,7 @@ class Cell {
     */
   bool is_cubic() const;
 
+
   /** @brief
           Test if cell is cuboid (orthorombic)
 
@@ -118,6 +119,7 @@ class Cell {
       z. No small errors allowed.
     */
   bool is_cuboid() const;
+
 
   /** @brief
           Convert Cartesian real-space coordinates to fractional.
@@ -246,10 +248,10 @@ class Cell {
 
 
   /** @brief
-          Selects a list of cells inside a cutoff sphere.
-
-      @param origin
-          A pointer of 3 doubles with the origin of a supercell.
+          Selects a cells inside or intersecting with a cutoff sphere. This function
+          assumes space is divded in a regular grid of cells. The shape of one cell is
+          by `rvecs` and `nvec`. This function finds all cells that contain a point within
+          a cutoff sphere.
 
       @param center
           A pointer of 3 doubles with the center of the cutoff sphere.
@@ -261,19 +263,24 @@ class Cell {
           A pointer of 3 ints with the shape of the supercell.
 
       @param pbc
-          A pointer to integer flags indicating the periodicity of the
-          supercell along each cell vector.
+          A pointer to Boolean flags indicating the periodicity of the supercell along
+          each cell vector.
 
-      @param indices
-          A sufficiently large pre-allocated output array to which the
-          indexes of the selected periodic images are written. Each set of
-          integers corresponds to the intersection of crystal planes at
-          the lower end corner of the cell. A safe number of rows is given
-          by the return value of set_ranges_rcut. The number of columns
-          equals `nvec`. The elements are stored in row-major order.
+      @param bars
+          A std::vector<int> pointer in which the results, i.e. the cells overlapping with
+          the cutoff sphere, are stored. In this output, a ranges of consecutive of cells
+          along the last cell vector is called a bar and is represented by `(nvec + 1)`
+          integers. Thus, the elements of the bars vectors should be used in groups of
+          `(nvec + 1)`. For a single bar, the last two integers are the fractional
+          coordinates of enclosing crystal planes along the last periodic vector. The
+          preceding indexes in a bar are used to identify the position of the first cell
+          in a bar along all but the last real-space vectors. The range in fractional
+          coordinates along these all-but-last directions is `(i, i + 1)`. Finally, the
+          union of all bars is a volume that completely contains the cutoff sphere but
+          does not contain a single cell that does not overlap with the cutoff sphere.
 
       @return
-          The number rows in the
+          The number bars. The size of the bars vector is `nbar*(nvec+1)`.
     */
   size_t select_bars_rcut(const double* center, const double rcut, const int* shape,
     const bool* pbc, std::vector<int>* bars) const;
@@ -319,6 +326,8 @@ int smart_wrap(int i, const int shape, const bool pbc);
 
 }  // namespace celllists
 
+
 #endif  // CELLLISTS_CELL_H_
+
 
 // vim: textwidth=90 et ts=2 sw=2
