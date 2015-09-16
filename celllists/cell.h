@@ -35,17 +35,17 @@ namespace celllists {
 
 
 /** @brief
-        An exception for singular cell vectors
+        An exception for singular cell vectors.
  */
 class singular_cell_vectors : public std::domain_error {
  public:
   explicit singular_cell_vectors(const std::string& what_arg)
-    : std::domain_error(what_arg) {}
+      : std::domain_error(what_arg) {}
 };
 
 
 /** @brief
-        3D/2D/1D cell and derived quantities in a 3D space.
+        3D/2D/1D/0D cell and derived quantities in a 3D space.
 
     Upon construction, an object of this class acts as a read-only representation of the
     cell. Reciprocal cell vectors, vector lengths and spacings between planes are computed
@@ -53,12 +53,12 @@ class singular_cell_vectors : public std::domain_error {
     supported.
 
     Even though lower-dimensional periodic boundary conditions are supported, this class
-    is specific for 3D systems. In case of 1D or 2D PBC, the cell vectors are internally
-    extended with orthonormal basis vectors to guarantee an invertible transformation
-    between Cartesian and fractional coordinates. In that case, the fractional coordinates
-    are actually also Cartesian coordinates in directions orthogonal to the available cell
-    vectors. The extra basis vectors are always such that the complete set of vectors is
-    right-handed
+    is specific for 3D systems. In case of 0D, 1D or 2D PBC, the cell vectors are
+    internally extended with orthonormal basis vectors to guarantee an invertible
+    transformation between Cartesian and fractional coordinates. In that case, the
+    fractional coordinates are actually also Cartesian coordinates in directions
+    orthogonal to the available cell vectors. The extra basis vectors are always such that
+    the complete set of vectors is right-handed.
  */
 class Cell {
  public:
@@ -66,12 +66,13 @@ class Cell {
           Construct a Cell object.
 
       @param _rvecs
-          A pointer to `3*nvec` doubles that represent the real-space vectors in
-          row-major ordering. The vectors may not have a linear dependency.
+          A pointer to `3*nvec` doubles that represent the Cartesian real-space vectors in
+          row-major ordering. The vectors may not have a linear dependency. Each vector is
+          one row in a 3x3 matrix.
 
       @param _nvec
-          The number of cell vectors. This corresponds to the number of periodic
-          dimensions of a unit cell. `nvec` must be 0, 1, 2 or 3.
+          The number of cell vectors. This corresponds to the dimensionality of the cell.
+          `nvec` must be 0, 1, 2 or 3.
   */
   Cell(const double* _rvecs, int _nvec);
 
@@ -106,8 +107,8 @@ class Cell {
   /** @brief
           Test if cell is cubic
 
-      The cell must also be aligned with Cartesian axes, i.e a to x, b to y and c to
-      z. No small errors allowed.
+      The cell must also be aligned with Cartesian axes, i.e a to x, b to y and c to z. No
+      small errors allowed.
     */
   bool is_cubic() const;
 
@@ -115,8 +116,8 @@ class Cell {
   /** @brief
           Test if cell is cuboid (orthorombic)
 
-      The cell must also be aligned with Cartesian axes, i.e a to x, b to y and c to
-      z. No small errors allowed.
+      The cell must also be aligned with Cartesian axes, i.e a to x, b to y and c to z. No
+      small errors allowed.
     */
   bool is_cuboid() const;
 
@@ -140,8 +141,7 @@ class Cell {
           Convert fractional real-space coordinates to Cartesian.
 
       @param frac
-          A pointer to 3 doubles containing the input fractional
-          coordinates.
+          A pointer to 3 doubles containing the input fractional coordinates.
 
       @param cart
           A pointer to 3 doubles to which the output is written
@@ -155,8 +155,7 @@ class Cell {
           Convert fractional reciprocal-space coordinates to Cartesian.
 
       @param frac
-          A pointer to 3 doubles containing the input fractional
-          coordinates.
+          A pointer to 3 doubles containing the input fractional coordinates.
 
       @param dots
           A pointer to 3 doubles to which the output is written.
@@ -171,14 +170,12 @@ class Cell {
           Convert fractional reciprocal-space coordinates to Cartesian.
 
       @param coeffs
-          A pointer to 3 doubles containing the coefficients for the
-          linear combination.
+          A pointer to 3 doubles containing the coefficients for the linear combination.
 
       @param gvec
           A pointer to 3 doubles to which the output is written
 
-      This effectively computes a linear combination of reciprocal-space cell
-      vectors.
+      This effectively computes a linear combination of reciprocal-space cell vectors.
    */
   void to_gcart(const double* gfrac, double* gcart) const;
 
@@ -187,32 +184,29 @@ class Cell {
           In-place wrap a (relative) vector back into the cell ]-0.5, 0.5].
 
       @param delta
-          A pointer to 3 doubles with the (relative) vector. It will be
-          modified in-place.
+          A pointer to 3 doubles with the (relative) vector. It will be modified in-place.
 
-      After calling the wrap method, the fractional coordinates of delta will be
-      in the range [-0.5, 0.5[.
+      After calling the wrap method, the fractional coordinates of delta will be in the
+      range [-0.5, 0.5[.
 
-      This is an approximate implementation of the minimum image convention that
-      sometimes fails in very skewed cells, i.e. the wrapped vector is not always
-      the shortest relative vector between a reference point and all of its periodic
-      images. For more details see:
+      This is an approximate implementation of the minimum image convention that sometimes
+      fails in very skewed cells, i.e. the wrapped vector is not always the shortest
+      relative vector between a reference point and all of its periodic images. For more
+      details see:
       http://scicomp.stackexchange.com/questions/3107/minimum-image-convention-for-triclinic-unit-cell
   */
   void iwrap(double* delta) const;
 
 
   /** @brief
-          In-place addition of an integer linear combination of cell vectors to
-          delta.
+          In-place addition of an integer linear combination of cell vectors to delta.
 
       @param delta
-          A pointer to 3 doubles for the real-space vector to which the
-          linear combination is added in-place.
+          A pointer to 3 doubles for the real-space vector to which the linear combination
+          is added in-place.
 
       @param coeffs
-          A pointer to 3 doubles with the coefficients of the linear
-          combination.
+          A pointer to 3 doubles with the coefficients of the linear combination.
    */
   void iadd_rvec(double* delta, const int* coeffs) const;
 
@@ -221,30 +215,27 @@ class Cell {
           Get the ranges of cells within a cutoff radius.
 
       @param center
-          A pointer to 3 doubles that specify the center of the cutoff
-          sphere in real-space.
+          A pointer to 3 doubles that specify the center of the cutoff sphere in
+          real-space Cartesian coordinates.
 
       @param rcut
           The cutoff radius.
 
       @param ranges_begin
-          A pointer to `nvec` ints to which the begin of each range of
-          periodic images along a periodic boundary condition is written.
-          These integers are the highest indices of the crystal planes
+          A pointer to `nvec` ints, to which the begin of each range of cells along a cell
+          vector is written. These integers are the highest indices of the crystal planes
           before/below the cutoff sphere.
 
       @param ranges_end
-          A pointer to `nvec` ints to which the end of each range of
-          periodic images along a periodic boundary condition is written.
-          Then end values are non-inclusive as in Python ranges.
-          These integers are the lowest indices of the crystal planes
+          A pointer to `nvec` ints to which the end of each range of cells along a cell
+          vector is written. These integers are the lowest indices of the crystal planes
           after/above the cutoff sphere.
 
       This function effectively defines a supercell that is guaranteed to
       enclose the cutoff sphere.
    */
   int select_ranges_rcut(const double* center, const double rcut, int* ranges_begin,
-    int* ranges_end) const;
+      int* ranges_end) const;
 
 
   /** @brief
@@ -254,7 +245,8 @@ class Cell {
           a cutoff sphere.
 
       @param center
-          A pointer of 3 doubles with the center of the cutoff sphere.
+          A pointer to 3 doubles that specify the center of the cutoff sphere in
+          real-space Cartesian coordinates.
 
       @param rcut
           The cutoff radius.
@@ -283,15 +275,15 @@ class Cell {
           The number bars. The size of the bars vector is `nbar*(nvec+1)`.
     */
   size_t select_bars_rcut(const double* center, const double rcut, const int* shape,
-    const bool* pbc, std::vector<int>* bars) const;
+      const bool* pbc, std::vector<int>* bars) const;
 
  private:
   /** @brief
           TODO
    */
   void select_bars_low(SphereSlice* slice, const int* shape,
-    const bool* pbc, std::vector<int>* prefix, std::vector<int>* bars)
-    const;
+      const bool* pbc, std::vector<int>* prefix, std::vector<int>* bars)
+      const;
 
   const int nvec;        //!< number of defined cell vectors
   double rvecs[9];       //!< real-space vectors,       one per row, row-major

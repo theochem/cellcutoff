@@ -231,7 +231,7 @@ bool Cell::is_cuboid() const {
 
 
 int Cell::select_ranges_rcut(const double* center, const double rcut, int* ranges_begin,
-  int* ranges_end) const {
+    int* ranges_end) const {
   if (rcut <= 0) {
     throw std::domain_error("rcut must be strictly positive.");
   }
@@ -252,8 +252,7 @@ int Cell::select_ranges_rcut(const double* center, const double rcut, int* range
 
 
 void Cell::select_bars_low(SphereSlice* slice, const int* shape,
-  const bool* pbc, std::vector<int>* prefix, std::vector<int>* bars) const {
-
+    const bool* pbc, std::vector<int>* prefix, std::vector<int>* bars) const {
   // Get the vector index for which the range is currently searched
   int ivec = static_cast<int>(prefix->size());
   // Solve the hard problem elsewhere.
@@ -292,7 +291,7 @@ void Cell::select_bars_low(SphereSlice* slice, const int* shape,
 
 
 size_t Cell::select_bars_rcut(const double* center, const double rcut,
-  const int* shape, const bool* pbc, std::vector<int>* bars) const {
+    const int* shape, const bool* pbc, std::vector<int>* bars) const {
   if (nvec == 0) {
     throw std::domain_error("The cell must be at least 1D periodic.");
   }
