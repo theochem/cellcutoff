@@ -26,7 +26,13 @@
 
 #include "celllists/cell.h"
 
+
 namespace cl = celllists;
+
+
+#define NREP 100
+#define NPOINT 1000
+
 
 /* Some notes:
 
@@ -35,18 +41,26 @@ namespace cl = celllists;
 
 */
 
-#define NREP 100
-#define NPOINT 1000
 
+//! Fills an array of doubles with random numbers in range ]-0.5*scale, 0.5*scale]
 unsigned int fill_random_double(const unsigned int seed, double* array, const int size,
     const double low = -0.5, const double high = 0.5);
+
+//! Fills an array of int with random numbers in range [-range, range]
 unsigned int fill_random_int(const unsigned int seed, int* array, const int size,
     const int begin, const int end);
+
+//! Fills and array of int with a random permutation
 unsigned int fill_random_permutation(const unsigned int seed, int* array, const int size);
+
+//! Random cell with a volume larger than (0.1*scale)**nvec
 std::unique_ptr<cl::Cell> create_random_cell_nvec(const unsigned int seed, const int nvec,
     const double scale = 1.0, const bool cuboid = false);
+
+//! Compute a random point in a cubic box centered around center. Also computes distance.
 unsigned int random_point(const unsigned int seed,  const double* center,
     const double rcut, double* point, double* norm);
+
 
 #endif  // CELLLISTS_TESTS_COMMON_H_
 

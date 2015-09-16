@@ -36,17 +36,16 @@ namespace cl = celllists;
 namespace vec3 = celllists::vec3;
 
 
+//! Internal helper that just makes a useful random seed for a random generates.
 unsigned int get_next_seed(std::minstd_rand gen) {
   std::uniform_int_distribution<unsigned int>
-    dis_seed(0, std::numeric_limits<unsigned int>::max());
+      dis_seed(0, std::numeric_limits<unsigned int>::max());
   return dis_seed(gen);
 }
 
 
-//! Fills an array of doubles with random numbers in range ]-0.5*scale, 0.5*scale]
 unsigned int fill_random_double(const unsigned int seed, double* array, const int size,
-  const double low, const double high) {
-
+    const double low, const double high) {
   // Parameter check
   if (size <= 0)
     throw std::domain_error("Array size must be strictly positive.");
@@ -61,9 +60,9 @@ unsigned int fill_random_double(const unsigned int seed, double* array, const in
   return get_next_seed(gen);
 }
 
-//! Fills an array of int with random numbers in range [-range, range]
+
 unsigned int fill_random_int(const unsigned int seed, int* array, const int size,
-  const int begin, const int end) {
+    const int begin, const int end) {
   // Parameter check
   if (size <= 0)
     throw std::domain_error("Array size must be strictly positive.");
@@ -80,9 +79,9 @@ unsigned int fill_random_int(const unsigned int seed, int* array, const int size
   return get_next_seed(gen);
 }
 
-//! Fills and array of int with a random permutation
+
 unsigned int fill_random_permutation(const unsigned int seed, int* array,
-  const int size) {
+    const int size) {
   // Parameter check
   if (size <= 0)
     throw std::domain_error("Array size must be strictly positive.");
@@ -99,13 +98,12 @@ unsigned int fill_random_permutation(const unsigned int seed, int* array,
   return get_next_seed(gen);
 }
 
-//! Random cell with a volume larger than (0.1*scale)**nvec
+
 std::unique_ptr<cl::Cell> create_random_cell_nvec(unsigned int seed, const int nvec,
-  const double scale, const bool cuboid) {
+    const double scale, const bool cuboid) {
   // Range check
-  if ((nvec <= 0) || (nvec > 3)) {
+  if ((nvec <= 0) || (nvec > 3))
     throw std::domain_error("A random cell must be 1D, 2D or 2D periodic.");
-  }
   // Randomly construct a cell till a decent one (sufficient volume) is found.
   double rvecs[9];
   while (true) {
@@ -130,9 +128,9 @@ std::unique_ptr<cl::Cell> create_random_cell_nvec(unsigned int seed, const int n
   }
 }
 
-//! Compute a random point in a cubic box centered around center. Also computes distance.
+
 unsigned int random_point(unsigned int seed,  const double* center,
-  const double rcut, double* point, double* norm) {
+    const double rcut, double* point, double* norm) {
   seed = fill_random_double(seed, point, 3, -rcut, rcut);
   *norm = vec3::norm(point);
   vec3::iadd(point, center);
