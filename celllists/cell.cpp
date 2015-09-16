@@ -255,13 +255,13 @@ void Cell::select_bars_low(SphereSlice* slice, const int* shape,
     const bool* pbc, std::vector<int>* prefix, std::vector<int>* bars) const {
   // Get the vector index for which the range is currently searched
   int ivec = static_cast<int>(prefix->size());
-  // Solve the hard problem elsewhere.
+  // Use SphereSlice object to solve the hard of problem of finding begin and end.
   double begin_exact = 0.0;
   double end_exact = 0.0;
   slice->solve_range(ivec, &begin_exact, &end_exact);
   int begin = static_cast<int>(floor(begin_exact));
   int end = static_cast<int>(ceil(end_exact));
-  // Truncate this range if there are non-periodic bounds
+  // Truncate the begin-end range if there are non-periodic bounds.
   if (!pbc[ivec]) {
     if (begin < 0) begin = 0;
     if (end > shape[ivec]) end = shape[ivec];
@@ -279,11 +279,11 @@ void Cell::select_bars_low(SphereSlice* slice, const int* shape,
     for (int i = begin; i < end; ++i) {
       // Make sure the following recursion knows the indices of the current bar.
       prefix->push_back(i);
-      // Make a new cut in the spere slice.
+      // Make a new cut in the sphere slice.
       slice->set_cut_begin_end(ivec, i, i + 1);
-      // Make recursion
+      // Recursive call in which the remaining details of the bar/bars is/are solved.
       select_bars_low(slice, shape, pbc, prefix, bars);
-      // Remove the last element of prefix again
+      // Remove the last element of prefix as it is no longer applicable.
       prefix->pop_back();
     }
   }
@@ -292,16 +292,15 @@ void Cell::select_bars_low(SphereSlice* slice, const int* shape,
 
 size_t Cell::select_bars_rcut(const double* center, const double rcut,
     const int* shape, const bool* pbc, std::vector<int>* bars) const {
+  // Check arguments
   if (nvec == 0) {
     throw std::domain_error("The cell must be at least 1D periodic.");
   }
   if (rcut <= 0) {
     throw std::domain_error("rcut must be strictly positive.");
   }
-
-  // For all the heavy work, precomputes a lot.
+  // For all the heavy work, a SphereSlice object is used that precomputes a lot.
   SphereSlice sphere_slice(center, gvecs, rcut);
-
   // Prefix is used to keep track of current bar indices while going into recursion.
   std::vector<int> prefix;
   // Compute bars and return the number of bars
