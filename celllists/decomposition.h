@@ -36,8 +36,8 @@ namespace celllists {
 class Point {
  public:
   int index;
-  std::array<double,3> cart;
-  std::array<int,3> icell;
+  std::array<double, 3> cart;
+  std::array<int, 3> icell;
 
   Point(const int index, const double* _cart);
   Point(const int index, const double* _cart, const int* _icell);
@@ -48,14 +48,31 @@ class Point {
 // A typedef for cell_map objects
 typedef std::map<std::array<int, 3>, std::array<int, 2>> CellMap;
 
-//! Makes a subcell
-Cell* create_subcell(const Cell* cell, const int* shape, const double* spacings, bool* pbc);
-
 //! Assigns all cell indexes
 void assign_icell(const Cell &subcell, std::vector<Point>* points);
+void assign_icell(const Cell &subcell, std::vector<Point>* points, const int* shape, const bool* pbc);
 
 //! Create a mapping from cell indices to a list of points
 CellMap* create_cell_map(const std::vector<Point> &points);
+
+/**
+    @brief
+        A standardized modulo operation geared toward boundary conditions.
+
+    @param i
+        The numerator of the integer division.
+
+    @param shape
+        The denominator of the integer division.
+
+    @param pbc
+        Whether periodic boundary conditions apply.
+
+    @return
+        `i % shape` (guaranteed to be positive) if `pbc` is true. If `pbc` is false,
+        `i` is returned without modification.
+ */
+int smart_wrap(int i, const int shape, const bool pbc);
 
 
 }  // namespace celllists

@@ -98,18 +98,24 @@ TEST(PointTest, less_than) {
 }
 
 
-TEST(DecompositionTest, domain_assign_icell) {
+// Decomposition
+// ~~~~~~~~~~~~~
+
+TEST(DecompositionTest, assign_icell_domain) {
   double vecs[9]{1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
   cl::Cell subcell0(vecs, 0);
   EXPECT_THROW(cl::assign_icell(subcell0, nullptr), std::domain_error);
+  EXPECT_THROW(cl::assign_icell(subcell0, nullptr, nullptr, nullptr), std::domain_error);
   cl::Cell subcell1(vecs, 1);
   EXPECT_THROW(cl::assign_icell(subcell1, nullptr), std::domain_error);
+  EXPECT_THROW(cl::assign_icell(subcell1, nullptr, nullptr, nullptr), std::domain_error);
   cl::Cell subcell2(vecs, 2);
   EXPECT_THROW(cl::assign_icell(subcell2, nullptr), std::domain_error);
+  EXPECT_THROW(cl::assign_icell(subcell2, nullptr, nullptr, nullptr), std::domain_error);
 }
 
 
-TEST(DecompositionTest, example_assign_icell) {
+TEST(DecompositionTest, assign_icell_example) {
   std::vector<cl::Point> points;
   double cart0[3]{3.1, -1.0, -0.5};
   double cart1[3]{3.0, 2.9, 0.0};
@@ -129,6 +135,43 @@ TEST(DecompositionTest, example_assign_icell) {
   EXPECT_EQ(0, points[2].icell[0]);
   EXPECT_EQ(-2, points[2].icell[1]);
   EXPECT_EQ(0, points[2].icell[2]);
+}
+
+
+TEST(DecompositionTest, assign_icell_random_wrap) {
+  for (int irep = 0; irep < NREP; ++irep) {
+    // Get a random 3D cell
+    std::unique_ptr<cl::Cell> cell(create_random_cell_nvec(irep*NPOINT, 3, 2));
+    // Get a subcell
+    int shape[3];
+    bool pbc[3];
+    fill_random_int(irep*5, shape, 3, 1, 5);
+    std::unique_ptr<cl::Cell> subcell(cell->create_subcell(shape, nullptr, pbc));
+    EXPECT_EQ(true, pbc[0]);
+    EXPECT_EQ(true, pbc[1]);
+    EXPECT_EQ(true, pbc[2]);
+
+    // Generate random points, wrapped in cell
+    std::vector<cl::Point> points;
+    for (int ipoint = 0; ipoint < NPOINT; ++ipoint) {
+      double cart[3];
+      fill_random_double(ipoint+3157, cart, 3, -5.0, 5.0);
+      points.push_back(cl::Point(ipoint, cart));
+    }
+
+    // Actual calculation of interest
+    cl::assign_icell(*subcell, &points, shape, pbc);
+
+    // Check all icell fields, should be in range defined by shape
+    for (const auto& point : points) {
+      EXPECT_LE(0, point.icell[0]);
+      EXPECT_GT(shape[0], point.icell[0]);
+      EXPECT_LE(0, point.icell[1]);
+      EXPECT_GT(shape[1], point.icell[1]);
+      EXPECT_LE(0, point.icell[2]);
+      EXPECT_GT(shape[2], point.icell[2]);
+    }
+  }
 }
 
 
@@ -156,13 +199,41 @@ TEST(DecompositionTest, random_cell_map) {
       }
     }
     // Check consistency of results: loop over points
-    ipoint = 0;
+    int ipoint = 0;
     for (const auto& point : points) {
-      EXPECT_GE(ipoint, cell_map[point.icell][0]);
-      EXPECT_LT(ipoint, cell_map[point.icell][1]);
+      EXPECT_GE(ipoint, cell_map->at(point.icell)[0]);
+      EXPECT_LT(ipoint, cell_map->at(point.icell)[1]);
       ++ipoint;
     }
   }
+}
+
+
+// smart_wrap
+// ~~~~~~~~~~
+
+TEST(SmartWrap, examples) {
+  EXPECT_EQ(0, cl::smart_wrap(-15, 5, true));
+  EXPECT_EQ(0, cl::smart_wrap(-5, 5, true));
+  EXPECT_EQ(2, cl::smart_wrap(-3, 5, true));
+  EXPECT_EQ(4, cl::smart_wrap(-1, 5, true));
+  EXPECT_EQ(0, cl::smart_wrap(0, 5, true));
+  EXPECT_EQ(3, cl::smart_wrap(3, 5, true));
+  EXPECT_EQ(0, cl::smart_wrap(5, 5, true));
+  EXPECT_EQ(1, cl::smart_wrap(6, 5, true));
+  EXPECT_EQ(0, cl::smart_wrap(10, 5, true));
+  EXPECT_EQ(2, cl::smart_wrap(12, 5, true));
+  EXPECT_EQ(-15, cl::smart_wrap(-15, 5, false));
+  EXPECT_EQ(-5, cl::smart_wrap(-5, 5, false));
+  EXPECT_EQ(-3, cl::smart_wrap(-3, 5, false));
+  EXPECT_EQ(-1, cl::smart_wrap(-1, 5, false));
+  EXPECT_EQ(0, cl::smart_wrap(0, 5, false));
+  EXPECT_EQ(3, cl::smart_wrap(3, 5, false));
+  EXPECT_EQ(4, cl::smart_wrap(4, 5, false));
+  EXPECT_EQ(5, cl::smart_wrap(5, 5, false));
+  EXPECT_EQ(6, cl::smart_wrap(6, 5, false));
+  EXPECT_EQ(10, cl::smart_wrap(10, 5, false));
+  EXPECT_EQ(12, cl::smart_wrap(12, 5, false));
 }
 
 // vim: textwidth=90 et ts=2 sw=2

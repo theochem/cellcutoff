@@ -346,26 +346,6 @@ class Cell {
   double gspacings_[3];   //!< spacing between reciprocal crystal planes
 };
 
-/**
-    @brief
-        A standardized modulo operation geared toward boundary conditions.
-
-    @param i
-        The numerator of the integer division.
-
-    @param shape
-        The denominator of the integer division.
-
-    @param pbc
-        Whether periodic boundary conditions apply.
-
-    @return
-        `i % shape` (guaranteed to be positive) if `pbc` is true. If `pbc` is false,
-        `i` is returned if `i` lies in `[0,shape[`. If `pbc` is false and `i` falls out of
-        that range, `-1` is returned.
- */
-int smart_wrap(int i, const int shape, const bool pbc);
-
 
 }  // namespace celllists
 

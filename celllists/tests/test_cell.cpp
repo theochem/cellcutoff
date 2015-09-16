@@ -1218,32 +1218,4 @@ TEST_P(CellTestP, bars_cutoff_corners) {
 
 INSTANTIATE_TEST_CASE_P(CellTest123, CellTestP, ::testing::Range(1, 4));
 
-
-// smart_wrap
-// ~~~~~~~~~~
-
-TEST(SmartWrap, examples) {
-  EXPECT_EQ(0, cl::smart_wrap(-15, 5, true));
-  EXPECT_EQ(0, cl::smart_wrap(-5, 5, true));
-  EXPECT_EQ(2, cl::smart_wrap(-3, 5, true));
-  EXPECT_EQ(4, cl::smart_wrap(-1, 5, true));
-  EXPECT_EQ(0, cl::smart_wrap(0, 5, true));
-  EXPECT_EQ(3, cl::smart_wrap(3, 5, true));
-  EXPECT_EQ(0, cl::smart_wrap(5, 5, true));
-  EXPECT_EQ(1, cl::smart_wrap(6, 5, true));
-  EXPECT_EQ(0, cl::smart_wrap(10, 5, true));
-  EXPECT_EQ(2, cl::smart_wrap(12, 5, true));
-  EXPECT_EQ(-1, cl::smart_wrap(-15, 5, false));
-  EXPECT_EQ(-1, cl::smart_wrap(-5, 5, false));
-  EXPECT_EQ(-1, cl::smart_wrap(-3, 5, false));
-  EXPECT_EQ(-1, cl::smart_wrap(-1, 5, false));
-  EXPECT_EQ(0, cl::smart_wrap(0, 5, false));
-  EXPECT_EQ(3, cl::smart_wrap(3, 5, false));
-  EXPECT_EQ(4, cl::smart_wrap(4, 5, false));
-  EXPECT_EQ(-1, cl::smart_wrap(5, 5, false));
-  EXPECT_EQ(-1, cl::smart_wrap(6, 5, false));
-  EXPECT_EQ(-1, cl::smart_wrap(10, 5, false));
-  EXPECT_EQ(-1, cl::smart_wrap(12, 5, false));
-}
-
 // vim: textwidth=90 et ts=2 sw=2

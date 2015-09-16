@@ -355,21 +355,6 @@ void Cell::bars_cutoff_low(SphereSlice* slice, const int* shape,
 }
 
 
-int smart_wrap(int i, const int shape, const bool pbc) {
-  if (pbc) {
-    i %= shape;
-    if (i < 0) i += shape;
-    return i;
-  } else if (i < 0) {
-    return -1;
-  } else if (i >= shape) {
-    return -1;
-  } else {
-    return i;
-  }
-}
-
-
 }  // namespace celllists
 
 // vim: textwidth=90 et ts=2 sw=2
