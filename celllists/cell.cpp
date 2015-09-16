@@ -230,7 +230,7 @@ bool Cell::is_cuboid() const {
 }
 
 
-int Cell::set_ranges_rcut(const double* center, const double rcut, int* ranges_begin,
+int Cell::select_ranges_rcut(const double* center, const double rcut, int* ranges_begin,
   int* ranges_end) const {
   if (rcut <= 0) {
     throw std::domain_error("rcut must be strictly positive.");

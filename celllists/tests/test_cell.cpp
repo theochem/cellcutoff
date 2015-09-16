@@ -595,53 +595,53 @@ TEST_F(CellTest3, cubic_cuboid_example) {
   EXPECT_TRUE(mycell->is_cuboid());
 }
 
-// set_ranges_rcut
-// ~~~~~~~~~~~~~~~
+// select_ranges_rcut
+// ~~~~~~~~~~~~~~~~~~
 
-TEST_F(CellTest1, set_ranges_rcut_example) {
+TEST_F(CellTest1, select_ranges_rcut_example) {
   double center[3] = {6.3, 0.2, -0.8};
   int ranges_begin[1];
   int ranges_end[1];
   int ncell = 0;
-  ncell = mycell->set_ranges_rcut(center, 1.0, ranges_begin, ranges_end);
+  ncell = mycell->select_ranges_rcut(center, 1.0, ranges_begin, ranges_end);
   EXPECT_EQ(2, ncell);
   EXPECT_EQ(2, ranges_begin[0]);
   EXPECT_EQ(4, ranges_end[0]);
-  ncell = mycell->set_ranges_rcut(center, 2.0, ranges_begin, ranges_end);
+  ncell = mycell->select_ranges_rcut(center, 2.0, ranges_begin, ranges_end);
   EXPECT_EQ(3, ncell);
   EXPECT_EQ(2, ranges_begin[0]);
   EXPECT_EQ(5, ranges_end[0]);
-  ncell = mycell->set_ranges_rcut(center, 3.0, ranges_begin, ranges_end);
+  ncell = mycell->select_ranges_rcut(center, 3.0, ranges_begin, ranges_end);
   EXPECT_EQ(4, ncell);
   EXPECT_EQ(1, ranges_begin[0]);
   EXPECT_EQ(5, ranges_end[0]);
 }
 
-TEST_F(CellTest1, set_ranges_rcut_edge) {
+TEST_F(CellTest1, select_ranges_rcut_edge) {
   double center[3] = {2.0, 0.2, -0.8};
   int ranges_begin[1];
   int ranges_end[1];
   int ncell = 0;
-  ncell = mycell->set_ranges_rcut(center, 1.0, ranges_begin, ranges_end);
+  ncell = mycell->select_ranges_rcut(center, 1.0, ranges_begin, ranges_end);
   EXPECT_EQ(2, ncell);
   EXPECT_EQ(0, ranges_begin[0]);
   EXPECT_EQ(2, ranges_end[0]);
-  ncell = mycell->set_ranges_rcut(center, 2.0, ranges_begin, ranges_end);
+  ncell = mycell->select_ranges_rcut(center, 2.0, ranges_begin, ranges_end);
   EXPECT_EQ(2, ncell);
   EXPECT_EQ(0, ranges_begin[0]);
   EXPECT_EQ(2, ranges_end[0]);
-  ncell = mycell->set_ranges_rcut(center, 3.0, ranges_begin, ranges_end);
+  ncell = mycell->select_ranges_rcut(center, 3.0, ranges_begin, ranges_end);
   EXPECT_EQ(4, ncell);
   EXPECT_EQ(-1, ranges_begin[0]);
   EXPECT_EQ(3, ranges_end[0]);
 }
 
-TEST_F(CellTest2, set_ranges_rcut_example) {
+TEST_F(CellTest2, select_ranges_rcut_example) {
   double center[3] = {6.3, 0.2, -5.0};
   int ranges_begin[2];
   int ranges_end[2];
   int ncell = 0;
-  ncell = mycell->set_ranges_rcut(center, 1.1, ranges_begin, ranges_end);
+  ncell = mycell->select_ranges_rcut(center, 1.1, ranges_begin, ranges_end);
   EXPECT_EQ(2*2, ncell);
   EXPECT_EQ(2, ranges_begin[0]);
   EXPECT_EQ(-2, ranges_begin[1]);
@@ -649,12 +649,12 @@ TEST_F(CellTest2, set_ranges_rcut_example) {
   EXPECT_EQ(0, ranges_end[1]);
 }
 
-TEST_F(CellTest2, set_ranges_rcut_edge) {
+TEST_F(CellTest2, select_ranges_rcut_edge) {
   double center[3] = {4.0, 0.2, -2.0};
   int ranges_begin[2];
   int ranges_end[2];
   int ncell = 0;
-  ncell = mycell->set_ranges_rcut(center, 2.0, ranges_begin, ranges_end);
+  ncell = mycell->select_ranges_rcut(center, 2.0, ranges_begin, ranges_end);
   EXPECT_EQ(2, ncell);
   EXPECT_EQ(1, ranges_begin[0]);
   EXPECT_EQ(-1, ranges_begin[1]);
@@ -662,12 +662,12 @@ TEST_F(CellTest2, set_ranges_rcut_edge) {
   EXPECT_EQ(0, ranges_end[1]);
 }
 
-TEST_F(CellTest3, set_ranges_rcut_example) {
+TEST_F(CellTest3, select_ranges_rcut_example) {
   double center[3] = {6.3, 2.2, -5.8};
   int ranges_begin[3];
   int ranges_end[3];
   int ncell = 0;
-  ncell = mycell->set_ranges_rcut(center, 1.0, ranges_begin, ranges_end);
+  ncell = mycell->select_ranges_rcut(center, 1.0, ranges_begin, ranges_end);
   EXPECT_EQ(2*3*1, ncell);
   EXPECT_EQ(2, ranges_begin[0]);
   EXPECT_EQ(1, ranges_begin[1]);
@@ -677,12 +677,12 @@ TEST_F(CellTest3, set_ranges_rcut_example) {
   EXPECT_EQ(-1, ranges_end[2]);
 }
 
-TEST_F(CellTest3, set_ranges_rcut_edge) {
+TEST_F(CellTest3, select_ranges_rcut_edge) {
   double center[3] = {10.0, -2.0, -6.0};
   int ranges_begin[3];
   int ranges_end[3];
   int ncell = 0;
-  ncell = mycell->set_ranges_rcut(center, 2.0, ranges_begin, ranges_end);
+  ncell = mycell->select_ranges_rcut(center, 2.0, ranges_begin, ranges_end);
   EXPECT_EQ(2*4*1, ncell);
   EXPECT_EQ(4, ranges_begin[0]);
   EXPECT_EQ(-4, ranges_begin[1]);
@@ -692,15 +692,15 @@ TEST_F(CellTest3, set_ranges_rcut_edge) {
   EXPECT_EQ(-1, ranges_end[2]);
 }
 
-TEST_P(CellTestP, set_ranges_rcut_domain) {
+TEST_P(CellTestP, select_ranges_rcut_domain) {
   double center[3] = {6.3, 2.2, -5.8};
   int ranges_begin[3];
   int ranges_end[3];
-  EXPECT_THROW(mycell->set_ranges_rcut(center, -1.0, ranges_begin, ranges_end), std::domain_error);
-  EXPECT_THROW(mycell->set_ranges_rcut(center, 0.0, ranges_begin, ranges_end), std::domain_error);
+  EXPECT_THROW(mycell->select_ranges_rcut(center, -1.0, ranges_begin, ranges_end), std::domain_error);
+  EXPECT_THROW(mycell->select_ranges_rcut(center, 0.0, ranges_begin, ranges_end), std::domain_error);
 }
 
-TEST_P(CellTestP, set_ranges_rcut_random) {
+TEST_P(CellTestP, select_ranges_rcut_random) {
   int npoint_total = 0;
   for (int irep=0; irep < NREP; ++irep) {
     std::unique_ptr<cl::Cell> cell(create_random_cell(irep));
@@ -709,7 +709,7 @@ TEST_P(CellTestP, set_ranges_rcut_random) {
     int ranges_end[3];
     double rcut = 0.3*(irep + 1);
     fill_random_double(irep + 2, center, 3, -5.0, 5.0);
-    cell->set_ranges_rcut(center, rcut, ranges_begin, ranges_end);
+    cell->select_ranges_rcut(center, rcut, ranges_begin, ranges_end);
     for (int ipoint=0; ipoint < NPOINT; ++ipoint) {
       double point[3];
       double norm;
