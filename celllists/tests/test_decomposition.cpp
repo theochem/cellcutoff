@@ -145,7 +145,7 @@ TEST(DecompositionTest, random_cell_map) {
     cl::assign_icell(*subcell, &points);
     std::sort(points.begin(), points.end());
     std::unique_ptr<cl::CellMap> cell_map(cl::create_cell_map(points));
-    // Check consistency of results
+    // Check consistency of results: loop over map
     for (const auto& kv : *cell_map) {
       const int begin = kv.second[0];
       const int end = kv.second[1];
@@ -154,6 +154,13 @@ TEST(DecompositionTest, random_cell_map) {
         EXPECT_EQ(kv.first[1], points.at(ipoint).icell[1]);
         EXPECT_EQ(kv.first[2], points.at(ipoint).icell[2]);
       }
+    }
+    // Check consistency of results: loop over points
+    ipoint = 0;
+    for (const auto& point : points) {
+      EXPECT_GE(ipoint, cell_map[point.icell][0]);
+      EXPECT_LT(ipoint, cell_map[point.icell][1]);
+      ++ipoint;
     }
   }
 }
