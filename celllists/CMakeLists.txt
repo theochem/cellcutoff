@@ -34,6 +34,7 @@ include_directories(${PROJECT_SOURCE_DIR})
 # Define source files
 set(SOURCE_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/cell.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/decomposition.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/sphere_slice.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vec3.cpp
 )
@@ -41,6 +42,7 @@ set(SOURCE_FILES
 # Define header files
 set(HEADER_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/cell.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/decomposition.h
   ${CMAKE_CURRENT_SOURCE_DIR}/sphere_slice.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vec3.h
   ${CMAKE_CURRENT_BINARY_DIR}/config.h

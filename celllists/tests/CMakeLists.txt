@@ -25,8 +25,16 @@ find_package(GTest REQUIRED)
 # Make sure the header files are found
 include_directories(${GTEST_INCLUDE_DIRS})
 
+# Define test source files
+set(TEST_SOURCE_FILES
+  ${CMAKE_CURRENT_SOURCE_DIR}/test_cell.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/test_decomposition.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/test_sphere_slice.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/common.cpp
+)
+
 # The testing executable
-add_executable(test_celllists EXCLUDE_FROM_ALL test_cell.cpp test_sphere_slice.cpp common.cpp)
+add_executable(test_celllists EXCLUDE_FROM_ALL ${TEST_SOURCE_FILES})
 set_property(TARGET test_celllists PROPERTY CXX_STANDARD 11)
 
 # How the testing executable has to be linked...
