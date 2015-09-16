@@ -35,7 +35,7 @@ namespace celllists {
 
 
 SphereSlice::SphereSlice(const double* center, const double* normals, double radius) :
-  center(center), normals(normals), radius(radius) {
+    center(center), normals(normals), radius(radius) {
   // Check sanity of arguments
   if (radius <= 0)
     throw std::domain_error("radius must be strictly positive.");
@@ -70,8 +70,8 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
   for (int id_axis=0; id_axis < 3; ++id_axis) {
     for (int id_cut=0; id_cut < 3; ++id_cut) {
       denoms[id_axis + 3*id_cut] = (
-        dots[id_axis + 3*id_cut]*dots[id_axis + 3*id_cut] -
-        dots[id_axis + 3*id_axis]*dots[id_cut + 3*id_cut]);
+          dots[id_axis + 3*id_cut]*dots[id_axis + 3*id_cut] -
+          dots[id_axis + 3*id_axis]*dots[id_cut + 3*id_cut]);
     }
   }
   for (int id_axis=0; id_axis < 3; ++id_axis) {
@@ -91,7 +91,7 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
         //  -> in plane of axis and cut_normal
         //  -> orthogonal to cut_normal
         vec3::iadd(ortho, cut_normal,
-                           -vec3::dot(axis, cut_normal)/norms_sq[id_cut]);
+                   -vec3::dot(axis, cut_normal)/norms_sq[id_cut]);
         // Normalize
         vec3::iscale(ortho, 1.0/vec3::norm(ortho));
       }
@@ -194,8 +194,7 @@ void SphereSlice::solve_range_2(double* begin, double* end) const {
 
 
 void SphereSlice::solve_full(const int id_axis, double* begin, double* end,
-  const int id_cut0, const int id_cut1) const {
-
+    const int id_cut0, const int id_cut1) const {
   double work_begin, work_end;
   if ((id_cut0 == -1) && (id_cut1 == -1)) {
     solve_full_low(id_axis, &work_begin, &work_end);
@@ -218,8 +217,7 @@ void SphereSlice::solve_full(const int id_axis, double* begin, double* end,
 
 
 void SphereSlice::solve_full_low(const int id_axis, double* begin,
-  double* end, double* point_begin, double* point_end) const {
-
+    double* end, double* point_begin, double* point_end) const {
   // Check the axis
   CHECK_ID(id_axis);
   // Everything is precomputed...
@@ -233,8 +231,7 @@ void SphereSlice::solve_full_low(const int id_axis, double* begin,
 
 
 void SphereSlice::solve_plane(const int id_axis, int const id_cut0,
-  double const frac_cut0, double* begin, double* end, const int id_cut1) const {
-
+    double const frac_cut0, double* begin, double* end, const int id_cut1) const {
   double work_begin, work_end;
   if (id_cut1 == -1) {
     solve_plane_low(id_axis, id_cut0, frac_cut0, &work_begin, &work_end);
@@ -258,9 +255,8 @@ void SphereSlice::solve_plane(const int id_axis, int const id_cut0,
 
 
 void SphereSlice::solve_plane_low(const int id_axis, const int id_cut,
-  const double frac_cut, double* begin, double* end,
-  double* point_begin, double* point_end) const {
-
+    const double frac_cut, double* begin, double* end,
+    double* point_begin, double* point_end) const {
   // Get the axis
   CHECK_ID(id_axis);
   const double* axis = normals + 3*id_axis;
@@ -304,18 +300,18 @@ void SphereSlice::solve_plane_low(const int id_axis, const int id_cut,
 
 
 void SphereSlice::solve_line(const int id_axis, const int id_cut0, const int id_cut1,
-  const double frac_cut0, const double frac_cut1, double* begin, double* end) const {
+    const double frac_cut0, const double frac_cut1, double* begin, double* end) const {
 
   double work_begin, work_end;
   solve_line_low(id_axis, id_cut0, id_cut1, frac_cut0, frac_cut1,
-    &work_begin, &work_end);
+                 &work_begin, &work_end);
   update_begin_end(work_begin, work_end, begin, end);
 }
 
 
 void SphereSlice::solve_line_low(const int id_axis, const int id_cut0, const int id_cut1,
-  const double frac_cut0, const double frac_cut1, double* begin, double* end,
-  double* point_begin, double* point_end) const {
+    const double frac_cut0, const double frac_cut1, double* begin, double* end,
+    double* point_begin, double* point_end) const {
 
   // Run some checks on the ID arguments.
   CHECK_ID(id_axis);
@@ -333,7 +329,7 @@ void SphereSlice::solve_line_low(const int id_axis, const int id_cut0, const int
 
   double line_center[3];
   double lost_radius_sq = compute_plane_intersection(id_cut0, id_cut1,
-    delta_cut0, delta_cut1, line_center);
+      delta_cut0, delta_cut1, line_center);
   vec3::iadd(line_center, center);
 
   // Compute the remaining line radius
@@ -358,7 +354,7 @@ void SphereSlice::solve_line_low(const int id_axis, const int id_cut0, const int
 
 
 double SphereSlice::compute_plane_intersection(const int id_cut0, const int id_cut1,
-  const double cut0, const double cut1, double* other_center) const {
+    const double cut0, const double cut1, double* other_center) const {
 
   CHECK_ID(id_cut0);
   CHECK_ID(id_cut1);
@@ -397,13 +393,13 @@ bool SphereSlice::inside_cuts(const int id_cut, const double* point) const {
 
 
 void compute_begin_end(const double* other_center, const double* ortho,
-  const double* axis, double* begin, double* end,
-  double* point_begin, double* point_end) {
+    const double* axis, double* begin, double* end,
+    double* point_begin, double* point_end) {
   // Compute projection on axis, optionally compute points;
   if (point_begin == nullptr) {
     *begin = (other_center[0] - ortho[0])*axis[0] +
-                 (other_center[1] - ortho[1])*axis[1] +
-                 (other_center[2] - ortho[2])*axis[2];
+             (other_center[1] - ortho[1])*axis[1] +
+             (other_center[2] - ortho[2])*axis[2];
   } else {
     vec3::copy(other_center, point_begin);
     vec3::iadd(point_begin, ortho, -1);
@@ -411,8 +407,8 @@ void compute_begin_end(const double* other_center, const double* ortho,
   }
   if (point_end == nullptr) {
     *end = (other_center[0] + ortho[0])*axis[0] +
-               (other_center[1] + ortho[1])*axis[1] +
-               (other_center[2] + ortho[2])*axis[2];
+           (other_center[1] + ortho[1])*axis[1] +
+           (other_center[2] + ortho[2])*axis[2];
   } else {
     vec3::copy(other_center, point_end);
     vec3::iadd(point_end, ortho, 1);
@@ -422,7 +418,7 @@ void compute_begin_end(const double* other_center, const double* ortho,
 
 
 void update_begin_end(const double work_begin, const double work_end,
-  double* begin, double* end) {
+    double* begin, double* end) {
   if (!std::isnan(work_begin)) {
     if (std::isnan(*begin)) {
       *begin = work_begin;

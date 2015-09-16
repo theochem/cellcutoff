@@ -37,8 +37,9 @@ namespace celllists {
 class no_solution_found : public std::domain_error {
  public:
   explicit no_solution_found(const std::string& what_arg)
-    : std::domain_error(what_arg) {}
+      : std::domain_error(what_arg) {}
 };
+
 
 class SphereSlice {
  public:
@@ -62,23 +63,23 @@ class SphereSlice {
   void solve_range_2(double* begin, double* end) const;
 
   void solve_full(const int id_axis, double* begin, double* end,
-    const int id_cut0 = -1, const int id_cut1 = -1) const;
+      const int id_cut0 = -1, const int id_cut1 = -1) const;
   void solve_full_low(const int id_axis, double* begin, double* end,
-    double* point_begin = nullptr, double* point_end = nullptr) const;
+      double* point_begin = nullptr, double* point_end = nullptr) const;
 
   void solve_plane(const int id_axis, const int id_cut0, const double frac_cut,
-    double* begin, double* end, const int id_cut1 = -1) const;
+      double* begin, double* end, const int id_cut1 = -1) const;
   void solve_plane_low(const int id_axis, const int id_cut, const double frac_cut,
-    double* begin, double* end,
-    double* point_begin = nullptr, double* point_end = nullptr) const;
+      double* begin, double* end,
+      double* point_begin = nullptr, double* point_end = nullptr) const;
 
   void solve_line(const int id_axis, const int id_cut0, const int id_cut1,
-    const double frac_cut0, const double frac_cut1, double* begin, double* end) const;
+      const double frac_cut0, const double frac_cut1, double* begin, double* end) const;
   void solve_line_low(const int id_axis, const int id_cut0, const int id_cut1,
-    const double frac_cut0, const double frac_cut1, double* begin, double* end,
-    double* point_begin = nullptr, double* point_end = nullptr) const;
+      const double frac_cut0, const double frac_cut1, double* begin, double* end,
+      double* point_begin = nullptr, double* point_end = nullptr) const;
   double compute_plane_intersection(const int id_cut0, int const id_cut1,
-    const double cut0, const double cut1, double* other_center) const;
+      const double cut0, const double cut1, double* other_center) const;
 
   bool inside_cuts(const int id_cut, const double* point) const;
 
@@ -109,14 +110,15 @@ class SphereSlice {
 };
 
 void compute_begin_end(const double* other_center, const double* ortho,
-  const double* axis, double* begin, double* end,
-  double* point_begin, double* point_end);
+    const double* axis, double* begin, double* end,
+    double* point_begin, double* point_end);
 
 void update_begin_end(const double work_begin, const double work_end,
-  double* begin, double* end);
+    double* begin, double* end);
 
 
 }  // namespace celllists
+
 
 #endif  // CELLLISTS_SPHERE_SLICE_H_
 
