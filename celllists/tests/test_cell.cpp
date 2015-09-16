@@ -89,6 +89,15 @@ class CellTestP : public CellTest, public ::testing::WithParamInterface<int> {
 };
 
 
+class CellTest0 : public CellTest {
+ public:
+  virtual void SetUp() {
+    nvec = 0;
+    set_up_data();
+  }
+};
+
+
 class CellTest1 : public CellTest {
  public:
   virtual void SetUp() {
@@ -141,6 +150,17 @@ TEST_F(CellTest3, constructor_nvec_too_large) {
 }
 
 
+TEST_F(CellTest0, constructor) {
+  EXPECT_EQ(0, mycell->nvec());
+  EXPECT_TRUE(std::isnan(mycell->volume()));
+  EXPECT_TRUE(std::isnan(mycell->gvolume()));
+  std::unique_ptr<cl::Cell> gcell(mycell->create_reciprocal());
+  EXPECT_EQ(0, gcell->nvec());
+  EXPECT_TRUE(std::isnan(gcell->volume()));
+  EXPECT_TRUE(std::isnan(gcell->gvolume()));
+}
+
+
 TEST_P(CellTestP, constructor_simple) {
   double rvecs[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
   cl::Cell cell(rvecs, nvec);
@@ -163,7 +183,8 @@ TEST_P(CellTestP, constructor_simple) {
   EXPECT_EQ(0.0, cell.gvec(2)[0]);
   EXPECT_EQ(0.0, cell.gvec(2)[1]);
   EXPECT_EQ(1.0, cell.gvec(2)[2]);
-  EXPECT_EQ(nvec > 0, cell.volume());
+  EXPECT_EQ(1.0, cell.volume());
+  EXPECT_EQ(1.0, cell.gvolume());
   EXPECT_EQ(1.0, cell.rspacings()[0]);
   EXPECT_EQ(1.0, cell.rspacings()[1]);
   EXPECT_EQ(1.0, cell.rspacings()[2]);
@@ -172,6 +193,28 @@ TEST_P(CellTestP, constructor_simple) {
   EXPECT_EQ(1.0, cell.gspacings()[2]);
   EXPECT_EQ(true, cell.cubic());
   EXPECT_EQ(true, cell.cuboid());
+}
+
+
+// create_reciprocal
+// ~~~~~~~~~~~~~~
+
+TEST_P(CellTestP, create_reciprocal) {
+  std::unique_ptr<cl::Cell> gcell(mycell->create_reciprocal());
+  // Make sure pointers are not copied.
+  EXPECT_NE(gcell->rvecs(), mycell->gvecs());
+  EXPECT_NE(gcell->gvecs(), mycell->rvecs());
+  EXPECT_NE(gcell->rlengths(), mycell->glengths());
+  EXPECT_NE(gcell->glengths(), mycell->rlengths());
+  EXPECT_NE(gcell->rspacings(), mycell->gspacings());
+  EXPECT_NE(gcell->gspacings(), mycell->rspacings());
+  // Make sure the contents of the data members are the same
+  EXPECT_TRUE(std::equal(gcell->rvecs(), gcell->rvecs() + 3*nvec, mycell->gvecs()));
+  EXPECT_TRUE(std::equal(gcell->gvecs(), gcell->gvecs() + 3*nvec, mycell->rvecs()));
+  EXPECT_TRUE(std::equal(gcell->rlengths(), gcell->rlengths() + nvec, mycell->glengths()));
+  EXPECT_TRUE(std::equal(gcell->glengths(), gcell->glengths() + nvec, mycell->rlengths()));
+  EXPECT_TRUE(std::equal(gcell->rspacings(), gcell->rspacings() + nvec, mycell->gspacings()));
+  EXPECT_TRUE(std::equal(gcell->gspacings(), gcell->gspacings() + nvec, mycell->rspacings()));
 }
 
 
@@ -358,85 +401,6 @@ TEST_P(CellTestP, to_rcart_to_rfrac_consistency) {
 }
 
 
-// to_gcart and to_gfrac
-// ~~~~~~~~~~~~~~~~~~~~~
-
-TEST_F(CellTest1, to_gcart_example) {
-  double gfrac[3] = {2.5, 4.3, 3.0};
-  double gcart[3];
-  mycell->to_gcart(gfrac, gcart);
-  EXPECT_NEAR(1.25, gcart[0], 1e-10);
-  EXPECT_NEAR(4.3, gcart[1], 1e-10);
-  EXPECT_NEAR(3.0, gcart[2], 1e-10);
-}
-
-
-TEST_F(CellTest2, to_gcart_example) {
-  double gfrac[3] = {2.5, 4.3, 3.0};
-  double gcart[3];
-  mycell->to_gcart(gfrac, gcart);
-  EXPECT_NEAR(1.25, gcart[0], 1e-10);
-  EXPECT_NEAR(-3.0, gcart[1], 1e-10);
-  EXPECT_NEAR(1.075, gcart[2], 1e-10);
-}
-
-
-TEST_F(CellTest3, to_gcart_example) {
-  double gfrac[3] = {2.5, 4.3, 3.0};
-  double gcart[3];
-  mycell->to_gcart(gfrac, gcart);
-  EXPECT_NEAR(1.25, gcart[0], 1e-10);
-  EXPECT_NEAR(4.3, gcart[1], 1e-10);
-  EXPECT_NEAR(0.75, gcart[2], 1e-10);
-}
-
-
-TEST_F(CellTest1, to_gfrac_example) {
-  double gcart[3] = {0.5, 0.2, -1.5};
-  double gfrac[3];
-  mycell->to_gfrac(gcart, gfrac);
-  EXPECT_NEAR(1.0, gfrac[0], 1e-10);
-  EXPECT_NEAR(0.2, gfrac[1], 1e-10);
-  EXPECT_NEAR(-1.5, gfrac[2], 1e-10);
-}
-
-
-TEST_F(CellTest2, to_gfrac_example) {
-  double gcart[3] = {0.5, 0.2, -1.5};
-  double gfrac[3];
-  mycell->to_gfrac(gcart, gfrac);
-  EXPECT_NEAR(1.0, gfrac[0], 1e-10);
-  EXPECT_NEAR(-6.0, gfrac[1], 1e-10);
-  EXPECT_NEAR(-0.2, gfrac[2], 1e-10);
-}
-
-
-TEST_F(CellTest3, to_gfrac_example) {
-  double gcart[3] = {0.5, 0.2, -1.5};
-  double gfrac[3];
-  mycell->to_gfrac(gcart, gfrac);
-  EXPECT_NEAR(1.0, gfrac[0], 1e-10);
-  EXPECT_NEAR(0.2, gfrac[1], 1e-10);
-  EXPECT_NEAR(-6.0, gfrac[2], 1e-10);
-}
-
-
-TEST_P(CellTestP, to_gcart_to_gfrac_consistency) {
-  for (int irep=0; irep < NREP; ++irep) {
-    std::unique_ptr<cl::Cell> cell(create_random_cell(irep));
-    double gfrac1[3];
-    double gcart[3];
-    double gfrac2[3];
-    fill_random_double(irep, gfrac1, 3, -5.0, 5.0);
-    cell->to_gcart(gfrac1, gcart);
-    cell->to_gfrac(gcart, gfrac2);
-    EXPECT_NEAR(gfrac2[0], gfrac1[0], 1e-10);
-    EXPECT_NEAR(gfrac2[1], gfrac1[1], 1e-10);
-    EXPECT_NEAR(gfrac2[2], gfrac1[2], 1e-10);
-  }
-}
-
-
 // iadd_rvec
 // ~~~~~~~~~
 
@@ -592,7 +556,7 @@ TEST_P(CellTestP, signed_volume) {
 }
 
 // cubic and cuboid
-// ~~~~~~~~~~~~~~~~~~~~~~
+// ~~~~~~~~~~~~~~~~
 
 TEST_P(CellTestP, cubic_cuboid_random1) {
   for (int irep = 0; irep < NREP; ++irep) {

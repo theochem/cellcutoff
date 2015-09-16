@@ -32,7 +32,7 @@
 namespace celllists {
 
 
-Cell::Cell(const double* rvecs, int nvec): nvec_(nvec) {
+Cell::Cell(const double* rvecs, const int nvec): nvec_(nvec) {
   // check if nvec is sensible
   if ((nvec_ < 0) || (nvec_ > 3))
     throw std::domain_error("The number of cell vectors must be 0, 1, 2 or 3.");
@@ -66,6 +66,7 @@ Cell::Cell(const double* rvecs, int nvec): nvec_(nvec) {
   // reciprocal cell vectors can not be computed.
   if (volume_ == 0.0)
     throw singular_cell_vectors("The cell vectors are degenerate");
+  gvolume_ = 1.0/volume_;
 
   // complete the list of rvecs in case nvec < 3
   switch (nvec_) {
@@ -136,6 +137,12 @@ Cell::Cell(const double* rvecs, int nvec): nvec_(nvec) {
 }
 
 
+Cell* Cell::create_reciprocal() const {
+  return new Cell(gvecs_, nvec_, rvecs_, gvolume_, volume_, glengths_, rlengths_,
+                  gspacings_, rspacings_);
+}
+
+
 const double* Cell::rvec(const int ivec) const {
   if ((ivec < 0) || (ivec >= 3)) {
     throw std::domain_error("ivec must be 0, 1 or 2.");
@@ -161,18 +168,6 @@ void Cell::to_rfrac(const double* rcart, double* rfrac) const {
 void Cell::to_rcart(const double* rfrac, double* rcart) const {
   // Transfrom to real-space Cartesian coordinates
   vec3::tmatvec(rvecs_, rfrac, rcart);
-}
-
-
-void Cell::to_gfrac(const double* gcart, double* gfrac) const {
-  // Transform to reciprocal space Cartesian coordinates
-  vec3::matvec(rvecs_, gcart, gfrac);
-}
-
-
-void Cell::to_gcart(const double* gfrac, double* gcart) const {
-  // Transform to reciprocal-space Cartesian coordinates
-  vec3::tmatvec(gvecs_, gfrac, gcart);
 }
 
 
@@ -251,6 +246,40 @@ int Cell::select_ranges_rcut(const double* center, const double rcut, int* range
 }
 
 
+size_t Cell::select_bars_rcut(const double* center, const double rcut,
+    const int* shape, const bool* pbc, std::vector<int>* bars) const {
+  // Check arguments
+  if (nvec_ == 0) {
+    throw std::domain_error("The cell must be at least 1D periodic.");
+  }
+  if (rcut <= 0) {
+    throw std::domain_error("rcut must be strictly positive.");
+  }
+  // For all the heavy work, a SphereSlice object is used that precomputes a lot.
+  SphereSlice sphere_slice(center, gvecs_, rcut);
+  // Prefix is used to keep track of current bar indices while going into recursion.
+  std::vector<int> prefix;
+  // Compute bars and return the number of bars
+  select_bars_low(&sphere_slice, shape, pbc, &prefix, bars);
+  return bars->size()/(nvec_ + 1);
+}
+
+
+Cell::Cell(const double* rvecs, const int nvec, const double* gvecs,
+    const double volume, const double gvolume,
+    const double* rlengths, const double* glengths,
+    const double* rspacings, const double* gspacings)
+    : nvec_(nvec), volume_(volume), gvolume_(gvolume) {
+  // Just copy everything to data members;
+  std::copy(rvecs, rvecs + nvec_*3, rvecs_);
+  std::copy(gvecs, gvecs + nvec_*3, gvecs_);
+  std::copy(rlengths, rlengths + nvec_, rlengths_);
+  std::copy(glengths, glengths + nvec_, glengths_);
+  std::copy(rspacings, rspacings + nvec_, rspacings_);
+  std::copy(gspacings, gspacings + nvec_, gspacings_);
+}
+
+
 void Cell::select_bars_low(SphereSlice* slice, const int* shape,
     const bool* pbc, std::vector<int>* prefix, std::vector<int>* bars) const {
   // Get the vector index for which the range is currently searched
@@ -287,25 +316,6 @@ void Cell::select_bars_low(SphereSlice* slice, const int* shape,
       prefix->pop_back();
     }
   }
-}
-
-
-size_t Cell::select_bars_rcut(const double* center, const double rcut,
-    const int* shape, const bool* pbc, std::vector<int>* bars) const {
-  // Check arguments
-  if (nvec_ == 0) {
-    throw std::domain_error("The cell must be at least 1D periodic.");
-  }
-  if (rcut <= 0) {
-    throw std::domain_error("rcut must be strictly positive.");
-  }
-  // For all the heavy work, a SphereSlice object is used that precomputes a lot.
-  SphereSlice sphere_slice(center, gvecs_, rcut);
-  // Prefix is used to keep track of current bar indices while going into recursion.
-  std::vector<int> prefix;
-  // Compute bars and return the number of bars
-  select_bars_low(&sphere_slice, shape, pbc, &prefix, bars);
-  return bars->size()/(nvec_ + 1);
 }
 
 

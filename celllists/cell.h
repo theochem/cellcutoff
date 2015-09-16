@@ -74,7 +74,7 @@ class Cell {
           The number of cell vectors. This corresponds to the dimensionality of the cell.
           `nvec` must be 0, 1, 2 or 3.
   */
-  Cell(const double* rvecs, int nvec);
+  Cell(const double* rvecs, const int nvec);
 
   // Copy-constructor, move-constructor and assignment make no sense as the Cell is
   // constant after construction! Just pass references or pointers instead.
@@ -82,24 +82,43 @@ class Cell {
   Cell(Cell&&) = delete;
   Cell& operator=(const Cell&) = delete;
 
+  /** @brief
+          Create a Cell object with the reciprocal cell. The caller owns the pointer. This
+          practically equivalent to `Cell(cell.gvecs(), cell.nvec())`, but more efficient
+          and without precision loss.
+   */
+  Cell* create_reciprocal() const;
+
   //! Returns the number of periodic dimensions.
   int nvec() const { return nvec_; }
+
   //! Returns all real-space vectors.
   const double* rvecs() const { return rvecs_; }
+
   //! Returns a real-space vector.
   const double* rvec(const int ivec) const;
+
   //! Returns all reciprocal-space vectors.
   const double* gvecs() const { return gvecs_; }
+
   //! Returns a reciprocal-space vector.
   const double* gvec(const int ivec) const;
+
   //! Returns the volume (or area or length) of the cell.
   double volume() const { return volume_; }
+
+  //! Returns the volume (or area or length) of the reciprocal cell.
+  double gvolume() const { return gvolume_; }
+
   //! Returns the lengths of the real-space vectors.
   const double* rlengths() const { return rlengths_; }
+
   //! Returns the lengths of the reciprocal-space vectors.
   const double* glengths() const { return glengths_; }
+
   //! Returns the spacings between the real-space crystal plane
   const double* rspacings() const { return rspacings_; }
+
   //! Returns the spacings between the reciprocal-space crystal plane
   const double* gspacings() const { return gspacings_; }
 
@@ -149,35 +168,6 @@ class Cell {
       This effectively computes a linear combination of real-space cell vectors.
    */
   void to_rcart(const double* frac, double* cart) const;
-
-
-  /** @brief
-          Convert fractional reciprocal-space coordinates to Cartesian.
-
-      @param frac
-          A pointer to 3 doubles containing the input fractional coordinates.
-
-      @param dots
-          A pointer to 3 doubles to which the output is written.
-
-      This effectively computes the dot products of the Cartesian vector with the
-      real-space cell vectors.
-   */
-  void to_gfrac(const double* gcart, double* gfrac) const;
-
-
-  /** @brief
-          Convert fractional reciprocal-space coordinates to Cartesian.
-
-      @param coeffs
-          A pointer to 3 doubles containing the coefficients for the linear combination.
-
-      @param gvec
-          A pointer to 3 doubles to which the output is written
-
-      This effectively computes a linear combination of reciprocal-space cell vectors.
-   */
-  void to_gcart(const double* gfrac, double* gcart) const;
 
 
   /** @brief
@@ -277,7 +267,16 @@ class Cell {
   size_t select_bars_rcut(const double* center, const double rcut, const int* shape,
       const bool* pbc, std::vector<int>* bars) const;
 
- private:
+ protected:
+  /** @brief
+          Constructor that assumes the caller takes care of the consistency of all
+          arguments. All arguments are copied.
+   */
+  Cell(const double* rvecs, const int nvec, const double* gvecs,
+       const double volume, const double gvolume,
+       const double* rlengths, const double* glenths,
+       const double* rspacings, const double* gspacings);
+
   /** @brief
           TODO
    */
@@ -285,10 +284,12 @@ class Cell {
       const bool* pbc, std::vector<int>* prefix, std::vector<int>* bars)
       const;
 
-  const int nvec_;        //!< number of defined cell vectors
+ private:
   double rvecs_[9];       //!< real-space vectors,       one per row, row-major
+  const int nvec_;        //!< number of defined cell vectors
   double gvecs_[9];       //!< reciprocal-space vectors, one per row, row-major
   double volume_;         //!< volume (or area or length) of the cell
+  double gvolume_;        //!< volume of the reciprocal cell
   double rlengths_[3];    //!< real-space vector lengths
   double glengths_[3];    //!< reciprocal-space vector lengths
   double rspacings_[3];   //!< spacing between real-space crystal planes
