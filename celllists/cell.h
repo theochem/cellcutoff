@@ -48,9 +48,9 @@ class singular_cell_vectors : public std::domain_error {
         3D/2D/1D/0D cell and derived quantities in a 3D space.
 
     Upon construction, an object of this class acts as a read-only representation of the
-    cell. Reciprocal cell vectors, vector lengths and spacings between planes are computed
-    immediately. All sorts of manipulations on fractional or Cartesian coordinates are
-    supported.
+    cell. Reciprocal cell vectors, cell vector lengths and spacings between crystal planes
+    are computed immediately. Several manipulations of fractional or Cartesian coordinates
+    are implemented.
 
     Even though lower-dimensional periodic boundary conditions are supported, this class
     is specific for 3D systems. In case of 0D, 1D or 2D PBC, the cell vectors are
@@ -65,43 +65,47 @@ class Cell {
   /** @brief
           Construct a Cell object.
 
-      @param _rvecs
-          A pointer to `3*nvec` doubles that represent the Cartesian real-space vectors in
-          row-major ordering. The vectors may not have a linear dependency. Each vector is
-          one row in a 3x3 matrix.
+      @param vecs
+          A pointer to `3*nvec` doubles that represent the Cartesian cell vectors in
+          row-major ordering. The vectors must not have a linear dependency. Each vector
+          is one row in a 3x3 matrix.
 
-      @param _nvec
+      @param nvec
           The number of cell vectors. This corresponds to the dimensionality of the cell.
           `nvec` must be 0, 1, 2 or 3.
   */
-  Cell(const double* rvecs, const int nvec);
+  Cell(const double* vecs, const int nvec);
 
   // Copy-constructor, move-constructor and assignment make no sense as the Cell is
-  // constant after construction! Just pass references or pointers instead.
+  // constant after construction! Just pass a reference or a pointer instead.
   Cell(const Cell& that) = delete;
   Cell(Cell&&) = delete;
   Cell& operator=(const Cell&) = delete;
 
   /** @brief
-          Create a Cell object with the reciprocal cell. The caller owns the pointer. This
-          practically equivalent to `Cell(cell.gvecs(), cell.nvec())`, but more efficient
-          and without precision loss.
+          Create a Cell object with the reciprocal cell.
+
+      The caller owns the memory of the returned pointer. This is practically equivalent
+      to `Cell(cell.gvecs(), cell.nvec())`, but more efficient and without precision loss.
+
+      @return
+          A pointer to a newly allocated reciprocal cell.
    */
   Cell* create_reciprocal() const;
 
   //! Returns the number of periodic dimensions.
   int nvec() const { return nvec_; }
 
-  //! Returns all real-space vectors.
-  const double* rvecs() const { return rvecs_; }
+  //! Returns all cell vectors.
+  const double* vecs() const { return vecs_; }
 
-  //! Returns a real-space vector.
-  const double* rvec(const int ivec) const;
+  //! Returns a cell vector.
+  const double* vec(const int ivec) const;
 
-  //! Returns all reciprocal-space vectors.
+  //! Returns all reciprocal cell vectors.
   const double* gvecs() const { return gvecs_; }
 
-  //! Returns a reciprocal-space vector.
+  //! Returns a reciprocal cell vector.
   const double* gvec(const int ivec) const;
 
   //! Returns the volume (or area or length) of the cell.
@@ -110,54 +114,52 @@ class Cell {
   //! Returns the volume (or area or length) of the reciprocal cell.
   double gvolume() const { return gvolume_; }
 
-  //! Returns the lengths of the real-space vectors.
-  const double* rlengths() const { return rlengths_; }
+  //! Returns the lengths of the cell vectors.
+  const double* lengths() const { return lengths_; }
 
-  //! Returns the lengths of the reciprocal-space vectors.
+  //! Returns the lengths of the reciprocal cell vectors.
   const double* glengths() const { return glengths_; }
 
-  //! Returns the spacings between the real-space crystal plane
-  const double* rspacings() const { return rspacings_; }
+  //! Returns the spacings between the crystal plane
+  const double* spacings() const { return spacings_; }
 
-  //! Returns the spacings between the reciprocal-space crystal plane
+  //! Returns the spacings between the reciprocal crystal plane
   const double* gspacings() const { return gspacings_; }
 
 
   /** @brief
-          Test if cell is cubic
-
-      The cell must also be aligned with Cartesian axes, i.e a to x, b to y and c to z. No
-      small errors allowed.
+          Returns `true` only when cell is cubic and aligned with Cartesian
+          axes: a to x, b to y and c to z. No small errors allowed.
     */
   bool cubic() const;
 
 
   /** @brief
-          Test if cell is cuboid (orthorombic)
-
-      The cell must also be aligned with Cartesian axes, i.e a to x, b to y and c to z. No
-      small errors allowed.
+          Returns `true` only when cell is cuboid (orthorombic) and aligned with Cartesian
+          axes: a to x, b to y and c to z. No small errors allowed.
     */
   bool cuboid() const;
 
 
   /** @brief
-          Convert Cartesian real-space coordinates to fractional.
+          Convert Cartesian coordinates to fractional.
+
+      This effectively computes the dot products of the Cartesian vector with the
+      reciprocal cell vectors.
 
       @param cart
-          A pointer to 3 doubles containing the input real-space vector.
+          A pointer to 3 doubles containing the input cell vector.
 
       @param frac
           A pointer to 3 doubles in which the output is written.
-
-      This effectively computes the dot products of the Cartesian vector with the
-      reciprocal-space cell vectors.
    */
   void to_rfrac(const double* cart, double* frac) const;
 
 
   /** @brief
-          Convert fractional real-space coordinates to Cartesian.
+          Convert fractional coordinates to Cartesian.
+
+      This effectively computes a linear combination of cell vectors.
 
       @param frac
           A pointer to 3 doubles containing the input fractional coordinates.
@@ -165,25 +167,26 @@ class Cell {
       @param cart
           A pointer to 3 doubles to which the output is written
 
-      This effectively computes a linear combination of real-space cell vectors.
    */
   void to_rcart(const double* frac, double* cart) const;
 
 
   /** @brief
-          In-place wrap a (relative) vector back into the cell ]-0.5, 0.5].
-
-      @param delta
-          A pointer to 3 doubles with the (relative) vector. It will be modified in-place.
+          In-place wrap a (relative) Cartesian vector back into the cell ]-0.5, 0.5].
 
       After calling the wrap method, the fractional coordinates of delta will be in the
-      range [-0.5, 0.5[.
+      range ]-0.5, 0.5].
 
       This is an approximate implementation of the minimum image convention that sometimes
       fails in very skewed cells, i.e. the wrapped vector is not always the shortest
       relative vector between a reference point and all of its periodic images. For more
       details see:
       http://scicomp.stackexchange.com/questions/3107/minimum-image-convention-for-triclinic-unit-cell
+
+      @param delta
+          A pointer to 3 doubles with the (relative) Cartesian vector. It will be modified
+          in-place.
+
   */
   void iwrap(double* delta) const;
 
@@ -192,53 +195,57 @@ class Cell {
           In-place addition of an integer linear combination of cell vectors to delta.
 
       @param delta
-          A pointer to 3 doubles for the real-space vector to which the linear combination
+          A pointer to 3 doubles for the Cartesian vector to which the linear combination
           is added in-place.
 
       @param coeffs
-          A pointer to 3 doubles with the coefficients of the linear combination.
+          A pointer to 3 ints with the coefficients of the linear combination.
    */
-  void iadd_rvec(double* delta, const int* coeffs) const;
+  void iadd_vec(double* delta, const int* coeffs) const;
 
 
   /** @brief
           Get the ranges of cells within a cutoff radius.
 
+      This function effectively defines a supercell that is guaranteed to enclose the
+      cutoff sphere.
+
       @param center
           A pointer to 3 doubles that specify the center of the cutoff sphere in
-          real-space Cartesian coordinates.
+          Cartesian coordinates.
 
-      @param rcut
+      @param cutoff
           The cutoff radius.
 
       @param ranges_begin
           A pointer to `nvec` ints, to which the begin of each range of cells along a cell
           vector is written. These integers are the highest indices of the crystal planes
-          before/below the cutoff sphere.
+          below the cutoff sphere.
 
       @param ranges_end
           A pointer to `nvec` ints to which the end of each range of cells along a cell
           vector is written. These integers are the lowest indices of the crystal planes
-          after/above the cutoff sphere.
+          above the cutoff sphere.
 
-      This function effectively defines a supercell that is guaranteed to
-      enclose the cutoff sphere.
+      @return
+          The number of cells contained in the supercell.
    */
-  int select_ranges_rcut(const double* center, const double rcut, int* ranges_begin,
+  int ranges_cutoff(const double* center, const double cutoff, int* ranges_begin,
       int* ranges_end) const;
 
 
   /** @brief
-          Selects a cells inside or intersecting with a cutoff sphere. This function
-          assumes space is divded in a regular grid of cells. The shape of one cell is
-          by `rvecs` and `nvec`. This function finds all cells that contain a point within
-          a cutoff sphere.
+          Selects a cells inside or intersecting with a cutoff sphere.
+
+      This function assumes space is divded in a regular grid of cells. The shape of one
+      cell is by `vecs` and `nvec`. This function finds all cells that contain a point
+      within a cutoff sphere.
 
       @param center
           A pointer to 3 doubles that specify the center of the cutoff sphere in
-          real-space Cartesian coordinates.
+          Cartesian coordinates.
 
-      @param rcut
+      @param cutoff
           The cutoff radius.
 
       @param shape
@@ -256,7 +263,7 @@ class Cell {
           `(nvec + 1)`. For a single bar, the last two integers are the fractional
           coordinates of enclosing crystal planes along the last periodic vector. The
           preceding indexes in a bar are used to identify the position of the first cell
-          in a bar along all but the last real-space vectors. The range in fractional
+          in a bar along all but the last cell vectors. The range in fractional
           coordinates along these all-but-last directions is `(i, i + 1)`. Finally, the
           union of all bars is a volume that completely contains the cutoff sphere but
           does not contain a single cell that does not overlap with the cutoff sphere.
@@ -264,36 +271,45 @@ class Cell {
       @return
           The number bars. The size of the bars vector is `nbar*(nvec+1)`.
     */
-  size_t select_bars_rcut(const double* center, const double rcut, const int* shape,
+  size_t bars_cutoff(const double* center, const double cutoff, const int* shape,
       const bool* pbc, std::vector<int>* bars) const;
 
  protected:
   /** @brief
           Constructor that assumes the caller takes care of the consistency of all
-          arguments. All arguments are copied.
+          arguments. All arguments are copied to data members.
    */
-  Cell(const double* rvecs, const int nvec, const double* gvecs,
+  Cell(const double* vecs, const int nvec, const double* gvecs,
        const double volume, const double gvolume,
-       const double* rlengths, const double* glenths,
-       const double* rspacings, const double* gspacings);
+       const double* lengths, const double* glenths,
+       const double* spacings, const double* gspacings);
 
   /** @brief
-          TODO
+          Low-level functions used by bars_cutoff.
+
+      TODO. This method may change in future, so I'm not going to try explain it in
+      detail. This can be fixed after the `sphere_slice` will be completely finalized.
+      (The current implementation sphere_slice and bars_cutoff is good but not optimal.)
+
+      This method goes recursively through all active cell vectors and divides space along
+      this axis in cells that overlap with the cutoff sphere/circle/line, depending on
+      the dimension at hand (i.e. the recursion depth). It makes use of the SphereSlice\
+      object to find the begin-end range along each cell vector.
    */
-  void select_bars_low(SphereSlice* slice, const int* shape,
+  void bars_cutoff_low(SphereSlice* slice, const int* shape,
       const bool* pbc, std::vector<int>* prefix, std::vector<int>* bars)
       const;
 
  private:
-  double rvecs_[9];       //!< real-space vectors,       one per row, row-major
+  double vecs_[9];        //!< cell vectors, one per row, row-major
   const int nvec_;        //!< number of defined cell vectors
-  double gvecs_[9];       //!< reciprocal-space vectors, one per row, row-major
+  double gvecs_[9];       //!< reciprocal cell vectors, one per row, row-major
   double volume_;         //!< volume (or area or length) of the cell
   double gvolume_;        //!< volume of the reciprocal cell
-  double rlengths_[3];    //!< real-space vector lengths
-  double glengths_[3];    //!< reciprocal-space vector lengths
-  double rspacings_[3];   //!< spacing between real-space crystal planes
-  double gspacings_[3];   //!< spacing between reciprocal-space crystal planes
+  double lengths_[3];     //!< cell vector lengths
+  double glengths_[3];    //!< reciprocal cell vector lengths
+  double spacings_[3];    //!< spacing between crystal planes
+  double gspacings_[3];   //!< spacing between reciprocal crystal planes
 };
 
 /**

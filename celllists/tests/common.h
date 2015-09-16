@@ -59,7 +59,7 @@ std::unique_ptr<cl::Cell> create_random_cell_nvec(const unsigned int seed, const
 
 //! Compute a random point in a cubic box centered around center. Also computes distance.
 unsigned int random_point(const unsigned int seed,  const double* center,
-    const double rcut, double* point, double* norm);
+    const double cutoff, double* point, double* norm);
 
 
 #endif  // CELLLISTS_TESTS_COMMON_H_

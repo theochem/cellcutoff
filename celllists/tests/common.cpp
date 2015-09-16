@@ -105,23 +105,23 @@ std::unique_ptr<cl::Cell> create_random_cell_nvec(unsigned int seed, const int n
   if ((nvec <= 0) || (nvec > 3))
     throw std::domain_error("A random cell must be 1D, 2D or 2D periodic.");
   // Randomly construct a cell till a decent one (sufficient volume) is found.
-  double rvecs[9];
+  double vecs[9];
   while (true) {
-    seed = fill_random_double(seed, rvecs, 9, -scale, scale);
+    seed = fill_random_double(seed, vecs, 9, -scale, scale);
     if (cuboid) {
-      rvecs[1] = 0.0;
-      rvecs[2] = 0.0;
+      vecs[1] = 0.0;
+      vecs[2] = 0.0;
       if (nvec > 1) {
-        rvecs[3] = 0.0;
-        rvecs[5] = 0.0;
+        vecs[3] = 0.0;
+        vecs[5] = 0.0;
       }
       if (nvec > 2) {
-        rvecs[6] = 0.0;
-        rvecs[7] = 0.0;
+        vecs[6] = 0.0;
+        vecs[7] = 0.0;
       }
     }
     try {
-      std::unique_ptr<cl::Cell> cell(new cl::Cell(rvecs, nvec));
+      std::unique_ptr<cl::Cell> cell(new cl::Cell(vecs, nvec));
       if (cell->volume() > pow(0.1*scale, nvec))
         return cell;
     } catch (cl::singular_cell_vectors) { }
@@ -130,8 +130,8 @@ std::unique_ptr<cl::Cell> create_random_cell_nvec(unsigned int seed, const int n
 
 
 unsigned int random_point(unsigned int seed,  const double* center,
-    const double rcut, double* point, double* norm) {
-  seed = fill_random_double(seed, point, 3, -rcut, rcut);
+    const double cutoff, double* point, double* norm) {
+  seed = fill_random_double(seed, point, 3, -cutoff, cutoff);
   *norm = vec3::norm(point);
   vec3::iadd(point, center);
   return seed;
