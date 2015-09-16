@@ -22,8 +22,10 @@
 #ifndef CELLLISTS_VEC3_H_
 #define CELLLISTS_VEC3_H_
 
+
 namespace celllists {
 namespace vec3 {
+
 
 /* Some notes:
 
@@ -35,24 +37,52 @@ namespace vec3 {
 
 */
 
+
+//! Computes the norm of a vector
 double norm(const double* vec);
+
+//! Computes the squared norm of a vector
 double normsq(const double* vec);
+
+//! Computes the dot product of two vectors
 double dot(const double* vec1, const double* vec2);
+
+//! Computes the distance between two vectors
 double distance(const double* vec1, const double* vec2);
+
+//! Computes the triple product of the three given vectors
 double triple(const double* vec1, const double* vec2, const double* vec3);
+
+//! Computes the cross product of the first two vectors and assigns result to the third
 void cross(const double* vec1, const double* vec2, double* vec3);
+
+//! Scale the vector in-place
 void iscale(double* vec, double scale);
+
+//! Copy contents of first argument to the second
 void copy(const double* source, double* dest);
+
+//! Add to the first argument the second argument
 void iadd(double* output, const double* term);
+
+//! Add to the first argument a rescaled second argument
 void iadd(double* output, const double* term, double scale);
+
+//! Construct a relative vector
 void delta(const double* begin, const double* end, double* output);
+
+//! Compute a matrix-vector product
 void matvec(const double* mat, const double* vec, double* output);
+
+//! Compute a matrix^T-vector product
 void tmatvec(const double* mat, const double* vec, double* output);
+
 
 #endif  // CELLLISTS_VEC3_H_
 
 
 }  // namespace vec3
 }  // namespace celllists
+
 
 // vim: textwidth=90 et ts=2 sw=2
