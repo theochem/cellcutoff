@@ -729,21 +729,21 @@ TEST_P(CellTestP, set_ranges_rcut_random) {
   EXPECT_LT((NREP*NPOINT)/3, npoint_total);
 }
 
-// select_inside_rcut
-// ~~~~~~~~~~~~~~~~~~
+// select_bars_rcut
+// ~~~~~~~~~~~~~~~~
 
-TEST_P(CellTestP, select_inside_rcut_domain) {
+TEST_P(CellTestP, select_bars_rcut_domain) {
   double center[3] = {2.5, 3.4, -0.6};
   int shape[3] = {10, 10, 10};
   bool pbc[3] = {true, true, true};
   std::vector<int> bars;
-  EXPECT_THROW(mycell->select_inside_rcut(center, 0.0, shape, pbc, &bars), std::domain_error);
-  EXPECT_THROW(mycell->select_inside_rcut(center, -1.0, shape, pbc, &bars), std::domain_error);
+  EXPECT_THROW(mycell->select_bars_rcut(center, 0.0, shape, pbc, &bars), std::domain_error);
+  EXPECT_THROW(mycell->select_bars_rcut(center, -1.0, shape, pbc, &bars), std::domain_error);
   cl::Cell zero_cell(nullptr, 0);
-  EXPECT_THROW(zero_cell.select_inside_rcut(center, 1.0, shape, pbc, &bars), std::domain_error);
+  EXPECT_THROW(zero_cell.select_bars_rcut(center, 1.0, shape, pbc, &bars), std::domain_error);
 }
 
-TEST_F(CellTest1, select_inside_rcut_example) {
+TEST_F(CellTest1, select_bars_rcut_example) {
   // All the parameters
   double rcut = 5.0;
   double center[3] = {2.5, 3.4, -0.6};
@@ -752,7 +752,7 @@ TEST_F(CellTest1, select_inside_rcut_example) {
 
   // Call
   std::vector<int> bars;
-  size_t nbar = mycell->select_inside_rcut(center, rcut, shape, pbc, &bars);
+  size_t nbar = mycell->select_bars_rcut(center, rcut, shape, pbc, &bars);
   EXPECT_EQ(1, nbar);
   EXPECT_EQ(2, bars.size());
 
@@ -764,7 +764,7 @@ TEST_F(CellTest1, select_inside_rcut_example) {
 }
 
 
-TEST_F(CellTest2, select_inside_rcut_example) {
+TEST_F(CellTest2, select_bars_rcut_example) {
   // All the parameters
   double rcut = 5.0;
   double center[3] = {2.5, 3.4, -0.6};
@@ -773,7 +773,7 @@ TEST_F(CellTest2, select_inside_rcut_example) {
 
   // Call
   std::vector<int> bars;
-  size_t nbar = mycell->select_inside_rcut(center, rcut, shape, pbc, &bars);
+  size_t nbar = mycell->select_bars_rcut(center, rcut, shape, pbc, &bars);
   EXPECT_EQ(6, nbar);
   EXPECT_EQ(6*3, bars.size());
 
@@ -789,7 +789,7 @@ TEST_F(CellTest2, select_inside_rcut_example) {
   }
 }
 
-TEST_F(CellTest3, select_inside_rcut_example) {
+TEST_F(CellTest3, select_bars_rcut_example) {
   // All the parameters
   double rcut = 1.9;
   double center[3] = {2.0, 2.0, 2.0};
@@ -798,7 +798,7 @@ TEST_F(CellTest3, select_inside_rcut_example) {
 
   // Call
   std::vector<int> bars;
-  size_t nbar = mycell->select_inside_rcut(center, rcut, shape, pbc, &bars);
+  size_t nbar = mycell->select_bars_rcut(center, rcut, shape, pbc, &bars);
   EXPECT_EQ(8, nbar);
   EXPECT_EQ(8*4, bars.size());
 
@@ -812,7 +812,7 @@ TEST_F(CellTest3, select_inside_rcut_example) {
   }
 }
 
-TEST_P(CellTestP, select_inside_rcut_random) {
+TEST_P(CellTestP, select_bars_rcut_random) {
   size_t nbar_total = 0;
   for (int irep=0; irep < NREP; ++irep) {
     // Test parameters:
@@ -833,7 +833,7 @@ TEST_P(CellTestP, select_inside_rcut_random) {
 
     // Compute the bars.
     std::vector<int> bars;
-    size_t nbar = cell->select_inside_rcut(center, rcut, shape, pbc, &bars);
+    size_t nbar = cell->select_bars_rcut(center, rcut, shape, pbc, &bars);
     EXPECT_EQ(nbar*(nvec + 1), bars.size());
     nbar_total += nbar;
 
@@ -909,7 +909,7 @@ TEST_P(CellTestP, select_inside_rcut_random) {
 }
 
 
-TEST_P(CellTestP, select_inside_rcut_corners) {
+TEST_P(CellTestP, select_bars_rcut_corners) {
   size_t nbar_total = 0;
   for (int irep=0; irep < NREP; ++irep) {
     // Test parameters:
@@ -930,7 +930,7 @@ TEST_P(CellTestP, select_inside_rcut_corners) {
 
     // Compute the bars.
     std::vector<int> bars;
-    size_t nbar = cell->select_inside_rcut(center, rcut, shape, pbc, &bars);
+    size_t nbar = cell->select_bars_rcut(center, rcut, shape, pbc, &bars);
     EXPECT_EQ(nbar*(nvec + 1), bars.size());
     nbar_total += nbar;
 

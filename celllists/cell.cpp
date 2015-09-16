@@ -251,7 +251,7 @@ int Cell::set_ranges_rcut(const double* center, const double rcut, int* ranges_b
 }
 
 
-void Cell::select_inside_low(SphereSlice* slice, const int* shape,
+void Cell::select_bars_low(SphereSlice* slice, const int* shape,
   const bool* pbc, std::vector<int>* prefix, std::vector<int>* bars) const {
 
   // Get the vector index for which the range is currently searched
@@ -283,7 +283,7 @@ void Cell::select_inside_low(SphereSlice* slice, const int* shape,
       // Make a new cut in the spere slice.
       slice->set_cut_begin_end(ivec, i, i + 1);
       // Make recursion
-      select_inside_low(slice, shape, pbc, prefix, bars);
+      select_bars_low(slice, shape, pbc, prefix, bars);
       // Remove the last element of prefix again
       prefix->pop_back();
     }
@@ -291,7 +291,7 @@ void Cell::select_inside_low(SphereSlice* slice, const int* shape,
 }
 
 
-size_t Cell::select_inside_rcut(const double* center, const double rcut,
+size_t Cell::select_bars_rcut(const double* center, const double rcut,
   const int* shape, const bool* pbc, std::vector<int>* bars) const {
   if (nvec == 0) {
     throw std::domain_error("The cell must be at least 1D periodic.");
@@ -306,7 +306,7 @@ size_t Cell::select_inside_rcut(const double* center, const double rcut,
   // Prefix is used to keep track of current bar indices while going into recursion.
   std::vector<int> prefix;
   // Compute bars and return the number of bars
-  select_inside_low(&sphere_slice, shape, pbc, &prefix, bars);
+  select_bars_low(&sphere_slice, shape, pbc, &prefix, bars);
   return bars->size()/(nvec + 1);
 }
 
