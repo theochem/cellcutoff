@@ -162,8 +162,6 @@ Cell* Cell::create_subcell(const int* shape, const double* spacings, bool* pbc) 
 }
 
 
-
-
 const double* Cell::vec(const int ivec) const {
   if ((ivec < 0) || (ivec >= 3)) {
     throw std::domain_error("ivec must be 0, 1 or 2.");
@@ -192,21 +190,38 @@ void Cell::to_cart(const double* rfrac, double* rcart) const {
 }
 
 
-void Cell::iwrap(double* delta) const {
+void Cell::iwrap_mic(double* delta) const {
   double x;
   if (nvec_ == 0) return;
-  // Compute the first fractional coordinates, subtract one half and ceil. The round
-  // founction is intentionally not used here! The half-ways case is always up instead
-  // of away from zero.
-  x = ceil(vec3::dot(gvecs_, delta) - 0.5);
+  // Translate back along first vector.
+  // The round founction is intentionally not used here! The half-ways case is always down
+  // instead of away from zero.
+  x = floor(vec3::dot(gvecs_, delta) + 0.5);
   vec3::iadd(delta, vecs_, -x);
   if (nvec_ == 1) return;
-  // Compute the second fractional coordinates, subtract one half and ceil.
-  x = ceil(vec3::dot(gvecs_ + 3, delta) - 0.5);
+  // Translate back along second vector.
+  x = floor(vec3::dot(gvecs_ + 3, delta) + 0.5);
   vec3::iadd(delta, vecs_ + 3, -x);
   if (nvec_ == 2) return;
-  // Compute the third fractional coordinates, subtract one half and ceil.
-  x = ceil(vec3::dot(gvecs_ + 6, delta) - 0.5);
+  // Translate back along third vector.
+  x = floor(vec3::dot(gvecs_ + 6, delta) + 0.5);
+  vec3::iadd(delta, vecs_ + 6, -x);
+}
+
+
+void Cell::iwrap_box(double* delta) const {
+  double x;
+  if (nvec_ == 0) return;
+  // Translate back along first vector.
+  x = floor(vec3::dot(gvecs_, delta));
+  vec3::iadd(delta, vecs_, -x);
+  if (nvec_ == 1) return;
+  // Translate back along second vector.
+  x = floor(vec3::dot(gvecs_ + 3, delta));
+  vec3::iadd(delta, vecs_ + 3, -x);
+  if (nvec_ == 2) return;
+  // Translate back along third vector.
+  x = floor(vec3::dot(gvecs_ + 6, delta));
   vec3::iadd(delta, vecs_ + 6, -x);
 }
 

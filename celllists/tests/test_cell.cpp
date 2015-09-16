@@ -331,64 +331,118 @@ TEST_F(CellTest3, subcell_example) {
 }
 
 
-// iwrap
-// ~~~~~
+// iwrap_mic and iwrap_box
+// ~~~~~~~~~~~~~~~~~~~~~~~
 
-TEST_F(CellTest1, iwrap_example) {
+TEST_F(CellTest1, iwrap_mic_example) {
   double delta[3] = {2.5, 4.3, 3.0};
-  mycell->iwrap(delta);
+  mycell->iwrap_mic(delta);
   EXPECT_EQ(0.5, delta[0]);
   EXPECT_EQ(4.3, delta[1]);
   EXPECT_EQ(3.0, delta[2]);
 }
 
 
-TEST_F(CellTest2, iwrap_example) {
+TEST_F(CellTest1, iwrap_box_example) {
+  double delta[3] = {3.5, 4.3, 3.0};
+  mycell->iwrap_box(delta);
+  EXPECT_EQ(1.5, delta[0]);
+  EXPECT_EQ(4.3, delta[1]);
+  EXPECT_EQ(3.0, delta[2]);
+}
+
+
+TEST_F(CellTest2, iwrap_mic_example) {
   double delta[3] = {2.0, 5.3, 3.0};
-  mycell->iwrap(delta);
+  mycell->iwrap_mic(delta);
   EXPECT_EQ(0.0, delta[0]);
   EXPECT_EQ(5.3, delta[1]);
   EXPECT_EQ(-1.0, delta[2]);
 }
 
 
-TEST_F(CellTest3, iwrap_example) {
+TEST_F(CellTest2, iwrap_box_example) {
+  double delta[3] = {-1.0, 5.3, 3.0};
+  mycell->iwrap_box(delta);
+  EXPECT_EQ(1.0, delta[0]);
+  EXPECT_EQ(5.3, delta[1]);
+  EXPECT_EQ(3.0, delta[2]);
+}
+
+
+TEST_F(CellTest3, iwrap_mic_example) {
   double delta[3] = {2.0, 0.3, 3.0};
-  mycell->iwrap(delta);
+  mycell->iwrap_mic(delta);
   EXPECT_EQ(0.0, delta[0]);
   EXPECT_EQ(0.3, delta[1]);
   EXPECT_EQ(-1.0, delta[2]);
 }
 
 
-TEST_F(CellTest1, iwrap_edges) {
-  double delta[3] = {-1.0, -0.5, -2.0};
-  mycell->iwrap(delta);
-  EXPECT_EQ(1.0, delta[0]);
-  EXPECT_EQ(-0.5, delta[1]);
-  EXPECT_EQ(-2.0, delta[2]);
+TEST_F(CellTest3, iwrap_box_example) {
+  double delta[3] = {1.9, -0.8, 5.0};
+  mycell->iwrap_box(delta);
+  EXPECT_EQ(1.9, delta[0]);
+  EXPECT_DOUBLE_EQ(0.2, delta[1]);
+  EXPECT_EQ(1.0, delta[2]);
 }
 
 
-TEST_F(CellTest2, iwrap_edges) {
-  double delta[3] = {-1.0, -0.5, -2.0};
-  mycell->iwrap(delta);
-  EXPECT_EQ(1.0, delta[0]);
-  EXPECT_EQ(-0.5, delta[1]);
-  EXPECT_EQ(2.0, delta[2]);
-}
-
-
-TEST_F(CellTest3, iwrap_edges) {
-  double delta[3] = {-1.0, -0.5, -2.0};
-  mycell->iwrap(delta);
-  EXPECT_EQ(1.0, delta[0]);
+TEST_F(CellTest1, iwrap_mic_edges) {
+  double delta[3] = {1.0, 0.5, 2.0};
+  mycell->iwrap_mic(delta);
+  EXPECT_EQ(-1.0, delta[0]);
   EXPECT_EQ(0.5, delta[1]);
   EXPECT_EQ(2.0, delta[2]);
 }
 
 
-TEST_P(CellTestP, iwrap_random) {
+TEST_F(CellTest1, iwrap_box_edges) {
+  double delta[3] = {2.0, 0.5, 2.0};
+  mycell->iwrap_box(delta);
+  EXPECT_EQ(0.0, delta[0]);
+  EXPECT_EQ(0.5, delta[1]);
+  EXPECT_EQ(2.0, delta[2]);
+}
+
+
+TEST_F(CellTest2, iwrap_mic_edges) {
+  double delta[3] = {1.0, 0.5, 2.0};
+  mycell->iwrap_mic(delta);
+  EXPECT_EQ(-1.0, delta[0]);
+  EXPECT_EQ(0.5, delta[1]);
+  EXPECT_EQ(-2.0, delta[2]);
+}
+
+
+TEST_F(CellTest2, iwrap_box_edges) {
+  double delta[3] = {2.0, 0.5, 4.0};
+  mycell->iwrap_box(delta);
+  EXPECT_EQ(0.0, delta[0]);
+  EXPECT_EQ(0.5, delta[1]);
+  EXPECT_EQ(0.0, delta[2]);
+}
+
+
+TEST_F(CellTest3, iwrap_mic_edges) {
+  double delta[3] = {1.0, 0.5, 2.0};
+  mycell->iwrap_mic(delta);
+  EXPECT_EQ(-1.0, delta[0]);
+  EXPECT_EQ(-0.5, delta[1]);
+  EXPECT_EQ(-2.0, delta[2]);
+}
+
+
+TEST_F(CellTest3, iwrap_box_edges) {
+  double delta[3] = {2.0, 1.0, 8.0};
+  mycell->iwrap_box(delta);
+  EXPECT_EQ(0.0, delta[0]);
+  EXPECT_EQ(0.0, delta[1]);
+  EXPECT_EQ(0.0, delta[2]);
+}
+
+
+TEST_P(CellTestP, iwrap_mic_random) {
   int num_wrapped = 0;
   for (int irep = 0; irep < NREP; ++irep) {
     std::unique_ptr<cl::Cell> cell(create_random_cell(irep));
@@ -403,11 +457,38 @@ TEST_P(CellTestP, iwrap_random) {
     }
 
     // Actual test
-    cell->iwrap(delta);
+    cell->iwrap_mic(delta);
     cell->to_frac(delta, frac);
     for (int ivec=0; ivec < nvec; ++ivec) {
-      EXPECT_LT(frac[ivec], 0.5);
-      EXPECT_GE(frac[ivec], -0.5);
+      EXPECT_LE(-0.5, frac[ivec]);
+      EXPECT_GT(0.5, frac[ivec]);
+    }
+  }
+  // Check whether the test is sufficient.
+  EXPECT_LT((NREP*nvec)/3, num_wrapped);
+}
+
+
+TEST_P(CellTestP, iwrap_box_random) {
+  int num_wrapped = 0;
+  for (int irep = 0; irep < NREP; ++irep) {
+    std::unique_ptr<cl::Cell> cell(create_random_cell(irep));
+    double delta[3];
+    fill_random_double(irep + NREP, delta, 3, -6.0, 6.0);
+    double frac[3];
+
+    // For test sufficiency check
+    cell->to_frac(delta, frac);
+    for (int ivec=0; ivec < nvec; ++ivec) {
+      if (fabs(frac[ivec] > 0.5)) ++num_wrapped;
+    }
+
+    // Actual test
+    cell->iwrap_box(delta);
+    cell->to_frac(delta, frac);
+    for (int ivec=0; ivec < nvec; ++ivec) {
+      EXPECT_LE(0.0, frac[ivec]);
+      EXPECT_GT(1.0, frac[ivec]);
     }
   }
   // Check whether the test is sufficient.
@@ -423,11 +504,21 @@ TEST_P(CellTestP, iwrap_consistency) {
     double frac[3];
     double cart1[3];
     double cart2[3];
+    // MIC
     fill_random_double(irep, frac, 3);
     cell->to_cart(frac, cart1);
     cell->to_cart(frac, cart2);
     cell->iadd_vec(cart2, coeffs);
-    cell->iwrap(cart2);
+    cell->iwrap_mic(cart2);
+    EXPECT_NEAR(cart2[0], cart1[0], 1e-10);
+    EXPECT_NEAR(cart2[1], cart1[1], 1e-10);
+    EXPECT_NEAR(cart2[2], cart1[2], 1e-10);
+    // BOX
+    fill_random_double(irep, frac, 3, 0.0, 1.0);
+    cell->to_cart(frac, cart1);
+    cell->to_cart(frac, cart2);
+    cell->iadd_vec(cart2, coeffs);
+    cell->iwrap_box(cart2);
     EXPECT_NEAR(cart2[0], cart1[0], 1e-10);
     EXPECT_NEAR(cart2[1], cart1[1], 1e-10);
     EXPECT_NEAR(cart2[2], cart1[2], 1e-10);
@@ -436,7 +527,7 @@ TEST_P(CellTestP, iwrap_consistency) {
 
 
 // to_frac and to_cart
-// ~~~~~~~~~~~~~~~~~~~~~
+// ~~~~~~~~~~~~~~~~~~~
 
 TEST_F(CellTest1, to_frac_example) {
   double rcart[3] = {2.5, 4.3, 3.0};

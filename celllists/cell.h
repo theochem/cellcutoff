@@ -166,16 +166,15 @@ class Cell {
 
       @param cart
           A pointer to 3 doubles to which the output is written
-
    */
   void to_cart(const double* frac, double* cart) const;
 
 
   /** @brief
-          In-place wrap a (relative) Cartesian vector back into the cell ]-0.5, 0.5].
+          In-place wrap a (relative) Cartesian vector back into the cell [-0.5, 0.5[.
 
-      After calling the wrap method, the fractional coordinates of delta will be in the
-      range ]-0.5, 0.5].
+      After calling the `iwrap_mic` method, the fractional coordinates of delta will be in
+      the range [-0.5, 0.5[.
 
       This is an approximate implementation of the minimum image convention that sometimes
       fails in very skewed cells, i.e. the wrapped vector is not always the shortest
@@ -186,9 +185,21 @@ class Cell {
       @param delta
           A pointer to 3 doubles with the (relative) Cartesian vector. It will be modified
           in-place.
-
   */
-  void iwrap(double* delta) const;
+  void iwrap_mic(double* delta) const;
+
+
+  /** @brief
+          In-place wrap a (relative) Cartesian vector back into the cell [0.0, 1.0[.
+
+      After calling the `iwrap_box` method, the fractional coordinates of delta will be in
+      the range [0.0, 1.0[.
+
+      @param delta
+          A pointer to 3 doubles with the (relative) Cartesian vector. It will be modified
+          in-place.
+  */
+  void iwrap_box(double* delta) const;
 
 
   /** @brief
