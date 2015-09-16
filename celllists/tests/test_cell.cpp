@@ -45,7 +45,7 @@ class CellTest : public ::testing::Test {
 
   void set_up_data() {
     // Example tests
-    std::fill(myvecs, myvecs + 9, 0);
+    std::fill(myvecs, myvecs + 9, 0.0);
     myvecs[0] = 2;
     myvecs[4] = 1;
     myvecs[8] = 4;
@@ -55,7 +55,7 @@ class CellTest : public ::testing::Test {
     }
     mycell.reset(new cl::Cell(myvecs, nvec));
     // Singular cell vectors
-    std::fill(singvecs, singvecs + 9, 0);
+    std::fill(singvecs, singvecs + 9, 0.0);
     if (nvec > 1) {
       singvecs[0] = 1.0;
       singvecs[3] = 0.5;
@@ -197,7 +197,7 @@ TEST_P(CellTestP, constructor_simple) {
 
 
 // create_reciprocal
-// ~~~~~~~~~~~~~~
+// ~~~~~~~~~~~~~~~~~
 
 TEST_P(CellTestP, create_reciprocal) {
   std::unique_ptr<cl::Cell> gcell(mycell->create_reciprocal());
@@ -215,6 +215,119 @@ TEST_P(CellTestP, create_reciprocal) {
   EXPECT_TRUE(std::equal(gcell->glengths(), gcell->glengths() + nvec, mycell->lengths()));
   EXPECT_TRUE(std::equal(gcell->spacings(), gcell->spacings() + nvec, mycell->gspacings()));
   EXPECT_TRUE(std::equal(gcell->gspacings(), gcell->gspacings() + nvec, mycell->spacings()));
+}
+
+
+// create_subcell
+// ~~~~~~~~~~~~~~
+
+TEST_P(CellTestP, create_subcell_simple) {
+  double vecs[9]{1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+  cl::Cell cell(vecs, nvec);
+  int shape[3]{10, 10, 10};
+  double spacings[3]{0.1, 0.1, 0.1};
+  bool pbc[3] = {false, false, true};
+  std::unique_ptr<cl::Cell> subcell(cell.create_subcell(shape, spacings, pbc));
+  EXPECT_EQ(3, subcell->nvec());
+  EXPECT_EQ(0.1, subcell->vecs()[0]);
+  EXPECT_EQ(0.0, subcell->vecs()[1]);
+  EXPECT_EQ(0.0, subcell->vecs()[2]);
+  EXPECT_EQ(0.0, subcell->vecs()[3]);
+  EXPECT_EQ(0.1, subcell->vecs()[4]);
+  EXPECT_EQ(0.0, subcell->vecs()[5]);
+  EXPECT_EQ(0.0, subcell->vecs()[6]);
+  EXPECT_EQ(0.0, subcell->vecs()[7]);
+  EXPECT_EQ(0.1, subcell->vecs()[8]);
+  EXPECT_EQ(nvec>0, pbc[0]);
+  EXPECT_EQ(nvec>1, pbc[1]);
+  EXPECT_EQ(nvec>2, pbc[2]);
+}
+
+
+TEST_P(CellTestP, create_subcell_random) {
+  for (int irep = 0; irep < NREP; ++irep) {
+    std::unique_ptr<cl::Cell> cell(create_random_cell(irep));
+    int shape[3];
+    double spacings[3];
+    fill_random_int(irep + NREP, shape, 3, 1, 20);
+    fill_random_double(irep, spacings, 3, 0.1, 2.0);
+    bool pbc[3] = {irep%2==0, (irep>>1)%2==0, (irep>>1)%2==0};
+    std::unique_ptr<cl::Cell> subcell(cell->create_subcell(shape, spacings, pbc));
+    double vol = cell->volume();
+    for (int ivec = 0; ivec < nvec; ++ivec) {
+      EXPECT_NEAR(cell->lengths()[ivec]/shape[ivec], subcell->lengths()[ivec], 1e-10);
+      vol /= shape[ivec];
+      EXPECT_EQ(true, pbc[ivec]);
+    }
+    for (int ivec = nvec; ivec < 3; ++ivec) {
+      EXPECT_NEAR(cell->lengths()[ivec]*spacings[ivec-nvec], subcell->lengths()[ivec], 1e-10);
+      vol *= spacings[ivec-nvec];
+      EXPECT_EQ(false, pbc[ivec]);
+    }
+    EXPECT_NEAR(vol, subcell->volume(), 1e-10);
+  }
+}
+
+
+TEST_F(CellTest1, subcell_example) {
+  int shape[1]{4};
+  double spacings[2]{0.1, 0.2};
+  bool pbc[3] = {false, true, true};
+  std::unique_ptr<cl::Cell> subcell(mycell->create_subcell(shape, spacings, pbc));
+  EXPECT_EQ(3, subcell->nvec());
+  EXPECT_NEAR(0.5, subcell->vecs()[0], 1e-10);
+  EXPECT_EQ(0.0, subcell->vecs()[1]);
+  EXPECT_EQ(0.0, subcell->vecs()[2]);
+  EXPECT_EQ(0.0, subcell->vecs()[3]);
+  EXPECT_NEAR(0.1, subcell->vecs()[4], 1e-10);
+  EXPECT_EQ(0.0, subcell->vecs()[5]);
+  EXPECT_EQ(0.0, subcell->vecs()[6]);
+  EXPECT_EQ(0.0, subcell->vecs()[7]);
+  EXPECT_NEAR(0.2, subcell->vecs()[8], 1e-10);
+  EXPECT_EQ(true, pbc[0]);
+  EXPECT_EQ(false, pbc[1]);
+  EXPECT_EQ(false, pbc[2]);
+}
+
+
+TEST_F(CellTest2, subcell_example) {
+  int shape[2]{10, 16};
+  double spacings[1]{0.55};
+  bool pbc[3] = {false, false, true};
+  std::unique_ptr<cl::Cell> subcell(mycell->create_subcell(shape, spacings, pbc));
+  EXPECT_EQ(3, subcell->nvec());
+  EXPECT_NEAR(0.2, subcell->vecs()[0], 1e-10);
+  EXPECT_EQ(0.0, subcell->vecs()[1]);
+  EXPECT_EQ(0.0, subcell->vecs()[2]);
+  EXPECT_EQ(0.0, subcell->vecs()[3]);
+  EXPECT_EQ(0.0, subcell->vecs()[4]);
+  EXPECT_NEAR(0.25, subcell->vecs()[5], 1e-10);
+  EXPECT_EQ(0.0, subcell->vecs()[6]);
+  EXPECT_NEAR(-0.55, subcell->vecs()[7], 1e-10);
+  EXPECT_EQ(0.0, subcell->vecs()[8]);
+  EXPECT_EQ(true, pbc[0]);
+  EXPECT_EQ(true, pbc[1]);
+  EXPECT_EQ(false, pbc[2]);
+}
+
+
+TEST_F(CellTest3, subcell_example) {
+  int shape[3]{20, 5, 8};
+  bool pbc[3] = {false, false, false};
+  std::unique_ptr<cl::Cell> subcell(mycell->create_subcell(shape, nullptr, pbc));
+  EXPECT_EQ(3, subcell->nvec());
+  EXPECT_NEAR(0.1, subcell->vecs()[0], 1e-10);
+  EXPECT_EQ(0.0, subcell->vecs()[1]);
+  EXPECT_EQ(0.0, subcell->vecs()[2]);
+  EXPECT_EQ(0.0, subcell->vecs()[3]);
+  EXPECT_NEAR(0.2, subcell->vecs()[4], 1e-10);
+  EXPECT_EQ(0.0, subcell->vecs()[5]);
+  EXPECT_EQ(0.0, subcell->vecs()[6]);
+  EXPECT_EQ(0.0, subcell->vecs()[7]);
+  EXPECT_NEAR(0.5, subcell->vecs()[8], 1e-10);
+  EXPECT_EQ(true, pbc[0]);
+  EXPECT_EQ(true, pbc[1]);
+  EXPECT_EQ(true, pbc[2]);
 }
 
 
@@ -277,7 +390,7 @@ TEST_F(CellTest3, iwrap_edges) {
 
 TEST_P(CellTestP, iwrap_random) {
   int num_wrapped = 0;
-  for (int irep=0; irep < NREP; ++irep) {
+  for (int irep = 0; irep < NREP; ++irep) {
     std::unique_ptr<cl::Cell> cell(create_random_cell(irep));
     double delta[3];
     fill_random_double(irep + NREP, delta, 3, -6.0, 6.0);
@@ -303,7 +416,7 @@ TEST_P(CellTestP, iwrap_random) {
 
 
 TEST_P(CellTestP, iwrap_consistency) {
-  for (int irep=0; irep < NREP; ++irep) {
+  for (int irep = 0; irep < NREP; ++irep) {
     std::unique_ptr<cl::Cell> cell(create_random_cell(irep));
     int coeffs[3];
     fill_random_int(irep, coeffs, nvec, -5, 5);
@@ -386,7 +499,7 @@ TEST_F(CellTest3, to_cart_example) {
 
 
 TEST_P(CellTestP, to_cart_to_frac_consistency) {
-  for (int irep=0; irep < NREP; ++irep) {
+  for (int irep = 0; irep < NREP; ++irep) {
     std::unique_ptr<cl::Cell> cell(create_random_cell(irep));
     double rfrac[3];
     double rcart1[3];
@@ -402,10 +515,10 @@ TEST_P(CellTestP, to_cart_to_frac_consistency) {
 
 
 // iadd_vec
-// ~~~~~~~~~
+// ~~~~~~~~
 
 TEST_P(CellTestP, iadd_vec_consistency) {
-  for (int irep=0; irep < NREP; ++irep) {
+  for (int irep = 0; irep < NREP; ++irep) {
     std::unique_ptr<cl::Cell> cell(create_random_cell(irep));
     int coeffs[3];
     fill_random_int(irep, coeffs, 3, -5, 5);
@@ -547,7 +660,7 @@ TEST_F(CellTest3, example) {
 
 
 TEST_P(CellTestP, signed_volume) {
-  for (int irep=0; irep < NREP; ++irep) {
+  for (int irep = 0; irep < NREP; ++irep) {
     std::unique_ptr<cl::Cell> cell(create_random_cell(irep));
     double sv = vec3::triple(cell->vec(0), cell->vec(1), cell->vec(2));
     EXPECT_NEAR(cell->volume(), fabs(sv), 1e-10);
@@ -712,7 +825,7 @@ TEST_P(CellTestP, ranges_cutoff_domain) {
 
 TEST_P(CellTestP, ranges_cutoff_random) {
   int npoint_total = 0;
-  for (int irep=0; irep < NREP; ++irep) {
+  for (int irep = 0; irep < NREP; ++irep) {
     std::unique_ptr<cl::Cell> cell(create_random_cell(irep));
     double center[3];
     int ranges_begin[3];
@@ -828,7 +941,7 @@ TEST_F(CellTest3, bars_cutoff_example) {
 
 TEST_P(CellTestP, bars_cutoff_random) {
   size_t nbar_total = 0;
-  for (int irep=0; irep < NREP; ++irep) {
+  for (int irep = 0; irep < NREP; ++irep) {
     // Test parameters:
     // - Random cell
     std::unique_ptr<cl::Cell> cell(create_random_cell(2*irep));
@@ -925,7 +1038,7 @@ TEST_P(CellTestP, bars_cutoff_random) {
 
 TEST_P(CellTestP, bars_cutoff_corners) {
   size_t nbar_total = 0;
-  for (int irep=0; irep < NREP; ++irep) {
+  for (int irep = 0; irep < NREP; ++irep) {
     // Test parameters:
     // - Random cell
     std::unique_ptr<cl::Cell> cell(create_random_cell(2*irep));

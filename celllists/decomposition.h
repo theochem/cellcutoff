@@ -36,8 +36,8 @@ namespace celllists {
 class Point {
  public:
   int index;
-  double cart[3];
-  int icell[3];
+  std::array<double,3> cart;
+  std::array<int,3> icell;
 
   Point(const int index, const double* _cart);
   Point(const int index, const double* _cart, const int* _icell);

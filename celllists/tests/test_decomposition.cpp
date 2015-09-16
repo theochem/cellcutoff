@@ -36,7 +36,7 @@ TEST(PointTest, constructor1) {
     fill_random_double(1475, cart, 3);
     cl::Point point(5, cart);
     // Make sure the contents is copied, not the pointer
-    EXPECT_NE(cart, point.cart);
+    EXPECT_NE(cart, point.cart.data());
     EXPECT_EQ(cart[0], point.cart[0]);
     EXPECT_EQ(cart[1], point.cart[1]);
     EXPECT_EQ(cart[2], point.cart[2]);
@@ -54,11 +54,11 @@ TEST(PointTest, constructor2) {
     fill_random_int(5849, icell, 3, 0, 10);
     cl::Point point(5, cart, icell);
     // Make sure the contents is copied, not the pointer
-    EXPECT_NE(cart, point.cart);
+    EXPECT_NE(cart, point.cart.data());
     EXPECT_EQ(cart[0], point.cart[0]);
     EXPECT_EQ(cart[1], point.cart[1]);
     EXPECT_EQ(cart[2], point.cart[2]);
-    EXPECT_NE(icell, point.icell);
+    EXPECT_NE(icell, point.icell.data());
     EXPECT_EQ(icell[0], point.icell[0]);
     EXPECT_EQ(icell[1], point.icell[1]);
     EXPECT_EQ(icell[2], point.icell[2]);

@@ -33,43 +33,19 @@ namespace celllists {
 
 
 Point::Point(const int index, const double* _cart) : index(index) {
-  std::copy(_cart, _cart + 3, cart);
-  std::fill(icell, icell + 3, 0.0);
+  std::copy(_cart, _cart + 3, cart.data());
+  std::fill(icell.begin(), icell.end(), 0);
 }
 
 
 Point::Point(const int index, const double* _cart, const int* _icell) : index(index) {
-  std::copy(_cart, _cart + 3, cart);
-  std::copy(_icell, _icell + 3, icell);
+  std::copy(_cart, _cart + 3, cart.data());
+  std::copy(_icell, _icell + 3, icell.data());
 }
 
 
 bool Point::operator<(const Point& other) const {
-  if (icell[0] < other.icell[0]) return true;
-  if (icell[0] > other.icell[0]) return false;
-  if (icell[1] < other.icell[1]) return true;
-  if (icell[1] > other.icell[1]) return false;
-  if (icell[2] < other.icell[2]) return true;
-  return false;
-}
-
-
-Cell* create_subcell(const Cell* cell, const int* shape, const double* spacings, bool* pbc) {\
-  // Start by copying all cell vectors
-  double new_vecs[9];
-  std::copy(cell->vecs(), cell->vecs() + 9, new_vecs);
-  // Divide the active dimensions according to shape
-  for (int ivec = 0; ivec < cell->nvec(); ++ivec) {
-    vec3::iscale(new_vecs + 3*ivec, 1.0/shape[ivec]);
-    pbc[ivec] = true;
-  }
-  // Divide the remaining dimensions by given spacing
-  for (int ivec = cell->nvec(); ivec < 3; ++ivec) {
-    vec3::iscale(new_vecs + 3*ivec, spacings[ivec - cell->nvec()]);
-    pbc[ivec] = false;
-  }
-  // Return the subcell
-  return new Cell(new_vecs, 3);
+  return icell < other.icell;
 }
 
 
@@ -78,7 +54,7 @@ void partition(std::vector<Point>* points, Cell* subcell) {
     throw std::domain_error("Partitioning is only sensible for 3D subcells.");
   for (auto& point : *points) {
     double frac[3];
-    subcell->to_frac(point.cart, frac);
+    subcell->to_frac(&point.cart[0], frac);
     point.icell[0] = static_cast<int>(floor(frac[0]));
     point.icell[1] = static_cast<int>(floor(frac[1]));
     point.icell[2] = static_cast<int>(floor(frac[2]));
@@ -88,7 +64,7 @@ void partition(std::vector<Point>* points, Cell* subcell) {
 
 std::map<std::array<int, 3>, std::array<int, 2>>* create_map(const std::vector<Point>* points) {
   auto result(new std::map<std::array<int, 3>, std::array<int, 2>>);
-  const int* icell_begin = points->at(0).icell;
+  const int* icell_begin = &(points->at(0).icell[0]);
   int ibegin = 0;
   int ipoint = 0;
   for (const auto& point : *points) {
@@ -101,7 +77,7 @@ std::map<std::array<int, 3>, std::array<int, 2>>* create_map(const std::vector<P
         std::array<int, 2>{ibegin, ipoint}
       );
       // New `begin`
-      icell_begin = point.icell;
+      icell_begin = &(point.icell[0]);
       ibegin = ipoint;
     }
     ++ipoint;

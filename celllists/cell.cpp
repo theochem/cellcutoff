@@ -143,6 +143,27 @@ Cell* Cell::create_reciprocal() const {
 }
 
 
+Cell* Cell::create_subcell(const int* shape, const double* spacings, bool* pbc) {
+  // Start by copying all three cell vectors, active or not.
+  double new_vecs[9];
+  std::copy(vecs_, vecs_ + 9, new_vecs);
+  // Divide the 'active' vectors by the corresponding shape value.
+  for (int ivec = 0; ivec < nvec_; ++ivec) {
+    vec3::iscale(new_vecs + 3*ivec, 1.0/shape[ivec]);
+    pbc[ivec] = true;
+  }
+  // Multiply the 'inactive' vectors by the corresponding spacing.
+  for (int ivec = nvec_; ivec < 3; ++ivec) {
+    vec3::iscale(new_vecs + 3*ivec, spacings[ivec - nvec_]);
+    pbc[ivec] = false;
+  }
+  // Return the subcell, always 3D periodic
+  return new Cell(new_vecs, 3);
+}
+
+
+
+
 const double* Cell::vec(const int ivec) const {
   if ((ivec < 0) || (ivec >= 3)) {
     throw std::domain_error("ivec must be 0, 1 or 2.");

@@ -274,6 +274,29 @@ class Cell {
   size_t bars_cutoff(const double* center, const double cutoff, const int* shape,
       const bool* pbc, std::vector<int>* bars) const;
 
+  /** @brief
+          Helper to construct a subcell of a given cell.
+
+          This partitions space into bins (with the size and shape of the subcell) that
+          can be used to do a domain decomposition.
+
+      @param shape
+          A pointer to nvec integers, with the number subcells along the corresponding
+          cell vector.
+
+      @param spacings
+          A pointer to (3-nvec) doubles, with the spacings between the
+          inactive/non-periodic cell vectors.
+
+      @param pbc
+          A pointer to 3 bools. This is an auxiliary output argument, whose first nvec
+          elements are set to true, while the remaining are set to false.
+
+      @return
+          A pointer to a `Cell` object with the subcell.
+   */
+  Cell* create_subcell(const int* shape, const double* spacings, bool* pbc);
+
  protected:
   /** @brief
           Constructor that assumes the caller takes care of the consistency of all
