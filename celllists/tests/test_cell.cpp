@@ -284,14 +284,14 @@ TEST_P(CellTestP, iwrap_random) {
     double frac[3];
 
     // For test sufficiency check
-    cell->to_rfrac(delta, frac);
+    cell->to_frac(delta, frac);
     for (int ivec=0; ivec < nvec; ++ivec) {
       if (fabs(frac[ivec] > 0.5)) ++num_wrapped;
     }
 
     // Actual test
     cell->iwrap(delta);
-    cell->to_rfrac(delta, frac);
+    cell->to_frac(delta, frac);
     for (int ivec=0; ivec < nvec; ++ivec) {
       EXPECT_LT(frac[ivec], 0.5);
       EXPECT_GE(frac[ivec], -0.5);
@@ -311,8 +311,8 @@ TEST_P(CellTestP, iwrap_consistency) {
     double cart1[3];
     double cart2[3];
     fill_random_double(irep, frac, 3);
-    cell->to_rcart(frac, cart1);
-    cell->to_rcart(frac, cart2);
+    cell->to_cart(frac, cart1);
+    cell->to_cart(frac, cart2);
     cell->iadd_vec(cart2, coeffs);
     cell->iwrap(cart2);
     EXPECT_NEAR(cart2[0], cart1[0], 1e-10);
@@ -322,78 +322,78 @@ TEST_P(CellTestP, iwrap_consistency) {
 }
 
 
-// to_rfrac and to_rcart
+// to_frac and to_cart
 // ~~~~~~~~~~~~~~~~~~~~~
 
-TEST_F(CellTest1, to_rfrac_example) {
+TEST_F(CellTest1, to_frac_example) {
   double rcart[3] = {2.5, 4.3, 3.0};
   double rfrac[3];
-  mycell->to_rfrac(rcart, rfrac);
+  mycell->to_frac(rcart, rfrac);
   EXPECT_NEAR(1.25, rfrac[0], 1e-10);
   EXPECT_NEAR(4.3, rfrac[1], 1e-10);
   EXPECT_NEAR(3.0, rfrac[2], 1e-10);
 }
 
 
-TEST_F(CellTest2, to_rfrac_example) {
+TEST_F(CellTest2, to_frac_example) {
   double rcart[3] = {2.5, 4.3, 3.0};
   double rfrac[3];
-  mycell->to_rfrac(rcart, rfrac);
+  mycell->to_frac(rcart, rfrac);
   EXPECT_NEAR(1.25, rfrac[0], 1e-10);
   EXPECT_NEAR(0.75, rfrac[1], 1e-10);
   EXPECT_NEAR(-4.3, rfrac[2], 1e-10);
 }
 
 
-TEST_F(CellTest3, to_rfrac_example) {
+TEST_F(CellTest3, to_frac_example) {
   double rcart[3] = {2.5, 4.3, 3.0};
   double rfrac[3];
-  mycell->to_rfrac(rcart, rfrac);
+  mycell->to_frac(rcart, rfrac);
   EXPECT_NEAR(1.25, rfrac[0], 1e-10);
   EXPECT_NEAR(4.3, rfrac[1], 1e-10);
   EXPECT_NEAR(0.75, rfrac[2], 1e-10);
 }
 
 
-TEST_F(CellTest1, to_rcart_example) {
+TEST_F(CellTest1, to_cart_example) {
   double rfrac[3] = {0.5, 0.2, -1.5};
   double rcart[3];
-  mycell->to_rcart(rfrac, rcart);
+  mycell->to_cart(rfrac, rcart);
   EXPECT_NEAR(1.0, rcart[0], 1e-10);
   EXPECT_NEAR(0.2, rcart[1], 1e-10);
   EXPECT_NEAR(-1.5, rcart[2], 1e-10);
 }
 
 
-TEST_F(CellTest2, to_rcart_example) {
+TEST_F(CellTest2, to_cart_example) {
   double rfrac[3] = {0.5, 0.2, -1.5};
   double rcart[3];
-  mycell->to_rcart(rfrac, rcart);
+  mycell->to_cart(rfrac, rcart);
   EXPECT_NEAR(1.0, rcart[0], 1e-10);
   EXPECT_NEAR(1.5, rcart[1], 1e-10);
   EXPECT_NEAR(0.8, rcart[2], 1e-10);
 }
 
 
-TEST_F(CellTest3, to_rcart_example) {
+TEST_F(CellTest3, to_cart_example) {
   double rfrac[3] = {0.5, 0.2, -1.5};
   double rcart[3];
-  mycell->to_rcart(rfrac, rcart);
+  mycell->to_cart(rfrac, rcart);
   EXPECT_NEAR(1.0, rcart[0], 1e-10);
   EXPECT_NEAR(0.2, rcart[1], 1e-10);
   EXPECT_NEAR(-6.0, rcart[2], 1e-10);
 }
 
 
-TEST_P(CellTestP, to_rcart_to_rfrac_consistency) {
+TEST_P(CellTestP, to_cart_to_frac_consistency) {
   for (int irep=0; irep < NREP; ++irep) {
     std::unique_ptr<cl::Cell> cell(create_random_cell(irep));
     double rfrac[3];
     double rcart1[3];
     double rcart2[3];
     fill_random_double(irep, rcart1, 3, -5.0, 5.0);
-    cell->to_rfrac(rcart1, rfrac);
-    cell->to_rcart(rfrac, rcart2);
+    cell->to_frac(rcart1, rfrac);
+    cell->to_cart(rfrac, rcart2);
     EXPECT_NEAR(rcart2[0], rcart1[0], 1e-10);
     EXPECT_NEAR(rcart2[1], rcart1[1], 1e-10);
     EXPECT_NEAR(rcart2[2], rcart1[2], 1e-10);
@@ -418,8 +418,8 @@ TEST_P(CellTestP, iadd_vec_consistency) {
     cart2[1] = cart1[1];
     cart2[2] = cart1[2];
     cell->iadd_vec(cart2, coeffs);
-    cell->to_rfrac(cart1, frac1);
-    cell->to_rfrac(cart2, frac2);
+    cell->to_frac(cart1, frac1);
+    cell->to_frac(cart2, frac2);
     for (int ivec=0; ivec < nvec; ++ivec) {
       EXPECT_NEAR(coeffs[ivec], frac2[ivec] - frac1[ivec], 1e-10);
     }
@@ -726,7 +726,7 @@ TEST_P(CellTestP, ranges_cutoff_random) {
       random_point(ipoint + irep*NPOINT, center, cutoff, point, &norm);
       if (norm <= cutoff) {
         double frac[3];
-        cell->to_rfrac(point, frac);
+        cell->to_frac(point, frac);
         for (int ivec=0; ivec < nvec; ++ivec) {
           EXPECT_LE(ranges_begin[ivec], frac[ivec]);
           EXPECT_GE(ranges_end[ivec], frac[ivec]);
@@ -861,7 +861,7 @@ TEST_P(CellTestP, bars_cutoff_random) {
     cart[2] += center[2];
     // For the rest of the test, we need this random vector in fractional coordinates.
     double frac[3];
-    cell->to_rfrac(cart, frac);
+    cell->to_frac(cart, frac);
 
     // Does the fractional coordinate fit in one of the bars?
     int index[3] = {
@@ -957,47 +957,47 @@ TEST_P(CellTestP, bars_cutoff_corners) {
       double dist;
 
       // loop of begin and end of the bar (last two integers in the bar).
-      cell->to_rfrac(center, frac_corner);
+      cell->to_frac(center, frac_corner);
       for (int ilast = 0; ilast < 2; ++ilast) {
         frac_corner[nvec-1] = bar[nvec-ilast];
         if (nvec == 1) {
-          cell->to_rcart(frac_corner, cart_corner);
+          cell->to_cart(frac_corner, cart_corner);
           dist = vec3::distance(cart_corner, center);
           EXPECT_GT(dist, cutoff);
         } else if (nvec == 2) {
           //
           frac_corner[0] = bar[0];
-          cell->to_rcart(frac_corner, cart_corner);
+          cell->to_cart(frac_corner, cart_corner);
           dist = vec3::distance(cart_corner, center);
           EXPECT_GT(dist, cutoff);
           //
           frac_corner[0] = bar[0] + 1;
-          cell->to_rcart(frac_corner, cart_corner);
+          cell->to_cart(frac_corner, cart_corner);
           dist = vec3::distance(cart_corner, center);
           EXPECT_GT(dist, cutoff);
         } else if (nvec == 3) {
           //
           frac_corner[0] = bar[0];
           frac_corner[1] = bar[1];
-          cell->to_rcart(frac_corner, cart_corner);
+          cell->to_cart(frac_corner, cart_corner);
           dist = vec3::distance(cart_corner, center);
           EXPECT_GT(dist, cutoff);
           //
           frac_corner[0] = bar[0] + 1;
           frac_corner[1] = bar[1];
-          cell->to_rcart(frac_corner, cart_corner);
+          cell->to_cart(frac_corner, cart_corner);
           dist = vec3::distance(cart_corner, center);
           EXPECT_GT(dist, cutoff);
           //
           frac_corner[0] = bar[0];
           frac_corner[1] = bar[1] + 1;
-          cell->to_rcart(frac_corner, cart_corner);
+          cell->to_cart(frac_corner, cart_corner);
           dist = vec3::distance(cart_corner, center);
           EXPECT_GT(dist, cutoff);
           //
           frac_corner[0] = bar[0] + 1;
           frac_corner[1] = bar[1] + 1;
-          cell->to_rcart(frac_corner, cart_corner);
+          cell->to_cart(frac_corner, cart_corner);
           dist = vec3::distance(cart_corner, center);
           EXPECT_GT(dist, cutoff);
         }

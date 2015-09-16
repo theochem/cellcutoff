@@ -159,13 +159,13 @@ const double* Cell::gvec(const int ivec) const {
 }
 
 
-void Cell::to_rfrac(const double* rcart, double* rfrac) const {
+void Cell::to_frac(const double* rcart, double* rfrac) const {
   // Transfrom to real-space fractional coordinates
   vec3::matvec(gvecs_, rcart, rfrac);
 }
 
 
-void Cell::to_rcart(const double* rfrac, double* rcart) const {
+void Cell::to_cart(const double* rfrac, double* rcart) const {
   // Transfrom to real-space Cartesian coordinates
   vec3::tmatvec(vecs_, rfrac, rcart);
 }
@@ -232,7 +232,7 @@ int Cell::ranges_cutoff(const double* center, const double cutoff, int* ranges_b
   }
   double frac[3];
   int ncell = 1;
-  to_rfrac(center, frac);
+  to_frac(center, frac);
   for (int ivec = nvec_ - 1; ivec >= 0; --ivec) {
     // Use spacings between planes to find first plane before cutoff sphere and last
     // plane after cutoff sphere. To this end, we must divide cutoff by the spacing
@@ -298,7 +298,7 @@ void Cell::bars_cutoff_low(SphereSlice* slice, const int* shape,
 
   if (ivec == nvec_ - 1) {
     // If we are dealing with the last recursion, just store the bar.
-    for (auto& i : *prefix)
+    for (const auto& i : *prefix)
       bars->push_back(i);
     bars->push_back(begin);
     bars->push_back(end);

@@ -153,7 +153,7 @@ class Cell {
       @param frac
           A pointer to 3 doubles in which the output is written.
    */
-  void to_rfrac(const double* cart, double* frac) const;
+  void to_frac(const double* cart, double* frac) const;
 
 
   /** @brief
@@ -168,7 +168,7 @@ class Cell {
           A pointer to 3 doubles to which the output is written
 
    */
-  void to_rcart(const double* frac, double* cart) const;
+  void to_cart(const double* frac, double* cart) const;
 
 
   /** @brief
