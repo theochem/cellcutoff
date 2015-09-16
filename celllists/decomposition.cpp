@@ -49,12 +49,12 @@ bool Point::operator<(const Point& other) const {
 }
 
 
-void partition(std::vector<Point>* points, Cell* subcell) {
-  if (!(subcell->nvec() == 3))
+void assign_icell(const Cell &subcell, std::vector<Point>* points) {
+  if (!(subcell.nvec() == 3))
     throw std::domain_error("Partitioning is only sensible for 3D subcells.");
   for (auto& point : *points) {
     double frac[3];
-    subcell->to_frac(&point.cart[0], frac);
+    subcell.to_frac(&point.cart[0], frac);
     point.icell[0] = static_cast<int>(floor(frac[0]));
     point.icell[1] = static_cast<int>(floor(frac[1]));
     point.icell[2] = static_cast<int>(floor(frac[2]));
@@ -62,12 +62,12 @@ void partition(std::vector<Point>* points, Cell* subcell) {
 }
 
 
-std::map<std::array<int, 3>, std::array<int, 2>>* create_map(const std::vector<Point>* points) {
+CellMap* create_cell_map(const std::vector<Point> &points) {
   auto result(new std::map<std::array<int, 3>, std::array<int, 2>>);
-  const int* icell_begin = &(points->at(0).icell[0]);
+  const int* icell_begin = &(points[0].icell[0]);
   int ibegin = 0;
   int ipoint = 0;
-  for (const auto& point : *points) {
+  for (const auto& point : points) {
     if ((icell_begin[0] != point.icell[0]) ||
         (icell_begin[1] != point.icell[1]) ||
         (icell_begin[2] != point.icell[2])) {
@@ -85,7 +85,7 @@ std::map<std::array<int, 3>, std::array<int, 2>>* create_map(const std::vector<P
   // Storing the last range
   result->emplace(
     std::array<int, 3>{icell_begin[0], icell_begin[1], icell_begin[2]},
-    std::array<int, 2>{ibegin, static_cast<int>(points->size())}
+    std::array<int, 2>{ibegin, static_cast<int>(points.size())}
   );
   return result;
 }

@@ -18,6 +18,9 @@
 //
 //--
 
+
+#include <algorithm>
+
 #include <gtest/gtest.h>
 
 #include <celllists/decomposition.h>
@@ -32,62 +35,127 @@ namespace cl = celllists;
 // ~~~~~~~~~~~
 
 TEST(PointTest, constructor1) {
-    double cart[3];
-    fill_random_double(1475, cart, 3);
-    cl::Point point(5, cart);
-    // Make sure the contents is copied, not the pointer
-    EXPECT_NE(cart, point.cart.data());
-    EXPECT_EQ(cart[0], point.cart[0]);
-    EXPECT_EQ(cart[1], point.cart[1]);
-    EXPECT_EQ(cart[2], point.cart[2]);
-    // When not given, icell must be zero
-    EXPECT_EQ(0, point.icell[0]);
-    EXPECT_EQ(0, point.icell[1]);
-    EXPECT_EQ(0, point.icell[2]);
+  double cart[3];
+  fill_random_double(1475, cart, 3);
+  cl::Point point(5, cart);
+  EXPECT_EQ(5, point.index);
+  // Make sure the contents is copied, not the pointer
+  EXPECT_NE(cart, point.cart.data());
+  EXPECT_EQ(cart[0], point.cart[0]);
+  EXPECT_EQ(cart[1], point.cart[1]);
+  EXPECT_EQ(cart[2], point.cart[2]);
+  // When not given, icell must be zero
+  EXPECT_EQ(0, point.icell[0]);
+  EXPECT_EQ(0, point.icell[1]);
+  EXPECT_EQ(0, point.icell[2]);
 }
 
 
 TEST(PointTest, constructor2) {
-    double cart[3];
-    int icell[3];
-    fill_random_double(1879, cart, 3);
-    fill_random_int(5849, icell, 3, 0, 10);
-    cl::Point point(5, cart, icell);
-    // Make sure the contents is copied, not the pointer
-    EXPECT_NE(cart, point.cart.data());
-    EXPECT_EQ(cart[0], point.cart[0]);
-    EXPECT_EQ(cart[1], point.cart[1]);
-    EXPECT_EQ(cart[2], point.cart[2]);
-    EXPECT_NE(icell, point.icell.data());
-    EXPECT_EQ(icell[0], point.icell[0]);
-    EXPECT_EQ(icell[1], point.icell[1]);
-    EXPECT_EQ(icell[2], point.icell[2]);
+  double cart[3];
+  int icell[3];
+  fill_random_double(1879, cart, 3);
+  fill_random_int(5849, icell, 3, 0, 10);
+  cl::Point point(4, cart, icell);
+  EXPECT_EQ(4, point.index);
+  // Make sure the contents is copied, not the pointer
+  EXPECT_NE(cart, point.cart.data());
+  EXPECT_EQ(cart[0], point.cart[0]);
+  EXPECT_EQ(cart[1], point.cart[1]);
+  EXPECT_EQ(cart[2], point.cart[2]);
+  EXPECT_NE(icell, point.icell.data());
+  EXPECT_EQ(icell[0], point.icell[0]);
+  EXPECT_EQ(icell[1], point.icell[1]);
+  EXPECT_EQ(icell[2], point.icell[2]);
 }
 
 
 TEST(PointTest, less_than) {
-    double cart[3]{1.0, 2.0, 3.0};
-    int icell[3]{0, 2, 3};
-    cl::Point a(5, cart, icell);
-    icell[0] = -1;
-    cl::Point b(5, cart, icell);
-    EXPECT_LT(b, a);
-    icell[0] = 1;
-    cl::Point c(5, cart, icell);
-    EXPECT_LT(a, c);
-    icell[0] = 0;
-    icell[1] = 1;
-    cl::Point d(5, cart, icell);
-    EXPECT_LT(d, a);
-    icell[1] = 3;
-    cl::Point e(5, cart, icell);
-    EXPECT_LT(a, e);
-    icell[1] = 2;
-    icell[2] = 2;
-    cl::Point f(5, cart, icell);
-    EXPECT_LT(f, a);
-    icell[2] = 4;
-    cl::Point g(5, cart, icell);
-    EXPECT_LT(a, g);
-    EXPECT_FALSE(g < a);
+  double cart[3]{1.0, 2.0, 3.0};
+  int icell[3]{0, 2, 3};
+  cl::Point a(5, cart, icell);
+  icell[0] = -1;
+  cl::Point b(5, cart, icell);
+  EXPECT_LT(b, a);
+  icell[0] = 1;
+  cl::Point c(5, cart, icell);
+  EXPECT_LT(a, c);
+  icell[0] = 0;
+  icell[1] = 1;
+  cl::Point d(5, cart, icell);
+  EXPECT_LT(d, a);
+  icell[1] = 3;
+  cl::Point e(5, cart, icell);
+  EXPECT_LT(a, e);
+  icell[1] = 2;
+  icell[2] = 2;
+  cl::Point f(5, cart, icell);
+  EXPECT_LT(f, a);
+  icell[2] = 4;
+  cl::Point g(5, cart, icell);
+  EXPECT_LT(a, g);
+  EXPECT_FALSE(g < a);
 }
+
+
+TEST(DecompositionTest, domain_assign_icell) {
+  double vecs[9]{1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+  cl::Cell subcell0(vecs, 0);
+  EXPECT_THROW(cl::assign_icell(subcell0, nullptr), std::domain_error);
+  cl::Cell subcell1(vecs, 1);
+  EXPECT_THROW(cl::assign_icell(subcell1, nullptr), std::domain_error);
+  cl::Cell subcell2(vecs, 2);
+  EXPECT_THROW(cl::assign_icell(subcell2, nullptr), std::domain_error);
+}
+
+
+TEST(DecompositionTest, example_assign_icell) {
+  std::vector<cl::Point> points;
+  double cart0[3]{3.1, -1.0, -0.5};
+  double cart1[3]{3.0, 2.9, 0.0};
+  double cart2[3]{0.7, -1.1, 0.1};
+  points.push_back(cl::Point(0, cart0));
+  points.push_back(cl::Point(1, cart1));
+  points.push_back(cl::Point(2, cart2));
+  double vecs[9]{1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+  cl::Cell subcell(vecs, 3);
+  cl::assign_icell(subcell, &points);
+  EXPECT_EQ(3, points[0].icell[0]);
+  EXPECT_EQ(-1, points[0].icell[1]);
+  EXPECT_EQ(-1, points[0].icell[2]);
+  EXPECT_EQ(3, points[1].icell[0]);
+  EXPECT_EQ(2, points[1].icell[1]);
+  EXPECT_EQ(0, points[1].icell[2]);
+  EXPECT_EQ(0, points[2].icell[0]);
+  EXPECT_EQ(-2, points[2].icell[1]);
+  EXPECT_EQ(0, points[2].icell[2]);
+}
+
+
+TEST(DecompositionTest, random_cell_map) {
+  for (int irep = 0; irep < NREP; ++irep) {
+    // Apply entire machinery on random data
+    std::vector<cl::Point> points;
+    for (int ipoint = 0; ipoint < NPOINT; ++ipoint) {
+      double cart[3];
+      fill_random_double(ipoint+3157, cart, 3, -5.0, 5.0);
+      points.push_back(cl::Point(ipoint, cart));
+    }
+    std::unique_ptr<cl::Cell> subcell(create_random_cell_nvec(irep*NPOINT, 3));
+    cl::assign_icell(*subcell, &points);
+    std::sort(points.begin(), points.end());
+    std::unique_ptr<cl::CellMap> cell_map(cl::create_cell_map(points));
+    // Check consistency of results
+    for (const auto& kv : *cell_map) {
+      const int begin = kv.second[0];
+      const int end = kv.second[1];
+      for (int ipoint = begin; ipoint < end; ++ipoint) {
+        EXPECT_EQ(kv.first[0], points.at(ipoint).icell[0]);
+        EXPECT_EQ(kv.first[1], points.at(ipoint).icell[1]);
+        EXPECT_EQ(kv.first[2], points.at(ipoint).icell[2]);
+      }
+    }
+  }
+}
+
+// vim: textwidth=90 et ts=2 sw=2

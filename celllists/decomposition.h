@@ -45,14 +45,17 @@ class Point {
 };
 
 
+// A typedef for cell_map objects
+typedef std::map<std::array<int, 3>, std::array<int, 2>> CellMap;
+
 //! Makes a subcell
 Cell* create_subcell(const Cell* cell, const int* shape, const double* spacings, bool* pbc);
 
 //! Assigns all cell indexes
-void partition(std::vector<Point>* points, Cell* subcell);
+void assign_icell(const Cell &subcell, std::vector<Point>* points);
 
 //! Create a mapping from cell indices to a list of points
-std::map<std::array<int, 3>, std::array<int, 2>>* create_map(const std::vector<Point>* points);
+CellMap* create_cell_map(const std::vector<Point> &points);
 
 
 }  // namespace celllists
