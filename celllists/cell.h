@@ -74,7 +74,7 @@ class Cell {
           The number of cell vectors. This corresponds to the dimensionality of the cell.
           `nvec` must be 0, 1, 2 or 3.
   */
-  Cell(const double* _rvecs, int _nvec);
+  Cell(const double* rvecs, int nvec);
 
   // Copy-constructor, move-constructor and assignment make no sense as the Cell is
   // constant after construction! Just pass references or pointers instead.
@@ -83,25 +83,25 @@ class Cell {
   Cell& operator=(const Cell&) = delete;
 
   //! Returns the number of periodic dimensions.
-  int get_nvec() const { return nvec; }
+  int nvec() const { return nvec_; }
   //! Returns all real-space vectors.
-  const double* get_rvecs() const { return rvecs; }
+  const double* rvecs() const { return rvecs_; }
   //! Returns a real-space vector.
-  const double* get_rvec(const int ivec) const;
+  const double* rvec(const int ivec) const;
   //! Returns all reciprocal-space vectors.
-  const double* get_gvecs() const { return gvecs; }
+  const double* gvecs() const { return gvecs_; }
   //! Returns a reciprocal-space vector.
-  const double* get_gvec(const int ivec) const;
+  const double* gvec(const int ivec) const;
   //! Returns the volume (or area or length) of the cell.
-  double get_volume() const { return volume; }
+  double volume() const { return volume_; }
   //! Returns the lengths of the real-space vectors.
-  const double* get_rlengths() const { return rlengths; }
+  const double* rlengths() const { return rlengths_; }
   //! Returns the lengths of the reciprocal-space vectors.
-  const double* get_glengths() const { return glengths; }
+  const double* glengths() const { return glengths_; }
   //! Returns the spacings between the real-space crystal plane
-  const double* get_rspacings() const { return rspacings; }
+  const double* rspacings() const { return rspacings_; }
   //! Returns the spacings between the reciprocal-space crystal plane
-  const double* get_gspacings() const { return gspacings; }
+  const double* gspacings() const { return gspacings_; }
 
 
   /** @brief
@@ -110,7 +110,7 @@ class Cell {
       The cell must also be aligned with Cartesian axes, i.e a to x, b to y and c to z. No
       small errors allowed.
     */
-  bool is_cubic() const;
+  bool cubic() const;
 
 
   /** @brief
@@ -119,7 +119,7 @@ class Cell {
       The cell must also be aligned with Cartesian axes, i.e a to x, b to y and c to z. No
       small errors allowed.
     */
-  bool is_cuboid() const;
+  bool cuboid() const;
 
 
   /** @brief
@@ -285,14 +285,14 @@ class Cell {
       const bool* pbc, std::vector<int>* prefix, std::vector<int>* bars)
       const;
 
-  const int nvec;        //!< number of defined cell vectors
-  double rvecs[9];       //!< real-space vectors,       one per row, row-major
-  double gvecs[9];       //!< reciprocal-space vectors, one per row, row-major
-  double volume;         //!< volume (or area or length) of the cell
-  double rlengths[3];    //!< real-space vector lengths
-  double glengths[3];    //!< reciprocal-space vector lengths
-  double rspacings[3];   //!< spacing between real-space crystal planes
-  double gspacings[3];   //!< spacing between reciprocal-space crystal planes
+  const int nvec_;        //!< number of defined cell vectors
+  double rvecs_[9];       //!< real-space vectors,       one per row, row-major
+  double gvecs_[9];       //!< reciprocal-space vectors, one per row, row-major
+  double volume_;         //!< volume (or area or length) of the cell
+  double rlengths_[3];    //!< real-space vector lengths
+  double glengths_[3];    //!< reciprocal-space vector lengths
+  double rspacings_[3];   //!< spacing between real-space crystal planes
+  double gspacings_[3];   //!< spacing between reciprocal-space crystal planes
 };
 
 /**
