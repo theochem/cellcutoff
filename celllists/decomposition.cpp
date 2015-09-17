@@ -70,7 +70,8 @@ void assign_icell(const Cell &subcell, std::vector<Point>* points, const int* sh
     subcell.to_frac(&point.cart[0], frac);
     for (int ivec = 0; ivec < 3; ++ivec) {
       int i = static_cast<int>(floor(frac[ivec]));
-      point.icell[ivec] = smart_wrap(i, shape[ivec], pbc[ivec]);
+      if (pbc[ivec])
+        point.icell[ivec] = robust_wrap(i, shape[ivec]);
       i -= point.icell[ivec];
       vec3::iadd(point.cart.data(), subcell.vec(ivec), -i);
     }
@@ -104,17 +105,6 @@ CellMap* create_cell_map(const std::vector<Point> &points) {
     std::array<int, 2>{ibegin, static_cast<int>(points.size())}
   );
   return result;
-}
-
-
-int smart_wrap(int i, const int shape, const bool pbc) {
-  if (pbc) {
-    i %= shape;
-    if (i < 0) i += shape;
-    return i;
-  } else {
-    return i;
-  }
 }
 
 

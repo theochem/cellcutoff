@@ -55,24 +55,18 @@ void assign_icell(const Cell &subcell, std::vector<Point>* points, const int* sh
 //! Create a mapping from cell indices to a list of points
 CellMap* create_cell_map(const std::vector<Point> &points);
 
-/**
-    @brief
-        A standardized modulo operation geared toward boundary conditions.
 
-    @param i
-        The numerator of the integer division.
+inline int robust_wrap(int num, const int denom, int* division) {
+  *division = num/denom;
+  num %= denom;
+  if (num < 0) --*division;
+  return (num + denom) % denom;
+}
 
-    @param shape
-        The denominator of the integer division.
 
-    @param pbc
-        Whether periodic boundary conditions apply.
-
-    @return
-        `i % shape` (guaranteed to be positive) if `pbc` is true. If `pbc` is false,
-        `i` is returned without modification.
- */
-int smart_wrap(int i, const int shape, const bool pbc);
+inline int robust_wrap(const int num, const int denom) {
+  return ((num % denom) + denom) % denom;
+}
 
 
 }  // namespace celllists

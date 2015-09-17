@@ -210,31 +210,32 @@ TEST(DecompositionTest, random_cell_map) {
 }
 
 
-// smart_wrap
-// ~~~~~~~~~~
+// robust_wrap
+// ~~~~~~~~~~~
 
 TEST(SmartWrap, examples) {
-  EXPECT_EQ(0, cl::smart_wrap(-15, 5, true));
-  EXPECT_EQ(0, cl::smart_wrap(-5, 5, true));
-  EXPECT_EQ(2, cl::smart_wrap(-3, 5, true));
-  EXPECT_EQ(4, cl::smart_wrap(-1, 5, true));
-  EXPECT_EQ(0, cl::smart_wrap(0, 5, true));
-  EXPECT_EQ(3, cl::smart_wrap(3, 5, true));
-  EXPECT_EQ(0, cl::smart_wrap(5, 5, true));
-  EXPECT_EQ(1, cl::smart_wrap(6, 5, true));
-  EXPECT_EQ(0, cl::smart_wrap(10, 5, true));
-  EXPECT_EQ(2, cl::smart_wrap(12, 5, true));
-  EXPECT_EQ(-15, cl::smart_wrap(-15, 5, false));
-  EXPECT_EQ(-5, cl::smart_wrap(-5, 5, false));
-  EXPECT_EQ(-3, cl::smart_wrap(-3, 5, false));
-  EXPECT_EQ(-1, cl::smart_wrap(-1, 5, false));
-  EXPECT_EQ(0, cl::smart_wrap(0, 5, false));
-  EXPECT_EQ(3, cl::smart_wrap(3, 5, false));
-  EXPECT_EQ(4, cl::smart_wrap(4, 5, false));
-  EXPECT_EQ(5, cl::smart_wrap(5, 5, false));
-  EXPECT_EQ(6, cl::smart_wrap(6, 5, false));
-  EXPECT_EQ(10, cl::smart_wrap(10, 5, false));
-  EXPECT_EQ(12, cl::smart_wrap(12, 5, false));
+  EXPECT_EQ(0, cl::robust_wrap(-15, 5));
+  EXPECT_EQ(0, cl::robust_wrap(-5, 5));
+  EXPECT_EQ(2, cl::robust_wrap(-3, 5));
+  EXPECT_EQ(4, cl::robust_wrap(-1, 5));
+  EXPECT_EQ(0, cl::robust_wrap(0, 5));
+  EXPECT_EQ(3, cl::robust_wrap(3, 5));
+  EXPECT_EQ(0, cl::robust_wrap(5, 5));
+  EXPECT_EQ(1, cl::robust_wrap(6, 5));
+  EXPECT_EQ(0, cl::robust_wrap(10, 5));
+  EXPECT_EQ(2, cl::robust_wrap(12, 5));
+}
+
+
+TEST(SmartWrap, examples_division) {
+  int base = 5;
+  for (int i = -20; i < 20; ++i) {
+    int div = 10000;
+    int m1 = cl::robust_wrap(i, base);
+    int m2 = cl::robust_wrap(i, base, &div);
+    EXPECT_EQ(m1, m2);
+    EXPECT_EQ(i, div*base + m1);
+  }
 }
 
 // vim: textwidth=90 et ts=2 sw=2
