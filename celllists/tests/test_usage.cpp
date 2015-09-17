@@ -49,8 +49,8 @@ class AlgorithmTestP : public ::testing::TestWithParam<int> {
   }
 
   std::unique_ptr<cl::Cell> create_random_cell(const unsigned int seed,
-      const double scale = 1.0, const bool cuboid = false) {
-    return create_random_cell_nvec(seed, nvec, scale, cuboid);
+      const double scale = 1.0, const double ratio = 0.1, const bool cuboid = false) {
+    return create_random_cell_nvec(seed, nvec, scale, ratio, cuboid);
   }
 
   int nvec;
@@ -74,7 +74,7 @@ TEST_P(AlgorithmTestP, points_within_cutoff) {
     }
 
     // Make a reasonable cell and subcell
-    std::unique_ptr<cl::Cell> cell(create_random_cell(irep+NREP, cutoff));
+    std::unique_ptr<cl::Cell> cell(create_random_cell(irep+NREP, cutoff, 0.6, false));
     cell->iwrap_box(center);
     int shape[3] = {-1, -1, -1};
     std::unique_ptr<cl::Cell> subcell(cell->create_subcell(cutoff*0.2, shape));
@@ -91,6 +91,7 @@ TEST_P(AlgorithmTestP, points_within_cutoff) {
     // Cell::bars_cutoff.
     std::vector<int> bars;
     size_t nbar = subcell->bars_cutoff(center, cutoff, &bars);
+    size_t ncell_bars = 0;
     std::vector<int> ipoints_bars;
     for (size_t ibar = 0; ibar < nbar; ++ibar) {
       std::array<int, 3> icell;
@@ -99,8 +100,9 @@ TEST_P(AlgorithmTestP, points_within_cutoff) {
       icell[1] = cl::robust_wrap(bars[4*ibar + 1], shape[1], &coeffs[1]);
       int begin2 = bars[4*ibar + 2];
       int end2 = bars[4*ibar + 3];
+      ncell_bars += end2 - begin2;
       for (int icell2 = begin2; icell2 < end2; ++icell2) {
-        icell[2] = cl::robust_wrap(shape[2], icell2, &coeffs[2]);
+        icell[2] = cl::robust_wrap(icell2, shape[2], &coeffs[2]);
         auto it = cell_map->find(icell);
         if (it != cell_map->end()) {
           for (int ipoint = it->second[0]; ipoint < it->second[1]; ++ipoint) {
@@ -116,45 +118,63 @@ TEST_P(AlgorithmTestP, points_within_cutoff) {
         }
       }
     }
+    std::sort(ipoints_bars.begin(), ipoints_bars.end());
 
     // Compute the points within the cutoff in a less efficient way, i.e. using
     // Cell::ranges_cutoff. Results should match.
-    /*int ranges_begin[3];
+    int ranges_begin[3];
     int ranges_end[3];
-    size_t ncell = subcell->bars_cutoff(center, cutoff, &bars);*/
-    /*
-    std::vector<int> bars;
-    size_t nbar = subcell->bars_cutoff(center, cutoff, &bars);
-    std::vector<int> ipoints_bars;
-    for (size_t ibar = 0; ibar < nbar; ++ibar) {
-      std::array<int, 3> icell;
-      int coeffs[3];
-      icell[0] = cl::robust_wrap(bars[4*ibar], shape[0], &coeffs[0]);
-      icell[1] = cl::robust_wrap(bars[4*ibar + 1], shape[1], &coeffs[1]);
-      int begin2 = bars[4*ibar + 2];
-      int end2 = bars[4*ibar + 3];
-      for (int icell2 = begin2; icell2 < end2; ++icell2) {
-        icell[2] = cl::robust_wrap(shape[2], icell2, &coeffs[2]);
-        auto it = cell_map->find(icell);
-        if (it != cell_map->end()) {
-          for (int ipoint = it->second[0]; ipoint < it->second[1]; ++ipoint) {
-            double cart[3];
-            std::copy(points[ipoint].cart.data(), points[ipoint].cart.data() + 3, cart);
-            cell->iadd_vec(cart, coeffs);
-            double d = vec3::distance(center, cart);
-            if (d < cutoff) {
-              ++npoint_total;
-              ipoints_bars.push_back(ipoint);
+    size_t ncell = subcell->ranges_cutoff(center, cutoff, ranges_begin, ranges_end);
+    EXPECT_LE(ncell_bars, ncell);
+    std::vector<int> ipoints_ranges;
+    for (int icell0 = ranges_begin[0]; icell0 < ranges_end[0]; ++icell0) {
+      for (int icell1 = ranges_begin[1]; icell1 < ranges_end[1]; ++icell1) {
+        for (int icell2 = ranges_begin[2]; icell2 < ranges_end[2]; ++icell2) {
+          std::array<int, 3> icell;
+          int coeffs[3];
+          icell[0] = cl::robust_wrap(icell0, shape[0], &coeffs[0]);
+          icell[1] = cl::robust_wrap(icell1, shape[1], &coeffs[1]);
+          icell[2] = cl::robust_wrap(icell2, shape[2], &coeffs[2]);
+          auto it = cell_map->find(icell);
+          if (it != cell_map->end()) {
+            for (int ipoint = it->second[0]; ipoint < it->second[1]; ++ipoint) {
+              double cart[3];
+              std::copy(points[ipoint].cart.data(), points[ipoint].cart.data() + 3, cart);
+              cell->iadd_vec(cart, coeffs);
+              double d = vec3::distance(center, cart);
+              if (d < cutoff) {
+                ipoints_ranges.push_back(ipoint);
+              }
             }
           }
         }
       }
     }
-    */
+    std::sort(ipoints_ranges.begin(), ipoints_ranges.end());
+
+    // Compare the two so far;
+    EXPECT_EQ(ipoints_bars.size(), ipoints_ranges.size());
+    for (size_t i = 0; i < ipoints_bars.size(); ++i) {
+      EXPECT_EQ(ipoints_bars.at(i), ipoints_ranges.at(i));
+    }
 
     // If aperiodic, compute the points within the cutoff in a dumb way: just try them
     // all! Results should match.
+    if (nvec == 0) {
+      std::vector<int> ipoints_dumb;
+      for (size_t ipoint = 0; ipoint < points.size(); ++ipoint) {
+        double d = vec3::distance(center, points[ipoint].cart.data());
+        if (d < cutoff) {
+          ipoints_dumb.push_back(static_cast<int>(ipoint));
+        }
+      }
 
+      // Compare
+      EXPECT_EQ(ipoints_bars.size(), ipoints_dumb.size());
+      for (size_t i = 0; i < ipoints_bars.size(); ++i) {
+        EXPECT_EQ(ipoints_bars.at(i), ipoints_dumb.at(i));
+      }
+    }
   }
   // Sufficiency check
   EXPECT_LE((NREP*NPOINT)/10, npoint_total);

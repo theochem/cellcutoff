@@ -53,9 +53,9 @@ unsigned int fill_random_int(const unsigned int seed, int* array, const int size
 //! Fills and array of int with a random permutation
 unsigned int fill_random_permutation(const unsigned int seed, int* array, const int size);
 
-//! Random cell with a volume larger than (0.1*scale)**nvec
+//! Random cell with a volume larger than (ratio*scale)**nvec
 std::unique_ptr<cl::Cell> create_random_cell_nvec(const unsigned int seed, const int nvec,
-    const double scale = 1.0, const bool cuboid = false);
+    const double scale = 1.0, const double ratio = 0.1, const bool cuboid = false);
 
 //! Compute a random point in a cubic box centered around center. Also computes distance.
 unsigned int random_point(const unsigned int seed,  const double* center,

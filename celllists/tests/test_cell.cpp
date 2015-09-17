@@ -69,8 +69,8 @@ class CellTest : public ::testing::Test {
   }
 
   std::unique_ptr<cl::Cell> create_random_cell(const unsigned int seed,
-      const double scale = 1.0, const bool cuboid = false) {
-    return create_random_cell_nvec(seed, nvec, scale, cuboid);
+      const double scale = 1.0, const double ratio = 0.1, const bool cuboid = false) {
+    return create_random_cell_nvec(seed, nvec, scale, ratio, cuboid);
   }
 
   int nvec;
@@ -781,7 +781,7 @@ TEST_P(CellTestP, cubic_cuboid_random1) {
 
 TEST_P(CellTestP, cubic_cuboid_random2) {
   for (int irep = 0; irep < NREP; ++irep) {
-    std::unique_ptr<cl::Cell> cell(create_random_cell(irep, 1.0, true));
+    std::unique_ptr<cl::Cell> cell(create_random_cell(irep, 1.0, 0.1, true));
     if (nvec == 1) {
       EXPECT_TRUE(cell->cubic());
     } else {

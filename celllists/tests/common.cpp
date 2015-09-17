@@ -100,7 +100,7 @@ unsigned int fill_random_permutation(const unsigned int seed, int* array,
 
 
 std::unique_ptr<cl::Cell> create_random_cell_nvec(unsigned int seed, const int nvec,
-    const double scale, const bool cuboid) {
+    const double scale, const double ratio, const bool cuboid) {
   // Range check
   if ((nvec < 0) || (nvec > 3))
     throw std::domain_error("A random cell must be 0D, 1D, 2D or 2D periodic.");
@@ -124,7 +124,7 @@ std::unique_ptr<cl::Cell> create_random_cell_nvec(unsigned int seed, const int n
     }
     try {
       std::unique_ptr<cl::Cell> cell(new cl::Cell(vecs, nvec));
-      if (cell->volume() > pow(0.1*scale, nvec))
+      if (cell->volume() > pow(ratio*scale, nvec))
         return cell;
     } catch (cl::singular_cell_vectors) { }
   }
