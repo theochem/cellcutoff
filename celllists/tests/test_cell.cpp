@@ -150,11 +150,22 @@ TEST_F(CellTest3, constructor_nvec_too_large) {
 }
 
 
-TEST_F(CellTest0, constructor) {
+TEST_F(CellTest0, constructor1) {
   EXPECT_EQ(0, mycell->nvec());
   EXPECT_TRUE(std::isnan(mycell->volume()));
   EXPECT_TRUE(std::isnan(mycell->gvolume()));
   std::unique_ptr<cl::Cell> gcell(mycell->create_reciprocal());
+  EXPECT_EQ(0, gcell->nvec());
+  EXPECT_TRUE(std::isnan(gcell->volume()));
+  EXPECT_TRUE(std::isnan(gcell->gvolume()));
+}
+
+
+TEST_F(CellTest0, constructor2) {
+  std::unique_ptr<cl::Cell> cell(new cl::Cell());
+  EXPECT_TRUE(std::isnan(cell->volume()));
+  EXPECT_TRUE(std::isnan(cell->gvolume()));
+  std::unique_ptr<cl::Cell> gcell(cell->create_reciprocal());
   EXPECT_EQ(0, gcell->nvec());
   EXPECT_TRUE(std::isnan(gcell->volume()));
   EXPECT_TRUE(std::isnan(gcell->gvolume()));
