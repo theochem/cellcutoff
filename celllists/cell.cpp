@@ -143,18 +143,22 @@ Cell* Cell::create_reciprocal() const {
 }
 
 
-Cell* Cell::create_subcell(const int* shape, const double* spacings, bool* pbc) {
+Cell* Cell::create_subcell(const double threshold, int* shape, bool* pbc) {
   // Start by copying all three cell vectors, active or not.
   double new_vecs[9];
   std::copy(vecs_, vecs_ + 9, new_vecs);
-  // Divide the 'active' vectors by the corresponding shape value.
+  // Divide the 'active' vectors by an integer such that the spacing between the crystal
+  // planes is maximal, yet below the given threshold. The integer is also stored in the
+  // shape output.
   for (int ivec = 0; ivec < nvec_; ++ivec) {
+    shape[ivec] = static_cast<int>(ceil(spacings_[ivec]/threshold));
     vec3::iscale(new_vecs + 3*ivec, 1.0/shape[ivec]);
     pbc[ivec] = true;
   }
-  // Multiply the 'inactive' vectors by the corresponding spacing.
+  // Multiply the 'inactive' vectors by the corresponding threshold. No need to fill in
+  // the shape output argument for these vectors.
   for (int ivec = nvec_; ivec < 3; ++ivec) {
-    vec3::iscale(new_vecs + 3*ivec, spacings[ivec - nvec_]);
+    vec3::iscale(new_vecs + 3*ivec, threshold);
     pbc[ivec] = false;
   }
   // Return the subcell, always 3D periodic

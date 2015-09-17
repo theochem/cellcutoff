@@ -53,12 +53,12 @@ class singular_cell_vectors : public std::domain_error {
     are implemented.
 
     Even though lower-dimensional periodic boundary conditions are supported, this class
-    is specific for 3D systems. In case of 0D, 1D or 2D PBC, the cell vectors are
-    internally extended with orthonormal basis vectors to guarantee an invertible
-    transformation between Cartesian and fractional coordinates. In that case, the
-    fractional coordinates are actually also Cartesian coordinates in directions
-    orthogonal to the available cell vectors. The extra basis vectors are always such that
-    the complete set of vectors is right-handed.
+    is specific for 3D systems. In case of 0D, 1D or 2D PBC, the "active" cell vectors are
+    internally extended with "inactive" cell vectors, i.e. an orthonormal set of basis
+    vectors to guarantee an invertible transformation between Cartesian and fractional
+    coordinates. In that case, the fractional coordinates are actually also Cartesian
+    coordinates in directions orthogonal to the available cell vectors. The extra basis
+    vectors are always such that the complete set of vectors is right-handed.
  */
 class Cell {
  public:
@@ -296,13 +296,15 @@ class Cell {
           This partitions space into bins (with the size and shape of the subcell) that
           can be used to do a domain decomposition.
 
-      @param shape
-          A pointer to nvec integers, with the number subcells along the corresponding
-          cell vector.
+      @param spacing
+          The spacing between the subcell crystal planes is guaranteed to be lower than
+          or equal to this value. Within the constraints of an integer division of the
+          active cell vectors and this threshold, the spacing between the subcell crystal
+          planes as as large as possible.
 
-      @param spacings
-          A pointer to (3-nvec) doubles, with the spacings between the
-          inactive/non-periodic cell vectors.
+      @param shape
+          A point to nvec ints. This output argument will contain the integer number of
+          subcells along each active cell vector.
 
       @param pbc
           A pointer to 3 bools. This is an auxiliary output argument, whose first nvec
@@ -311,7 +313,7 @@ class Cell {
       @return
           A pointer to a `Cell` object with the subcell.
    */
-  Cell* create_subcell(const int* shape, const double* spacings, bool* pbc);
+  Cell* create_subcell(const double threshold, int* shape, bool* pbc);
 
  protected:
   /** @brief

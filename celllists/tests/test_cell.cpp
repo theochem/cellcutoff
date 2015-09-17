@@ -235,10 +235,10 @@ TEST_P(CellTestP, create_reciprocal) {
 TEST_P(CellTestP, create_subcell_simple) {
   double vecs[9]{1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
   cl::Cell cell(vecs, nvec);
-  int shape[3]{10, 10, 10};
-  double spacings[3]{0.1, 0.1, 0.1};
+  int shape[3] = {-1, -1, -1};
+  double threshold = 0.1;
   bool pbc[3] = {false, false, true};
-  std::unique_ptr<cl::Cell> subcell(cell.create_subcell(shape, spacings, pbc));
+  std::unique_ptr<cl::Cell> subcell(cell.create_subcell(threshold, shape, pbc));
   EXPECT_EQ(3, subcell->nvec());
   EXPECT_EQ(0.1, subcell->vecs()[0]);
   EXPECT_EQ(0.0, subcell->vecs()[1]);
@@ -249,6 +249,8 @@ TEST_P(CellTestP, create_subcell_simple) {
   EXPECT_EQ(0.0, subcell->vecs()[6]);
   EXPECT_EQ(0.0, subcell->vecs()[7]);
   EXPECT_EQ(0.1, subcell->vecs()[8]);
+  for (int ivec = 0; ivec < nvec; ++ivec)
+    EXPECT_EQ(10, shape[ivec]);
   EXPECT_EQ(nvec>0, pbc[0]);
   EXPECT_EQ(nvec>1, pbc[1]);
   EXPECT_EQ(nvec>2, pbc[2]);
@@ -258,21 +260,22 @@ TEST_P(CellTestP, create_subcell_simple) {
 TEST_P(CellTestP, create_subcell_random) {
   for (int irep = 0; irep < NREP; ++irep) {
     std::unique_ptr<cl::Cell> cell(create_random_cell(irep));
-    int shape[3];
-    double spacings[3];
-    fill_random_int(irep + NREP, shape, 3, 1, 20);
-    fill_random_double(irep, spacings, 3, 0.1, 2.0);
+    double threshold;
+    fill_random_double(irep, &threshold, 1, 0.1, 2.0);
+    int shape[3] = {-1, -1, -1};
     bool pbc[3] = {irep%2==0, (irep>>1)%2==0, (irep>>1)%2==0};
-    std::unique_ptr<cl::Cell> subcell(cell->create_subcell(shape, spacings, pbc));
+    std::unique_ptr<cl::Cell> subcell(cell->create_subcell(threshold, shape, pbc));
     double vol = cell->volume();
     for (int ivec = 0; ivec < nvec; ++ivec) {
       EXPECT_NEAR(cell->lengths()[ivec]/shape[ivec], subcell->lengths()[ivec], 1e-10);
+      EXPECT_NEAR(cell->spacings()[ivec]/shape[ivec], subcell->spacings()[ivec], 1e-10);
+      EXPECT_GE(threshold, subcell->spacings()[ivec]);
       vol /= shape[ivec];
       EXPECT_EQ(true, pbc[ivec]);
     }
     for (int ivec = nvec; ivec < 3; ++ivec) {
-      EXPECT_NEAR(cell->lengths()[ivec]*spacings[ivec-nvec], subcell->lengths()[ivec], 1e-10);
-      vol *= spacings[ivec-nvec];
+      EXPECT_NEAR(threshold, subcell->spacings()[ivec], 1e-10);
+      vol *= threshold;
       EXPECT_EQ(false, pbc[ivec]);
     }
     EXPECT_NEAR(vol, subcell->volume(), 1e-10);
@@ -281,12 +284,13 @@ TEST_P(CellTestP, create_subcell_random) {
 
 
 TEST_F(CellTest1, subcell_example) {
-  int shape[1]{4};
-  double spacings[2]{0.1, 0.2};
+  double threshold = 0.1;
+  int shape[1] = {-35};
   bool pbc[3] = {false, true, true};
-  std::unique_ptr<cl::Cell> subcell(mycell->create_subcell(shape, spacings, pbc));
+  std::unique_ptr<cl::Cell> subcell(mycell->create_subcell(threshold, shape, pbc));
   EXPECT_EQ(3, subcell->nvec());
-  EXPECT_NEAR(0.5, subcell->vecs()[0], 1e-10);
+  EXPECT_EQ(20, shape[0]);
+  EXPECT_NEAR(0.1, subcell->vecs()[0], 1e-10);
   EXPECT_EQ(0.0, subcell->vecs()[1]);
   EXPECT_EQ(0.0, subcell->vecs()[2]);
   EXPECT_EQ(0.0, subcell->vecs()[3]);
@@ -294,7 +298,7 @@ TEST_F(CellTest1, subcell_example) {
   EXPECT_EQ(0.0, subcell->vecs()[5]);
   EXPECT_EQ(0.0, subcell->vecs()[6]);
   EXPECT_EQ(0.0, subcell->vecs()[7]);
-  EXPECT_NEAR(0.2, subcell->vecs()[8], 1e-10);
+  EXPECT_NEAR(0.1, subcell->vecs()[8], 1e-10);
   EXPECT_EQ(true, pbc[0]);
   EXPECT_EQ(false, pbc[1]);
   EXPECT_EQ(false, pbc[2]);
@@ -302,19 +306,21 @@ TEST_F(CellTest1, subcell_example) {
 
 
 TEST_F(CellTest2, subcell_example) {
-  int shape[2]{10, 16};
-  double spacings[1]{0.55};
+  double threshold = 0.23;
+  int shape[2] = {-1, -1};
   bool pbc[3] = {false, false, true};
-  std::unique_ptr<cl::Cell> subcell(mycell->create_subcell(shape, spacings, pbc));
+  std::unique_ptr<cl::Cell> subcell(mycell->create_subcell(threshold, shape, pbc));
   EXPECT_EQ(3, subcell->nvec());
-  EXPECT_NEAR(0.2, subcell->vecs()[0], 1e-10);
+  EXPECT_EQ(9, shape[0]);
+  EXPECT_EQ(18, shape[1]);
+  EXPECT_NEAR(0.2222222222222222, subcell->vecs()[0], 1e-10);
   EXPECT_EQ(0.0, subcell->vecs()[1]);
   EXPECT_EQ(0.0, subcell->vecs()[2]);
   EXPECT_EQ(0.0, subcell->vecs()[3]);
   EXPECT_EQ(0.0, subcell->vecs()[4]);
-  EXPECT_NEAR(0.25, subcell->vecs()[5], 1e-10);
+  EXPECT_NEAR(0.2222222222222222, subcell->vecs()[5], 1e-10);
   EXPECT_EQ(0.0, subcell->vecs()[6]);
-  EXPECT_NEAR(-0.55, subcell->vecs()[7], 1e-10);
+  EXPECT_NEAR(-0.23, subcell->vecs()[7], 1e-10);
   EXPECT_EQ(0.0, subcell->vecs()[8]);
   EXPECT_EQ(true, pbc[0]);
   EXPECT_EQ(true, pbc[1]);
@@ -323,19 +329,23 @@ TEST_F(CellTest2, subcell_example) {
 
 
 TEST_F(CellTest3, subcell_example) {
-  int shape[3]{20, 5, 8};
+  double threshold = 0.15;
+  int shape[3] = {-1, -1, -1};
   bool pbc[3] = {false, false, false};
-  std::unique_ptr<cl::Cell> subcell(mycell->create_subcell(shape, nullptr, pbc));
+  std::unique_ptr<cl::Cell> subcell(mycell->create_subcell(threshold, shape, pbc));
   EXPECT_EQ(3, subcell->nvec());
-  EXPECT_NEAR(0.1, subcell->vecs()[0], 1e-10);
+  EXPECT_EQ(14, shape[0]);
+  EXPECT_EQ(7, shape[1]);
+  EXPECT_EQ(27, shape[2]);
+  EXPECT_NEAR(0.14285714285714285, subcell->vecs()[0], 1e-10);
   EXPECT_EQ(0.0, subcell->vecs()[1]);
   EXPECT_EQ(0.0, subcell->vecs()[2]);
   EXPECT_EQ(0.0, subcell->vecs()[3]);
-  EXPECT_NEAR(0.2, subcell->vecs()[4], 1e-10);
+  EXPECT_NEAR(0.14285714285714285, subcell->vecs()[4], 1e-10);
   EXPECT_EQ(0.0, subcell->vecs()[5]);
   EXPECT_EQ(0.0, subcell->vecs()[6]);
   EXPECT_EQ(0.0, subcell->vecs()[7]);
-  EXPECT_NEAR(0.5, subcell->vecs()[8], 1e-10);
+  EXPECT_NEAR(0.14814814814814814, subcell->vecs()[8], 1e-10);
   EXPECT_EQ(true, pbc[0]);
   EXPECT_EQ(true, pbc[1]);
   EXPECT_EQ(true, pbc[2]);

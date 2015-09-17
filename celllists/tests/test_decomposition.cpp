@@ -143,13 +143,14 @@ TEST(DecompositionTest, assign_icell_random_wrap) {
     // Get a random 3D cell
     std::unique_ptr<cl::Cell> cell(create_random_cell_nvec(irep*NPOINT, 3, 2));
     // Get a subcell
-    int shape[3];
-    bool pbc[3];
-    fill_random_int(irep*5, shape, 3, 1, 5);
-    std::unique_ptr<cl::Cell> subcell(cell->create_subcell(shape, nullptr, pbc));
-    EXPECT_EQ(true, pbc[0]);
-    EXPECT_EQ(true, pbc[1]);
-    EXPECT_EQ(true, pbc[2]);
+    double threshold = 0.2;
+    int shape[3] = {-1, -1, -1};
+    bool pbc[3] = {false, false, false};
+    std::unique_ptr<cl::Cell> subcell(cell->create_subcell(threshold, shape, pbc));
+    for (int ivec = 0; ivec < 3; ++ivec) {
+      EXPECT_EQ(true, pbc[ivec]);
+      EXPECT_NEAR(cell->spacings()[0], subcell->spacings()[0]*shape[0], 1e-10);
+    }
 
     // Generate random points, wrapped in cell
     std::vector<cl::Point> points;
