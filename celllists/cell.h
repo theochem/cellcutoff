@@ -246,7 +246,7 @@ class Cell {
       @return
           The number of cells contained in the supercell.
    */
-  int ranges_cutoff(const double* center, const double cutoff, int* ranges_begin,
+  size_t ranges_cutoff(const double* center, const double cutoff, int* ranges_begin,
       int* ranges_end) const;
 
 

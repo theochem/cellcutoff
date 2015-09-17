@@ -817,7 +817,7 @@ TEST_F(CellTest1, ranges_cutoff_example) {
   double center[3] = {6.3, 0.2, -0.8};
   int ranges_begin[1];
   int ranges_end[1];
-  int ncell = 0;
+  size_t ncell = 0;
   ncell = mycell->ranges_cutoff(center, 1.0, ranges_begin, ranges_end);
   EXPECT_EQ(2, ncell);
   EXPECT_EQ(2, ranges_begin[0]);
@@ -837,7 +837,7 @@ TEST_F(CellTest1, ranges_cutoff_edge) {
   double center[3] = {2.0, 0.2, -0.8};
   int ranges_begin[1];
   int ranges_end[1];
-  int ncell = 0;
+  size_t ncell = 0;
   ncell = mycell->ranges_cutoff(center, 1.0, ranges_begin, ranges_end);
   EXPECT_EQ(2, ncell);
   EXPECT_EQ(0, ranges_begin[0]);
@@ -857,7 +857,7 @@ TEST_F(CellTest2, ranges_cutoff_example) {
   double center[3] = {6.3, 0.2, -5.0};
   int ranges_begin[2];
   int ranges_end[2];
-  int ncell = 0;
+  size_t ncell = 0;
   ncell = mycell->ranges_cutoff(center, 1.1, ranges_begin, ranges_end);
   EXPECT_EQ(2*2, ncell);
   EXPECT_EQ(2, ranges_begin[0]);
@@ -871,7 +871,7 @@ TEST_F(CellTest2, ranges_cutoff_edge) {
   double center[3] = {4.0, 0.2, -2.0};
   int ranges_begin[2];
   int ranges_end[2];
-  int ncell = 0;
+  size_t ncell = 0;
   ncell = mycell->ranges_cutoff(center, 2.0, ranges_begin, ranges_end);
   EXPECT_EQ(2, ncell);
   EXPECT_EQ(1, ranges_begin[0]);
@@ -885,7 +885,7 @@ TEST_F(CellTest3, ranges_cutoff_example) {
   double center[3] = {6.3, 2.2, -5.8};
   int ranges_begin[3];
   int ranges_end[3];
-  int ncell = 0;
+  size_t ncell = 0;
   ncell = mycell->ranges_cutoff(center, 1.0, ranges_begin, ranges_end);
   EXPECT_EQ(2*3*1, ncell);
   EXPECT_EQ(2, ranges_begin[0]);
@@ -901,7 +901,7 @@ TEST_F(CellTest3, ranges_cutoff_edge) {
   double center[3] = {10.0, -2.0, -6.0};
   int ranges_begin[3];
   int ranges_end[3];
-  int ncell = 0;
+  size_t ncell = 0;
   ncell = mycell->ranges_cutoff(center, 2.0, ranges_begin, ranges_end);
   EXPECT_EQ(2*4*1, ncell);
   EXPECT_EQ(4, ranges_begin[0]);

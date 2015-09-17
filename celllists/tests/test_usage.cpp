@@ -119,7 +119,38 @@ TEST_P(AlgorithmTestP, points_within_cutoff) {
 
     // Compute the points within the cutoff in a less efficient way, i.e. using
     // Cell::ranges_cutoff. Results should match.
-
+    /*int ranges_begin[3];
+    int ranges_end[3];
+    size_t ncell = subcell->bars_cutoff(center, cutoff, &bars);*/
+    /*
+    std::vector<int> bars;
+    size_t nbar = subcell->bars_cutoff(center, cutoff, &bars);
+    std::vector<int> ipoints_bars;
+    for (size_t ibar = 0; ibar < nbar; ++ibar) {
+      std::array<int, 3> icell;
+      int coeffs[3];
+      icell[0] = cl::robust_wrap(bars[4*ibar], shape[0], &coeffs[0]);
+      icell[1] = cl::robust_wrap(bars[4*ibar + 1], shape[1], &coeffs[1]);
+      int begin2 = bars[4*ibar + 2];
+      int end2 = bars[4*ibar + 3];
+      for (int icell2 = begin2; icell2 < end2; ++icell2) {
+        icell[2] = cl::robust_wrap(shape[2], icell2, &coeffs[2]);
+        auto it = cell_map->find(icell);
+        if (it != cell_map->end()) {
+          for (int ipoint = it->second[0]; ipoint < it->second[1]; ++ipoint) {
+            double cart[3];
+            std::copy(points[ipoint].cart.data(), points[ipoint].cart.data() + 3, cart);
+            cell->iadd_vec(cart, coeffs);
+            double d = vec3::distance(center, cart);
+            if (d < cutoff) {
+              ++npoint_total;
+              ipoints_bars.push_back(ipoint);
+            }
+          }
+        }
+      }
+    }
+    */
 
     // If aperiodic, compute the points within the cutoff in a dumb way: just try them
     // all! Results should match.

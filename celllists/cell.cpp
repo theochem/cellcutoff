@@ -264,13 +264,13 @@ bool Cell::cuboid() const {
 }
 
 
-int Cell::ranges_cutoff(const double* center, const double cutoff,
+size_t Cell::ranges_cutoff(const double* center, const double cutoff,
     int* ranges_begin, int* ranges_end) const {
   if (cutoff <= 0) {
     throw std::domain_error("cutoff must be strictly positive.");
   }
   double frac[3];
-  int ncell = 1;
+  size_t ncell = 1;
   to_frac(center, frac);
   for (int ivec = nvec_ - 1; ivec >= 0; --ivec) {
     // Use spacings between planes to find first plane before cutoff sphere and last
