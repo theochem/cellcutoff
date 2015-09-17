@@ -70,7 +70,7 @@ TEST_P(AlgorithmTestP, points_within_cutoff) {
     for (int ipoint = 0; ipoint < NPOINT; ++ipoint) {
       double cart[3];
       fill_random_double(irep*NPOINT + ipoint, cart, 3, -cutoff, cutoff);
-      points.push_back(cl::Point(ipoint, cart));
+      points.push_back(cl::Point(cart));
     }
 
     // Make a reasonable cell and subcell
@@ -83,16 +83,16 @@ TEST_P(AlgorithmTestP, points_within_cutoff) {
     EXPECT_LT(-1*(nvec<=2), shape[2]);
 
     // Assign icells to points, sort and make a cell_map.
-    cl::assign_icell(*subcell, &points, shape);
+    cl::assign_icell(*subcell, shape, points.data(), points.size(), sizeof(cl::Point));
     std::sort(points.begin(), points.end());
-    std::unique_ptr<cl::CellMap> cell_map(cl::create_cell_map(points));
+    std::unique_ptr<cl::CellMap> cell_map(cl::create_cell_map(points.data(), points.size(), sizeof(cl::Point)));
 
     // Compute the points within the cutoff in the most efficient way, i.e. using
     // Cell::bars_cutoff.
     std::vector<int> bars;
     size_t nbar = subcell->bars_cutoff(center, cutoff, &bars);
     size_t ncell_bars = 0;
-    std::vector<int> ipoints_bars;
+    std::vector<size_t> ipoints_bars;
     for (size_t ibar = 0; ibar < nbar; ++ibar) {
       std::array<int, 3> icell;
       int coeffs[3];
@@ -105,9 +105,9 @@ TEST_P(AlgorithmTestP, points_within_cutoff) {
         icell[2] = cl::robust_wrap(icell2, shape[2], &coeffs[2]);
         auto it = cell_map->find(icell);
         if (it != cell_map->end()) {
-          for (int ipoint = it->second[0]; ipoint < it->second[1]; ++ipoint) {
+          for (size_t ipoint = it->second[0]; ipoint < it->second[1]; ++ipoint) {
             double cart[3];
-            std::copy(points[ipoint].cart.data(), points[ipoint].cart.data() + 3, cart);
+            std::copy(points[ipoint].cart_, points[ipoint].cart_ + 3, cart);
             cell->iadd_vec(cart, coeffs);
             double d = vec3::distance(center, cart);
             if (d < cutoff) {
@@ -126,7 +126,7 @@ TEST_P(AlgorithmTestP, points_within_cutoff) {
     int ranges_end[3];
     size_t ncell = subcell->ranges_cutoff(center, cutoff, ranges_begin, ranges_end);
     EXPECT_LE(ncell_bars, ncell);
-    std::vector<int> ipoints_ranges;
+    std::vector<size_t> ipoints_ranges;
     for (int icell0 = ranges_begin[0]; icell0 < ranges_end[0]; ++icell0) {
       for (int icell1 = ranges_begin[1]; icell1 < ranges_end[1]; ++icell1) {
         for (int icell2 = ranges_begin[2]; icell2 < ranges_end[2]; ++icell2) {
@@ -137,9 +137,9 @@ TEST_P(AlgorithmTestP, points_within_cutoff) {
           icell[2] = cl::robust_wrap(icell2, shape[2], &coeffs[2]);
           auto it = cell_map->find(icell);
           if (it != cell_map->end()) {
-            for (int ipoint = it->second[0]; ipoint < it->second[1]; ++ipoint) {
+            for (size_t ipoint = it->second[0]; ipoint < it->second[1]; ++ipoint) {
               double cart[3];
-              std::copy(points[ipoint].cart.data(), points[ipoint].cart.data() + 3, cart);
+              std::copy(points[ipoint].cart_, points[ipoint].cart_ + 3, cart);
               cell->iadd_vec(cart, coeffs);
               double d = vec3::distance(center, cart);
               if (d < cutoff) {
@@ -161,9 +161,9 @@ TEST_P(AlgorithmTestP, points_within_cutoff) {
     // If aperiodic, compute the points within the cutoff in a dumb way: just try them
     // all! Results should match.
     if (nvec == 0) {
-      std::vector<int> ipoints_dumb;
+      std::vector<size_t> ipoints_dumb;
       for (size_t ipoint = 0; ipoint < points.size(); ++ipoint) {
-        double d = vec3::distance(center, points[ipoint].cart.data());
+        double d = vec3::distance(center, points[ipoint].cart_);
         if (d < cutoff) {
           ipoints_dumb.push_back(static_cast<int>(ipoint));
         }

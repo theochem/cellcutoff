@@ -33,47 +33,59 @@
 namespace celllists {
 
 
+/** @brief
+        An exception for Point arrays that are not properly grouped by icell.
+ */
+class points_not_grouped : public std::domain_error {
+ public:
+  explicit points_not_grouped(const std::string& what_arg)
+      : std::domain_error(what_arg) {}
+};
+
+
 class Point {
  public:
-  int index;
-  std::array<double, 3> cart;
-  std::array<int, 3> icell;
-
-  Point(const int index, const double* _cart);
-  Point(const int index, const double* _cart, const int* _icell);
+  Point(const double* cart);
+  Point(const double* cart, const int* icell);
   bool operator<(const Point& other) const;
+
+  double cart_[3];
+  int icell_[3];
 };
 
 
 // A typedef for cell_map objects
-typedef std::map<std::array<int, 3>, std::array<int, 2>> CellMap;
+typedef std::map<std::array<int, 3>, std::array<size_t, 2>> CellMap;
 
 //! Assigns all cell indexes
-void assign_icell(const Cell &subcell, std::vector<Point>* points);
-void assign_icell(const Cell &subcell, std::vector<Point>* points, const int* shape);
+void assign_icell(const Cell &subcell, void* points, size_t npoint, size_t point_size);
+void assign_icell(const Cell &subcell, const int* shape, void* points, size_t npoint,
+    size_t point_size);
+
+void sort_by_icell(void* points, size_t npoint, size_t point_size);
 
 //! Create a mapping from cell indices to a list of points
-CellMap* create_cell_map(const std::vector<Point> &points);
+CellMap* create_cell_map(const void* points, size_t npoint, size_t point_size);
 
 
-inline int robust_wrap(int num, const int denom, int* division) {
-  if (denom == 0) {
+inline int robust_wrap(int index, const int size, int* division) {
+  if (size == 0) {
     *division = 0;
-    return num;
+    return index;
   } else {
-    *division = num/denom;
-    num %= denom;
-    if (num < 0) --*division;
-    return (num + denom) % denom;
+    *division = index/size;
+    index %= size;
+    if (index < 0) --*division;
+    return (index + size) % size;
   }
 }
 
 
-inline int robust_wrap(const int num, const int denom) {
-  if (denom == 0) {
-    return num;
+inline int robust_wrap(const int index, const int size) {
+  if (size == 0) {
+    return index;
   } else {
-    return ((num % denom) + denom) % denom;
+    return ((index % size) + size) % size;
   }
 }
 
