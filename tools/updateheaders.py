@@ -42,7 +42,7 @@ def strip_header(lines, closing):
     lines.insert(0, closing)
 
 
-def fix_python(fn, lines, header_lines):
+def fix_python(fn, lines, header_lines, encoding=True):
     # check if a shebang is present
     do_shebang = lines[0].startswith('#!')
     # remove the current header
@@ -55,9 +55,15 @@ def fix_python(fn, lines, header_lines):
     for hline in header_lines[::-1]:
         lines.insert(0, ('# '+hline).strip() + '\n')
     # add a source code encoding line
-    lines.insert(0, '# -*- coding: utf-8 -*-\n')
+    if encoding:
+        lines.insert(0, '# -*- coding: utf-8 -*-\n')
+    # add shebang
     if do_shebang:
         lines.insert(0, '#!/usr/bin/env python\n')
+
+
+def fix_txt(fn, lines, header_lines):
+    fix_python(fn, lines, header_lines, encoding=False)
 
 
 def fix_c(fn, lines, header_lines):
@@ -78,11 +84,11 @@ def iter_subdirs(root):
 
 
 def main():
-    source_dirs = ['.', 'celllists', 'celllists/tests', 'tools']
+    source_dirs = ['.', 'celllists', 'celllists/tests', 'tools', 'python-celllists']
 
     fixers = [
         ('*.py', fix_python),
-        ('*.txt', fix_python),
+        ('*.txt', fix_txt),
         ('*.cpp', fix_c),
         ('*.h', fix_c),
     ]

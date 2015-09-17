@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # CellList is a 3D domain decomposition library.
 # Copyright (C) 2011-2015 The CellList Development Team
 #
