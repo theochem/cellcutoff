@@ -50,22 +50,31 @@ typedef std::map<std::array<int, 3>, std::array<int, 2>> CellMap;
 
 //! Assigns all cell indexes
 void assign_icell(const Cell &subcell, std::vector<Point>* points);
-void assign_icell(const Cell &subcell, std::vector<Point>* points, const int* shape, const bool* pbc);
+void assign_icell(const Cell &subcell, std::vector<Point>* points, const int* shape);
 
 //! Create a mapping from cell indices to a list of points
 CellMap* create_cell_map(const std::vector<Point> &points);
 
 
 inline int robust_wrap(int num, const int denom, int* division) {
-  *division = num/denom;
-  num %= denom;
-  if (num < 0) --*division;
-  return (num + denom) % denom;
+  if (denom == 0) {
+    *division = 0;
+    return num;
+  } else {
+    *division = num/denom;
+    num %= denom;
+    if (num < 0) --*division;
+    return (num + denom) % denom;
+  }
 }
 
 
 inline int robust_wrap(const int num, const int denom) {
-  return ((num % denom) + denom) % denom;
+  if (denom == 0) {
+    return num;
+  } else {
+    return ((num % denom) + denom) % denom;
+  }
 }
 
 

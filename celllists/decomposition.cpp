@@ -61,8 +61,7 @@ void assign_icell(const Cell &subcell, std::vector<Point>* points) {
   }
 }
 
-void assign_icell(const Cell &subcell, std::vector<Point>* points, const int* shape,
-    const bool* pbc){
+void assign_icell(const Cell &subcell, std::vector<Point>* points, const int* shape){
   if (!(subcell.nvec() == 3))
     throw std::domain_error("Partitioning is only sensible for 3D subcells.");
   for (auto& point : *points) {
@@ -70,8 +69,7 @@ void assign_icell(const Cell &subcell, std::vector<Point>* points, const int* sh
     subcell.to_frac(&point.cart[0], frac);
     for (int ivec = 0; ivec < 3; ++ivec) {
       int i = static_cast<int>(floor(frac[ivec]));
-      if (pbc[ivec])
-        point.icell[ivec] = robust_wrap(i, shape[ivec]);
+      point.icell[ivec] = robust_wrap(i, shape[ivec]);
       i -= point.icell[ivec];
       vec3::iadd(point.cart.data(), subcell.vec(ivec), -i);
     }

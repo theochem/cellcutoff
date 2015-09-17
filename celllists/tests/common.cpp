@@ -102,8 +102,10 @@ unsigned int fill_random_permutation(const unsigned int seed, int* array,
 std::unique_ptr<cl::Cell> create_random_cell_nvec(unsigned int seed, const int nvec,
     const double scale, const bool cuboid) {
   // Range check
-  if ((nvec <= 0) || (nvec > 3))
-    throw std::domain_error("A random cell must be 1D, 2D or 2D periodic.");
+  if ((nvec < 0) || (nvec > 3))
+    throw std::domain_error("A random cell must be 0D, 1D, 2D or 2D periodic.");
+  if (nvec == 0)
+    return std::unique_ptr<cl::Cell>(new cl::Cell());
   // Randomly construct a cell till a decent one (sufficient volume) is found.
   double vecs[9];
   while (true) {
@@ -146,9 +148,8 @@ TEST(CommonTest, domain) {
   EXPECT_THROW(fill_random_int(0, nullptr, 1, 1, 0), std::domain_error);
   EXPECT_THROW(fill_random_permutation(0, nullptr, 0), std::domain_error);
   EXPECT_THROW(fill_random_permutation(0, nullptr, -1), std::domain_error);
-  EXPECT_THROW(create_random_cell_nvec(-1, 0, 1, false), std::domain_error);
-  EXPECT_THROW(create_random_cell_nvec(0, 0, 1, false), std::domain_error);
-  EXPECT_THROW(create_random_cell_nvec(4, 0, 1, false), std::domain_error);
+  EXPECT_THROW(create_random_cell_nvec(1277, -1, 1, false), std::domain_error);
+  EXPECT_THROW(create_random_cell_nvec(1274, 4, 1, false), std::domain_error);
 }
 
 // vim: textwidth=90 et ts=2 sw=2

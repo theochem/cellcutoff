@@ -143,7 +143,7 @@ Cell* Cell::create_reciprocal() const {
 }
 
 
-Cell* Cell::create_subcell(const double threshold, int* shape, bool* pbc) {
+Cell* Cell::create_subcell(const double threshold, int* shape) {
   // Start by copying all three cell vectors, active or not.
   double new_vecs[9];
   std::copy(vecs_, vecs_ + 9, new_vecs);
@@ -153,13 +153,12 @@ Cell* Cell::create_subcell(const double threshold, int* shape, bool* pbc) {
   for (int ivec = 0; ivec < nvec_; ++ivec) {
     shape[ivec] = static_cast<int>(ceil(spacings_[ivec]/threshold));
     vec3::iscale(new_vecs + 3*ivec, 1.0/shape[ivec]);
-    pbc[ivec] = true;
   }
   // Multiply the 'inactive' vectors by the corresponding threshold. No need to fill in
   // the shape output argument for these vectors.
   for (int ivec = nvec_; ivec < 3; ++ivec) {
     vec3::iscale(new_vecs + 3*ivec, threshold);
-    pbc[ivec] = false;
+    shape[ivec] = 0;
   }
   // Return the subcell, always 3D periodic
   return new Cell(new_vecs, 3);
@@ -265,8 +264,8 @@ bool Cell::cuboid() const {
 }
 
 
-int Cell::ranges_cutoff(const double* center, const double cutoff, int* ranges_begin,
-    int* ranges_end) const {
+int Cell::ranges_cutoff(const double* center, const double cutoff,
+    int* ranges_begin, int* ranges_end) const {
   if (cutoff <= 0) {
     throw std::domain_error("cutoff must be strictly positive.");
   }
@@ -280,6 +279,7 @@ int Cell::ranges_cutoff(const double* center, const double cutoff, int* ranges_b
     double frac_cutoff = cutoff/spacings_[ivec];
     ranges_begin[ivec] = static_cast<int>(floor(frac[ivec] - frac_cutoff));
     ranges_end[ivec] = static_cast<int>(ceil(frac[ivec] + frac_cutoff));
+
     ncell *= (ranges_end[ivec] - ranges_begin[ivec]);
   }
   return ncell;
@@ -287,7 +287,7 @@ int Cell::ranges_cutoff(const double* center, const double cutoff, int* ranges_b
 
 
 size_t Cell::bars_cutoff(const double* center, const double cutoff,
-    const int* shape, const bool* pbc, std::vector<int>* bars) const {
+    std::vector<int>* bars) const {
   // Check arguments
   if (nvec_ == 0) {
     throw std::domain_error("The cell must be at least 1D periodic.");
@@ -300,7 +300,7 @@ size_t Cell::bars_cutoff(const double* center, const double cutoff,
   // Prefix is used to keep track of current bar indices while going into recursion.
   std::vector<int> prefix;
   // Compute bars and return the number of bars
-  bars_cutoff_low(&sphere_slice, shape, pbc, &prefix, bars);
+  bars_cutoff_low(&sphere_slice, &prefix, bars);
   return bars->size()/(nvec_ + 1);
 }
 
@@ -320,8 +320,8 @@ Cell::Cell(const double* vecs, const int nvec, const double* gvecs,
 }
 
 
-void Cell::bars_cutoff_low(SphereSlice* slice, const int* shape,
-    const bool* pbc, std::vector<int>* prefix, std::vector<int>* bars) const {
+void Cell::bars_cutoff_low(SphereSlice* slice, std::vector<int>* prefix,
+    std::vector<int>* bars) const {
   // Get the vector index for which the range is currently searched
   int ivec = static_cast<int>(prefix->size());
   // Use SphereSlice object to solve the hard of problem of finding begin and end.
@@ -330,11 +330,6 @@ void Cell::bars_cutoff_low(SphereSlice* slice, const int* shape,
   slice->solve_range(ivec, &begin_exact, &end_exact);
   int begin = static_cast<int>(floor(begin_exact));
   int end = static_cast<int>(ceil(end_exact));
-  // Truncate the begin-end range if there are non-periodic bounds.
-  if (!pbc[ivec]) {
-    if (begin < 0) begin = 0;
-    if (end > shape[ivec]) end = shape[ivec];
-  }
 
   if (ivec == nvec_ - 1) {
     // If we are dealing with the last recursion, just store the bar.
@@ -351,7 +346,7 @@ void Cell::bars_cutoff_low(SphereSlice* slice, const int* shape,
       // Make a new cut in the sphere slice.
       slice->set_cut_begin_end(ivec, i, i + 1);
       // Recursive call in which the remaining details of the bar/bars is/are solved.
-      bars_cutoff_low(slice, shape, pbc, prefix, bars);
+      bars_cutoff_low(slice, prefix, bars);
       // Remove the last element of prefix as it is no longer applicable.
       prefix->pop_back();
     }

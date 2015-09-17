@@ -105,13 +105,13 @@ TEST(DecompositionTest, assign_icell_domain) {
   double vecs[9]{1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
   cl::Cell subcell0(vecs, 0);
   EXPECT_THROW(cl::assign_icell(subcell0, nullptr), std::domain_error);
-  EXPECT_THROW(cl::assign_icell(subcell0, nullptr, nullptr, nullptr), std::domain_error);
+  EXPECT_THROW(cl::assign_icell(subcell0, nullptr, nullptr), std::domain_error);
   cl::Cell subcell1(vecs, 1);
   EXPECT_THROW(cl::assign_icell(subcell1, nullptr), std::domain_error);
-  EXPECT_THROW(cl::assign_icell(subcell1, nullptr, nullptr, nullptr), std::domain_error);
+  EXPECT_THROW(cl::assign_icell(subcell1, nullptr, nullptr), std::domain_error);
   cl::Cell subcell2(vecs, 2);
   EXPECT_THROW(cl::assign_icell(subcell2, nullptr), std::domain_error);
-  EXPECT_THROW(cl::assign_icell(subcell2, nullptr, nullptr, nullptr), std::domain_error);
+  EXPECT_THROW(cl::assign_icell(subcell2, nullptr, nullptr), std::domain_error);
 }
 
 
@@ -145,12 +145,9 @@ TEST(DecompositionTest, assign_icell_random_wrap) {
     // Get a subcell
     double threshold = 0.2;
     int shape[3] = {-1, -1, -1};
-    bool pbc[3] = {false, false, false};
-    std::unique_ptr<cl::Cell> subcell(cell->create_subcell(threshold, shape, pbc));
-    for (int ivec = 0; ivec < 3; ++ivec) {
-      EXPECT_EQ(true, pbc[ivec]);
+    std::unique_ptr<cl::Cell> subcell(cell->create_subcell(threshold, shape));
+    for (int ivec = 0; ivec < 3; ++ivec)
       EXPECT_NEAR(cell->spacings()[0], subcell->spacings()[0]*shape[0], 1e-10);
-    }
 
     // Generate random points, wrapped in cell
     std::vector<cl::Point> points;
@@ -161,7 +158,7 @@ TEST(DecompositionTest, assign_icell_random_wrap) {
     }
 
     // Actual calculation of interest
-    cl::assign_icell(*subcell, &points, shape, pbc);
+    cl::assign_icell(*subcell, &points, shape);
 
     // Check all icell fields, should be in range defined by shape
     for (const auto& point : points) {

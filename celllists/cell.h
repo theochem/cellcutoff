@@ -253,9 +253,9 @@ class Cell {
   /** @brief
           Selects a cells inside or intersecting with a cutoff sphere.
 
-      This function assumes space is divded in a regular grid of cells. The shape of one
-      cell is by `vecs` and `nvec`. This function finds all cells that contain a point
-      within a cutoff sphere.
+      This function assumes space is divided in a regular grid of subcells. The shape of
+      one subcell is by `vecs` and `nvec`. This function finds all subcells that contain a
+      point within a cutoff sphere.
 
       @param center
           A pointer to 3 doubles that specify the center of the cutoff sphere in
@@ -264,16 +264,9 @@ class Cell {
       @param cutoff
           The cutoff radius.
 
-      @param shape
-          A pointer of 3 ints with the shape of the supercell.
-
-      @param pbc
-          A pointer to Boolean flags indicating the periodicity of the supercell along
-          each cell vector.
-
       @param bars
           A std::vector<int> pointer in which the results, i.e. the cells overlapping with
-          the cutoff sphere, are stored. In this output, a ranges of consecutive of cells
+          the cutoff sphere, are stored. In this output, a range of consecutive of cells
           along the last cell vector is called a bar and is represented by `(nvec + 1)`
           integers. Thus, the elements of the bars vectors should be used in groups of
           `(nvec + 1)`. For a single bar, the last two integers are the fractional
@@ -287,8 +280,8 @@ class Cell {
       @return
           The number bars. The size of the bars vector is `nbar*(nvec+1)`.
     */
-  size_t bars_cutoff(const double* center, const double cutoff, const int* shape,
-      const bool* pbc, std::vector<int>* bars) const;
+  size_t bars_cutoff(const double* center, const double cutoff,
+      std::vector<int>* bars) const;
 
   /** @brief
           Helper to construct a subcell of a given cell.
@@ -300,20 +293,18 @@ class Cell {
           The spacing between the subcell crystal planes is guaranteed to be lower than
           or equal to this value. Within the constraints of an integer division of the
           active cell vectors and this threshold, the spacing between the subcell crystal
-          planes as as large as possible.
+          planes as as large as possible. The spacing along inactive cell vectors is equal
+          to the threshold.
 
       @param shape
-          A point to nvec ints. This output argument will contain the integer number of
-          subcells along each active cell vector.
-
-      @param pbc
-          A pointer to 3 bools. This is an auxiliary output argument, whose first nvec
-          elements are set to true, while the remaining are set to false.
+          A point to three ints. For each active cell vector i, shape[i] will contain the
+          integer number of subcells along cell vector i. For inactive cell vectors i,
+          shape[i] is set to zero.
 
       @return
           A pointer to a `Cell` object with the subcell.
    */
-  Cell* create_subcell(const double threshold, int* shape, bool* pbc);
+  Cell* create_subcell(const double threshold, int* shape);
 
  protected:
   /** @brief
@@ -337,9 +328,8 @@ class Cell {
       the dimension at hand (i.e. the recursion depth). It makes use of the SphereSlice\
       object to find the begin-end range along each cell vector.
    */
-  void bars_cutoff_low(SphereSlice* slice, const int* shape,
-      const bool* pbc, std::vector<int>* prefix, std::vector<int>* bars)
-      const;
+  void bars_cutoff_low(SphereSlice* slice, std::vector<int>* prefix,
+      std::vector<int>* bars) const;
 
  private:
   double vecs_[9];        //!< cell vectors, one per row, row-major

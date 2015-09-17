@@ -29,6 +29,7 @@ set(TEST_SOURCE_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/test_cell.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/test_decomposition.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/test_sphere_slice.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/test_usage.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/common.cpp
 )
 

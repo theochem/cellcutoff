@@ -237,8 +237,7 @@ TEST_P(CellTestP, create_subcell_simple) {
   cl::Cell cell(vecs, nvec);
   int shape[3] = {-1, -1, -1};
   double threshold = 0.1;
-  bool pbc[3] = {false, false, true};
-  std::unique_ptr<cl::Cell> subcell(cell.create_subcell(threshold, shape, pbc));
+  std::unique_ptr<cl::Cell> subcell(cell.create_subcell(threshold, shape));
   EXPECT_EQ(3, subcell->nvec());
   EXPECT_EQ(0.1, subcell->vecs()[0]);
   EXPECT_EQ(0.0, subcell->vecs()[1]);
@@ -251,9 +250,8 @@ TEST_P(CellTestP, create_subcell_simple) {
   EXPECT_EQ(0.1, subcell->vecs()[8]);
   for (int ivec = 0; ivec < nvec; ++ivec)
     EXPECT_EQ(10, shape[ivec]);
-  EXPECT_EQ(nvec>0, pbc[0]);
-  EXPECT_EQ(nvec>1, pbc[1]);
-  EXPECT_EQ(nvec>2, pbc[2]);
+  for (int ivec = nvec; ivec < 3; ++ivec)
+    EXPECT_EQ(0, shape[ivec]);
 }
 
 
@@ -263,20 +261,18 @@ TEST_P(CellTestP, create_subcell_random) {
     double threshold;
     fill_random_double(irep, &threshold, 1, 0.1, 2.0);
     int shape[3] = {-1, -1, -1};
-    bool pbc[3] = {irep%2==0, (irep>>1)%2==0, (irep>>1)%2==0};
-    std::unique_ptr<cl::Cell> subcell(cell->create_subcell(threshold, shape, pbc));
+    std::unique_ptr<cl::Cell> subcell(cell->create_subcell(threshold, shape));
     double vol = cell->volume();
     for (int ivec = 0; ivec < nvec; ++ivec) {
       EXPECT_NEAR(cell->lengths()[ivec]/shape[ivec], subcell->lengths()[ivec], 1e-10);
       EXPECT_NEAR(cell->spacings()[ivec]/shape[ivec], subcell->spacings()[ivec], 1e-10);
       EXPECT_GE(threshold, subcell->spacings()[ivec]);
       vol /= shape[ivec];
-      EXPECT_EQ(true, pbc[ivec]);
     }
     for (int ivec = nvec; ivec < 3; ++ivec) {
       EXPECT_NEAR(threshold, subcell->spacings()[ivec], 1e-10);
       vol *= threshold;
-      EXPECT_EQ(false, pbc[ivec]);
+      EXPECT_EQ(0, shape[ivec]);
     }
     EXPECT_NEAR(vol, subcell->volume(), 1e-10);
   }
@@ -285,11 +281,12 @@ TEST_P(CellTestP, create_subcell_random) {
 
 TEST_F(CellTest1, subcell_example) {
   double threshold = 0.1;
-  int shape[1] = {-35};
-  bool pbc[3] = {false, true, true};
-  std::unique_ptr<cl::Cell> subcell(mycell->create_subcell(threshold, shape, pbc));
+  int shape[3] = {-35, -1, -1};
+  std::unique_ptr<cl::Cell> subcell(mycell->create_subcell(threshold, shape));
   EXPECT_EQ(3, subcell->nvec());
   EXPECT_EQ(20, shape[0]);
+  EXPECT_EQ(0, shape[1]);
+  EXPECT_EQ(0, shape[2]);
   EXPECT_NEAR(0.1, subcell->vecs()[0], 1e-10);
   EXPECT_EQ(0.0, subcell->vecs()[1]);
   EXPECT_EQ(0.0, subcell->vecs()[2]);
@@ -299,20 +296,17 @@ TEST_F(CellTest1, subcell_example) {
   EXPECT_EQ(0.0, subcell->vecs()[6]);
   EXPECT_EQ(0.0, subcell->vecs()[7]);
   EXPECT_NEAR(0.1, subcell->vecs()[8], 1e-10);
-  EXPECT_EQ(true, pbc[0]);
-  EXPECT_EQ(false, pbc[1]);
-  EXPECT_EQ(false, pbc[2]);
 }
 
 
 TEST_F(CellTest2, subcell_example) {
   double threshold = 0.23;
-  int shape[2] = {-1, -1};
-  bool pbc[3] = {false, false, true};
-  std::unique_ptr<cl::Cell> subcell(mycell->create_subcell(threshold, shape, pbc));
+  int shape[3] = {-1, -1, -1};
+  std::unique_ptr<cl::Cell> subcell(mycell->create_subcell(threshold, shape));
   EXPECT_EQ(3, subcell->nvec());
   EXPECT_EQ(9, shape[0]);
   EXPECT_EQ(18, shape[1]);
+  EXPECT_EQ(0, shape[2]);
   EXPECT_NEAR(0.2222222222222222, subcell->vecs()[0], 1e-10);
   EXPECT_EQ(0.0, subcell->vecs()[1]);
   EXPECT_EQ(0.0, subcell->vecs()[2]);
@@ -322,17 +316,13 @@ TEST_F(CellTest2, subcell_example) {
   EXPECT_EQ(0.0, subcell->vecs()[6]);
   EXPECT_NEAR(-0.23, subcell->vecs()[7], 1e-10);
   EXPECT_EQ(0.0, subcell->vecs()[8]);
-  EXPECT_EQ(true, pbc[0]);
-  EXPECT_EQ(true, pbc[1]);
-  EXPECT_EQ(false, pbc[2]);
 }
 
 
 TEST_F(CellTest3, subcell_example) {
   double threshold = 0.15;
   int shape[3] = {-1, -1, -1};
-  bool pbc[3] = {false, false, false};
-  std::unique_ptr<cl::Cell> subcell(mycell->create_subcell(threshold, shape, pbc));
+  std::unique_ptr<cl::Cell> subcell(mycell->create_subcell(threshold, shape));
   EXPECT_EQ(3, subcell->nvec());
   EXPECT_EQ(14, shape[0]);
   EXPECT_EQ(7, shape[1]);
@@ -346,9 +336,6 @@ TEST_F(CellTest3, subcell_example) {
   EXPECT_EQ(0.0, subcell->vecs()[6]);
   EXPECT_EQ(0.0, subcell->vecs()[7]);
   EXPECT_NEAR(0.14814814814814814, subcell->vecs()[8], 1e-10);
-  EXPECT_EQ(true, pbc[0]);
-  EXPECT_EQ(true, pbc[1]);
-  EXPECT_EQ(true, pbc[2]);
 }
 
 
@@ -970,13 +957,11 @@ TEST_P(CellTestP, ranges_cutoff_random) {
 
 TEST_P(CellTestP, bars_cutoff_domain) {
   double center[3] = {2.5, 3.4, -0.6};
-  int shape[3] = {10, 10, 10};
-  bool pbc[3] = {true, true, true};
   std::vector<int> bars;
-  EXPECT_THROW(mycell->bars_cutoff(center, 0.0, shape, pbc, &bars), std::domain_error);
-  EXPECT_THROW(mycell->bars_cutoff(center, -1.0, shape, pbc, &bars), std::domain_error);
+  EXPECT_THROW(mycell->bars_cutoff(center, 0.0, &bars), std::domain_error);
+  EXPECT_THROW(mycell->bars_cutoff(center, -1.0, &bars), std::domain_error);
   cl::Cell zero_cell(nullptr, 0);
-  EXPECT_THROW(zero_cell.bars_cutoff(center, 1.0, shape, pbc, &bars), std::domain_error);
+  EXPECT_THROW(zero_cell.bars_cutoff(center, 1.0, &bars), std::domain_error);
 }
 
 
@@ -984,12 +969,10 @@ TEST_F(CellTest1, bars_cutoff_example) {
   // All the parameters
   double cutoff = 5.0;
   double center[3] = {2.5, 3.4, -0.6};
-  int shape[1] = {10};
-  bool pbc[1] = {true};
 
   // Call
   std::vector<int> bars;
-  size_t nbar = mycell->bars_cutoff(center, cutoff, shape, pbc, &bars);
+  size_t nbar = mycell->bars_cutoff(center, cutoff, &bars);
   EXPECT_EQ(1, nbar);
   EXPECT_EQ(2, bars.size());
 
@@ -1005,19 +988,22 @@ TEST_F(CellTest2, bars_cutoff_example) {
   // All the parameters
   double cutoff = 5.0;
   double center[3] = {2.5, 3.4, -0.6};
-  int shape[2] = {10, 5};
-  bool pbc[2] = {true, false};
 
   // Call
   std::vector<int> bars;
-  size_t nbar = mycell->bars_cutoff(center, cutoff, shape, pbc, &bars);
+  size_t nbar = mycell->bars_cutoff(center, cutoff, &bars);
   EXPECT_EQ(6, nbar);
   EXPECT_EQ(6*3, bars.size());
 
   // Test
   for (size_t ibar = 0; ibar < nbar; ++ibar) {
+    SCOPED_TRACE(ibar);
     EXPECT_EQ(ibar - 2, bars[3*ibar]);
-    EXPECT_EQ(0, bars[3*ibar + 1]);
+    if (ibar == 0) {
+      EXPECT_EQ(-1, bars[3*ibar + 1]);
+    } else {
+      EXPECT_EQ(-2, bars[3*ibar + 1]);
+    }
     if ((ibar == 0) || (ibar == 1) || (ibar == 5)) {
       EXPECT_EQ(1, bars[3*ibar + 2]);
     } else {
@@ -1031,12 +1017,10 @@ TEST_F(CellTest3, bars_cutoff_example) {
   // All the parameters
   double cutoff = 1.9;
   double center[3] = {2.0, 2.0, 2.0};
-  int shape[3] = {10, 5, 7};
-  bool pbc[3] = {true, true, true};
 
   // Call
   std::vector<int> bars;
-  size_t nbar = mycell->bars_cutoff(center, cutoff, shape, pbc, &bars);
+  size_t nbar = mycell->bars_cutoff(center, cutoff, &bars);
   EXPECT_EQ(8, nbar);
   EXPECT_EQ(8*4, bars.size());
 
@@ -1062,17 +1046,10 @@ TEST_P(CellTestP, bars_cutoff_random) {
     // - Random center
     double center[3];
     fill_random_double(47332 + irep, center, 3, -1.0, 1.0);
-    // - Alternating values for shape and pbc
-    int shape[3];
-    bool pbc[3];
-    for (int ivec=0; ivec < 3; ++ivec) {
-      shape[ivec] = ((irep*(ivec + 1)) % 5) + 1;
-      pbc[ivec] = (irep >> ivec) % 2;
-    }
 
     // Compute the bars.
     std::vector<int> bars;
-    size_t nbar = cell->bars_cutoff(center, cutoff, shape, pbc, &bars);
+    size_t nbar = cell->bars_cutoff(center, cutoff, &bars);
     EXPECT_EQ(nbar*(nvec + 1), bars.size());
     nbar_total += nbar;
 
@@ -1117,20 +1094,6 @@ TEST_P(CellTestP, bars_cutoff_random) {
     // Does the relative vector sit in the cutoff sphere, taking into account
     // non-periodic boundaries that truncate the cutoff sphere.
     bool in_sphere = (norm < cutoff);
-    if (in_sphere) {
-      for (int ivec=0; ivec < nvec; ++ivec) {
-        if (!pbc[ivec]) {
-          if (frac[ivec] < 0) {
-            in_sphere = false;
-            break;
-          }
-          if (frac[ivec] >= shape[ivec]) {
-            in_sphere = false;
-            break;
-          }
-        }
-      }
-    }
 
     if (in_sphere) {
       // First test: if the vector is in the cutoff and non-periodic boundaries, the
@@ -1159,17 +1122,10 @@ TEST_P(CellTestP, bars_cutoff_corners) {
     // - Random center
     double center[3];
     fill_random_double(47332 + irep, center, 3, -2.0, 2.0);
-    // - Alternating values for shape and pbc
-    int shape[3];
-    bool pbc[3];
-    for (int ivec=0; ivec < 3; ++ivec) {
-      shape[ivec] = ((irep*(ivec + 1)) % 5) + 1;
-      pbc[ivec] = true;
-    }
 
     // Compute the bars.
     std::vector<int> bars;
-    size_t nbar = cell->bars_cutoff(center, cutoff, shape, pbc, &bars);
+    size_t nbar = cell->bars_cutoff(center, cutoff, &bars);
     EXPECT_EQ(nbar*(nvec + 1), bars.size());
     nbar_total += nbar;
 
