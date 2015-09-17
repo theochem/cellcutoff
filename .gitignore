@@ -2,3 +2,5 @@
 *.so*
 build
 tmp
+python-celllists/celllists.cpp
+python-celllists/build
