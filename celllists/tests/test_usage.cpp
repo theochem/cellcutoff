@@ -43,7 +43,7 @@ namespace cl = celllists;
 namespace vec3 = celllists::vec3;
 
 
-class AlgorithmTestP : public ::testing::TestWithParam<int> {
+class UsageTestP : public ::testing::TestWithParam<int> {
  public:
   virtual void SetUp() {
     nvec = GetParam();
@@ -58,7 +58,7 @@ class AlgorithmTestP : public ::testing::TestWithParam<int> {
 };
 
 
-TEST_P(AlgorithmTestP, points_within_cutoff) {
+TEST_P(UsageTestP, points_within_cutoff) {
   size_t npoint_total = 0;
   for (int irep = 0; irep < NREP; ++irep) {
     // Select a random center and a cutoff
@@ -177,6 +177,6 @@ TEST_P(AlgorithmTestP, points_within_cutoff) {
 // Instantiation of parameterized tests
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-INSTANTIATE_TEST_CASE_P(AlgorithmTest0123, AlgorithmTestP, ::testing::Range(0, 4));
+INSTANTIATE_TEST_CASE_P(UsageTest0123, UsageTestP, ::testing::Range(0, 4));
 
 // vim: textwidth=90 et ts=2 sw=2
