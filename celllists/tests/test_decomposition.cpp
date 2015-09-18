@@ -157,6 +157,15 @@ TEST(DecompositionTest, assign_icell_example_shape) {
   EXPECT_EQ(0, points[2].icell_[0]);
   EXPECT_EQ(1, points[2].icell_[1]);
   EXPECT_EQ(0, points[2].icell_[2]);
+  EXPECT_NEAR(1.1, points[0].cart_[0], 1e-10);
+  EXPECT_NEAR(2.0, points[0].cart_[1], 1e-10);
+  EXPECT_NEAR(3.5, points[0].cart_[2], 1e-10);
+  EXPECT_NEAR(0.0, points[1].cart_[0], 1e-10);
+  EXPECT_NEAR(2.9, points[1].cart_[1], 1e-10);
+  EXPECT_NEAR(0.0, points[1].cart_[2], 1e-10);
+  EXPECT_NEAR(0.7, points[2].cart_[0], 1e-10);
+  EXPECT_NEAR(1.9, points[2].cart_[1], 1e-10);
+  EXPECT_NEAR(0.1, points[2].cart_[2], 1e-10);
 }
 
 

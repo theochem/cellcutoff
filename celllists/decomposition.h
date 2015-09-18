@@ -62,12 +62,13 @@ void assign_icell(const Cell &subcell, void* points, size_t npoint, size_t point
 void assign_icell(const Cell &subcell, const int* shape, void* points, size_t npoint,
     size_t point_size);
 
+//! Sort function for Point array
 void sort_by_icell(void* points, size_t npoint, size_t point_size);
 
 //! Create a mapping from cell indices to a list of points
 CellMap* create_cell_map(const void* points, size_t npoint, size_t point_size);
 
-
+//! Safe modulus operation with compatible division
 inline int robust_wrap(int index, const int size, int* division) {
   if (size == 0) {
     *division = 0;
@@ -80,7 +81,7 @@ inline int robust_wrap(int index, const int size, int* division) {
   }
 }
 
-
+//! Safe modulus operation
 inline int robust_wrap(const int index, const int size) {
   if (size == 0) {
     return index;

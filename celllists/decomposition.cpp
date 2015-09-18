@@ -45,6 +45,7 @@ Point::Point(const double* cart, const int* icell) {
 
 
 bool Point::operator<(const Point& other) const {
+  // Lexicographical less than (equivalent to std::lexicographical_compare but faster)
   if (icell_[0] < other.icell_[0]) return true;
   if (icell_[0] > other.icell_[0]) return false;
   if (icell_[1] < other.icell_[1]) return true;
@@ -58,7 +59,7 @@ void assign_icell(const Cell &subcell, void* points, size_t npoint, size_t point
   // Check args
   if (!(subcell.nvec() == 3))
     throw std::domain_error("Partitioning is only sensible for 3D subcells.");
-  // Loop over all points, compute icell and wrap if needed
+  // Loop over all points, compute icell
   char* points_char = reinterpret_cast<char*>(points);  // Ugly sweet hack
   for (size_t ipoint = 0; ipoint < npoint; ++ipoint) {
     Point* point(reinterpret_cast<Point*>(points_char));  // Ugly sweet hack
@@ -88,17 +89,17 @@ void assign_icell(const Cell &subcell, const int* shape, void* points, size_t np
       int i = static_cast<int>(floor(frac[ivec]));
       point->icell_[ivec] = robust_wrap(i, shape[ivec]);
       // Wrap point into box
-      i -= point->icell_[ivec];
-      vec3::iadd(point->cart_, subcell.vec(ivec), -i);
+      vec3::iadd(point->cart_, subcell.vec(ivec), point->icell_[ivec]-i);
     }
     points_char += point_size;
   }
 }
 
 
-int cmp_points(const void *a, const void* b) {
+static int cmp_points(const void *a, const void* b) {
   const Point* pa(reinterpret_cast<const Point*>(a));  // Ugly sweet hack
   const Point* pb(reinterpret_cast<const Point*>(b));  // Ugly sweet hack
+  // Lexicographical comparison
   int result = pa->icell_[0] - pb->icell_[0];
   if (result != 0) return result;
   result = pa->icell_[1] - pb->icell_[1];
@@ -111,16 +112,20 @@ void sort_by_icell(void* points, size_t npoint, size_t point_size) {
   qsort(points, npoint, point_size, cmp_points);
 }
 
-inline void _store_in_cell_map(const int* icell_begin, size_t ibegin, size_t iend, CellMap* cell_map){
+
+static inline void _store_in_cell_map(const int* icell_begin, size_t ibegin, size_t iend, CellMap* cell_map){
+  // Try to store the new range in the cell_map
   auto emplace_output = cell_map->emplace(
     std::array<int, 3>{icell_begin[0], icell_begin[1], icell_begin[2]},
     std::array<size_t, 2>{ibegin, iend}
   );
+  // If the is already present, the input for create_cell_map was incorrect.
   if (not emplace_output.second) {
     delete cell_map;
     throw points_not_grouped("The given points are not grouped by icell.");
   }
 }
+
 
 CellMap* create_cell_map(const void* points, size_t npoint, size_t point_size) {
   auto cell_map(new CellMap);
