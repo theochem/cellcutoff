@@ -98,6 +98,31 @@ class Cell {
    */
   Cell* create_reciprocal() const;
 
+
+  /** @brief
+          Helper to construct a subcell of a given cell.
+
+          This partitions space into bins (with the size and shape of the subcell) that
+          can be used to do a domain decomposition.
+
+      @param spacing
+          The spacing between the subcell crystal planes is guaranteed to be lower than
+          or equal to this value. Within the constraints of an integer division of the
+          active cell vectors and this threshold, the spacing between the subcell crystal
+          planes as as large as possible. The spacing along inactive cell vectors is equal
+          to the threshold.
+
+      @param shape
+          A point to three ints. For each active cell vector i, shape[i] will contain the
+          integer number of subcells along cell vector i. For inactive cell vectors i,
+          shape[i] is set to zero.
+
+      @return
+          A pointer to a `Cell` object with the subcell.
+   */
+  Cell* create_subcell(const double threshold, int* shape);
+
+
   //! Returns the number of periodic dimensions.
   int nvec() const { return nvec_; }
 
@@ -282,29 +307,6 @@ class Cell {
     */
   size_t bars_cutoff(const double* center, const double cutoff,
       std::vector<int>* bars) const;
-
-  /** @brief
-          Helper to construct a subcell of a given cell.
-
-          This partitions space into bins (with the size and shape of the subcell) that
-          can be used to do a domain decomposition.
-
-      @param spacing
-          The spacing between the subcell crystal planes is guaranteed to be lower than
-          or equal to this value. Within the constraints of an integer division of the
-          active cell vectors and this threshold, the spacing between the subcell crystal
-          planes as as large as possible. The spacing along inactive cell vectors is equal
-          to the threshold.
-
-      @param shape
-          A point to three ints. For each active cell vector i, shape[i] will contain the
-          integer number of subcells along cell vector i. For inactive cell vectors i,
-          shape[i] is set to zero.
-
-      @return
-          A pointer to a `Cell` object with the subcell.
-   */
-  Cell* create_subcell(const double threshold, int* shape);
 
  protected:
   /** @brief
