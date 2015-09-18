@@ -321,7 +321,7 @@ class Cell {
   /** @brief
           Low-level functions used by bars_cutoff.
 
-      TODO. This method may change in future, so I'm not going to try explain it in
+      TODO. This method may change in future, so I'm not going to try explaining it in
       detail. This can be fixed after the `sphere_slice` will be completely finalized.
       (The current implementation sphere_slice and bars_cutoff is good but not optimal.)
 
@@ -350,6 +350,5 @@ class Cell {
 
 
 #endif  // CELLLISTS_CELL_H_
-
 
 // vim: textwidth=90 et ts=2 sw=2

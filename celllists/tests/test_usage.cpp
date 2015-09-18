@@ -19,10 +19,10 @@
 //--
 
 
-/* Tests in this file combine different features from celllists. Strictly speaking, these
-   aren't unit tests, but we want these tests to pass as well! They check non-trivial
-   outcomes that are more a validation of the algorithm choices, rather than algorithm
-   implementations. */
+/* Usage tests in this file combine different features from celllists, comparable to how
+   this library is to be used by others. Strictly speaking, these aren't unit tests, but
+   we want these tests to pass as well! They check non-trivial outcomes that are more a
+   validation of the algorithm choices, rather than algorithm implementations. */
 
 
 #include <algorithm>
@@ -33,6 +33,7 @@
 
 #include <celllists/cell.h>
 #include <celllists/decomposition.h>
+#include <celllists/iterators.h>
 #include <celllists/vec3.h>
 
 #include "common.h"
@@ -93,27 +94,19 @@ TEST_P(AlgorithmTestP, points_within_cutoff) {
     size_t nbar = subcell->bars_cutoff(center, cutoff, &bars);
     size_t ncell_bars = 0;
     std::vector<size_t> ipoints_bars;
-    for (size_t ibar = 0; ibar < nbar; ++ibar) {
-      std::array<int, 3> icell;
-      int coeffs[3];
-      icell[0] = cl::robust_wrap(bars[4*ibar], shape[0], &coeffs[0]);
-      icell[1] = cl::robust_wrap(bars[4*ibar + 1], shape[1], &coeffs[1]);
-      int begin2 = bars[4*ibar + 2];
-      int end2 = bars[4*ibar + 3];
-      ncell_bars += end2 - begin2;
-      for (int icell2 = begin2; icell2 < end2; ++icell2) {
-        icell[2] = cl::robust_wrap(icell2, shape[2], &coeffs[2]);
-        auto it = cell_map->find(icell);
-        if (it != cell_map->end()) {
-          for (size_t ipoint = it->second[0]; ipoint < it->second[1]; ++ipoint) {
-            double cart[3];
-            std::copy(points[ipoint].cart_, points[ipoint].cart_ + 3, cart);
-            cell->iadd_vec(cart, coeffs);
-            double d = vec3::distance(center, cart);
-            if (d < cutoff) {
-              ++npoint_total;
-              ipoints_bars.push_back(ipoint);
-            }
+    for (cl::BarIterator3D bit(bars, shape); bit.busy(); ++bit){
+      EXPECT_EQ(bit.nbar(), nbar);
+      ++ncell_bars;
+      auto it = cell_map->find(bit.icell());
+      if (it != cell_map->end()) {
+        for (size_t ipoint = it->second[0]; ipoint < it->second[1]; ++ipoint) {
+          double cart[3];
+          std::copy(points[ipoint].cart_, points[ipoint].cart_ + 3, cart);
+          cell->iadd_vec(cart, bit.coeffs());
+          double d = vec3::distance(center, cart);
+          if (d < cutoff) {
+            ++npoint_total;
+            ipoints_bars.push_back(ipoint);
           }
         }
       }
