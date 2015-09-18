@@ -366,10 +366,10 @@ TEST_F(SphereSliceTest, solve_full_low_random) {
     EXPECT_LE(begin, end);
 
     // Check consistency begin, point_begin
-    EXPECT_NEAR(begin, vec3::dot(point_begin, normals), 1e-10);
+    EXPECT_NEAR(begin, vec3::dot(point_begin, normals), EPS);
 
     // Check consistency begin, point_end
-    EXPECT_NEAR(end, vec3::dot(point_end, normals), 1e-10);
+    EXPECT_NEAR(end, vec3::dot(point_end, normals), EPS);
 
     // Check consistency when not using point_begin, point_end.
     double begin_bis, end_bis;
@@ -460,25 +460,25 @@ TEST_F(SphereSliceTest, solve_plane_low_random) {
     EXPECT_LE(begin, end);
 
     // Points must be on sphere...
-    EXPECT_NEAR(radius, vec3::distance(center, point_begin), 1e-10);
-    EXPECT_NEAR(radius, vec3::distance(center, point_end), 1e-10);
+    EXPECT_NEAR(radius, vec3::distance(center, point_begin), EPS);
+    EXPECT_NEAR(radius, vec3::distance(center, point_end), EPS);
 
     // Points should be consistent with begin and end
-    EXPECT_NEAR(begin, vec3::dot(point_begin, axis), 1e-10);
-    EXPECT_NEAR(end, vec3::dot(point_end, axis), 1e-10);
+    EXPECT_NEAR(begin, vec3::dot(point_begin, axis), EPS);
+    EXPECT_NEAR(end, vec3::dot(point_end, axis), EPS);
 
     // Points should be on the cut
-    EXPECT_NEAR(cut, vec3::dot(point_begin, cut_normal), 1e-10);
-    EXPECT_NEAR(cut, vec3::dot(point_end, cut_normal), 1e-10);
+    EXPECT_NEAR(cut, vec3::dot(point_begin, cut_normal), EPS);
+    EXPECT_NEAR(cut, vec3::dot(point_end, cut_normal), EPS);
 
     // Check that cut_normal, axis and (point_end - point_begin) lie in
     // the same plane.
     double delta[3];
     vec3::delta(point_end, point_begin, delta);
-    EXPECT_NEAR(0.0, vec3::triple(cut_normal, axis, delta), 1e-10);
+    EXPECT_NEAR(0.0, vec3::triple(cut_normal, axis, delta), EPS);
 
     // Check that cut_normal is orthogonal to delta.
-    EXPECT_NEAR(0.0, vec3::dot(cut_normal, delta), 1e-10);
+    EXPECT_NEAR(0.0, vec3::dot(cut_normal, delta), EPS);
 
     // Parameterize the circle
     double circle_center[3];
@@ -494,7 +494,7 @@ TEST_F(SphereSliceTest, solve_plane_low_random) {
     vec3::iscale(circle_basis1, circle_radius/vec3::norm(circle_basis1));
 
     // Check the circle center
-    EXPECT_NEAR(cut, vec3::dot(cut_normal, circle_center), 1e-10);
+    EXPECT_NEAR(cut, vec3::dot(cut_normal, circle_center), EPS);
 
     // Scan the circle close to the solutions, where optimality is easily
     // tested.
@@ -506,13 +506,13 @@ TEST_F(SphereSliceTest, solve_plane_low_random) {
       vec3::iadd(other, circle_basis0, cos(angle));
       vec3::iadd(other, circle_basis1, sin(angle));
       proj_axis = vec3::dot(other, axis);
-      EXPECT_GE(end + 1e-10, proj_axis);
+      EXPECT_GE(end + EPS, proj_axis);
       // Check begin
       vec3::copy(circle_center, other);
       vec3::iadd(other, circle_basis0, -cos(angle));
       vec3::iadd(other, circle_basis1, -sin(angle));
       proj_axis = vec3::dot(other, axis);
-      EXPECT_LE(begin-1e-10, proj_axis);
+      EXPECT_LE(begin-EPS, proj_axis);
     }
 
     // Call without point_* arguments
@@ -589,7 +589,7 @@ TEST_F(SphereSliceTest, solve_range_1_random) {
       double point[3];
       double norm;
       random_point(ipoint, center, radius, point, &norm);
-      ASSERT_NEAR(norm, vec3::distance(point, center), 1e-10);
+      ASSERT_NEAR(norm, vec3::distance(point, center), EPS);
       if (norm < radius) {
         // Projection on axis should always be in the "sphere range"
         double proj2 = vec3::dot(point, axis);
@@ -668,24 +668,24 @@ TEST_F(SphereSliceTest, solve_line_low_random) {
     EXPECT_LE(begin, end);
 
     // Points must be on sphere...
-    EXPECT_NEAR(radius, vec3::distance(center, point_begin), 1e-10);
-    EXPECT_NEAR(radius, vec3::distance(center, point_end), 1e-10);
+    EXPECT_NEAR(radius, vec3::distance(center, point_begin), EPS);
+    EXPECT_NEAR(radius, vec3::distance(center, point_end), EPS);
 
     // Points should be consistent with begin and end
-    EXPECT_NEAR(begin, vec3::dot(point_begin, axis), 1e-10);
-    EXPECT_NEAR(end, vec3::dot(point_end, axis), 1e-10);
+    EXPECT_NEAR(begin, vec3::dot(point_begin, axis), EPS);
+    EXPECT_NEAR(end, vec3::dot(point_end, axis), EPS);
 
     // Points should be on the cut
-    EXPECT_NEAR(cut0, vec3::dot(point_begin, cut0_normal), 1e-10);
-    EXPECT_NEAR(cut0, vec3::dot(point_end, cut0_normal), 1e-10);
-    EXPECT_NEAR(cut1, vec3::dot(point_begin, cut1_normal), 1e-10);
-    EXPECT_NEAR(cut1, vec3::dot(point_end, cut1_normal), 1e-10);
+    EXPECT_NEAR(cut0, vec3::dot(point_begin, cut0_normal), EPS);
+    EXPECT_NEAR(cut0, vec3::dot(point_end, cut0_normal), EPS);
+    EXPECT_NEAR(cut1, vec3::dot(point_begin, cut1_normal), EPS);
+    EXPECT_NEAR(cut1, vec3::dot(point_end, cut1_normal), EPS);
 
     // Check that cut0_normal and cut1_normal are orthogonal to delta.
     double delta[3];
     vec3::delta(point_end, point_begin, delta);
-    EXPECT_NEAR(0.0, vec3::dot(cut0_normal, delta), 1e-10);
-    EXPECT_NEAR(0.0, vec3::dot(cut1_normal, delta), 1e-10);
+    EXPECT_NEAR(0.0, vec3::dot(cut0_normal, delta), EPS);
+    EXPECT_NEAR(0.0, vec3::dot(cut1_normal, delta), EPS);
 
     // Get the line center and radius
     double line_center[3];
@@ -694,8 +694,8 @@ TEST_F(SphereSliceTest, solve_line_low_random) {
     vec3::iscale(line_center, 0.5);
 
     // Check the line center
-    EXPECT_NEAR(cut0, vec3::dot(cut0_normal, line_center), 1e-10);
-    EXPECT_NEAR(cut1, vec3::dot(cut1_normal, line_center), 1e-10);
+    EXPECT_NEAR(cut0, vec3::dot(cut0_normal, line_center), EPS);
+    EXPECT_NEAR(cut1, vec3::dot(cut1_normal, line_center), EPS);
 
     // Call without point_* arguments
     double begin_bis, end_bis;
@@ -886,7 +886,7 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
       double point[3];
       double norm;
       random_point(ipoint, center, radius, point, &norm);
-      ASSERT_NEAR(norm, vec3::distance(point, center), 1e-10);
+      ASSERT_NEAR(norm, vec3::distance(point, center), EPS);
       if (norm < radius) {
         // Projection on axis should always be in the "sphere range"
         double frac_axis = vec3::dot(point, axis);

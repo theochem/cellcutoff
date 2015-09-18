@@ -264,17 +264,17 @@ TEST_P(CellTestP, create_subcell_random) {
     std::unique_ptr<cl::Cell> subcell(cell->create_subcell(threshold, shape));
     double vol = cell->volume();
     for (int ivec = 0; ivec < nvec; ++ivec) {
-      EXPECT_NEAR(cell->lengths()[ivec]/shape[ivec], subcell->lengths()[ivec], 1e-10);
-      EXPECT_NEAR(cell->spacings()[ivec]/shape[ivec], subcell->spacings()[ivec], 1e-10);
+      EXPECT_NEAR(cell->lengths()[ivec]/shape[ivec], subcell->lengths()[ivec], EPS);
+      EXPECT_NEAR(cell->spacings()[ivec]/shape[ivec], subcell->spacings()[ivec], EPS);
       EXPECT_GE(threshold, subcell->spacings()[ivec]);
       vol /= shape[ivec];
     }
     for (int ivec = nvec; ivec < 3; ++ivec) {
-      EXPECT_NEAR(threshold, subcell->spacings()[ivec], 1e-10);
+      EXPECT_NEAR(threshold, subcell->spacings()[ivec], EPS);
       vol *= threshold;
       EXPECT_EQ(0, shape[ivec]);
     }
-    EXPECT_NEAR(vol, subcell->volume(), 1e-10);
+    EXPECT_NEAR(vol, subcell->volume(), EPS);
   }
 }
 
@@ -287,15 +287,15 @@ TEST_F(CellTest1, subcell_example) {
   EXPECT_EQ(20, shape[0]);
   EXPECT_EQ(0, shape[1]);
   EXPECT_EQ(0, shape[2]);
-  EXPECT_NEAR(0.1, subcell->vecs()[0], 1e-10);
+  EXPECT_NEAR(0.1, subcell->vecs()[0], EPS);
   EXPECT_EQ(0.0, subcell->vecs()[1]);
   EXPECT_EQ(0.0, subcell->vecs()[2]);
   EXPECT_EQ(0.0, subcell->vecs()[3]);
-  EXPECT_NEAR(0.1, subcell->vecs()[4], 1e-10);
+  EXPECT_NEAR(0.1, subcell->vecs()[4], EPS);
   EXPECT_EQ(0.0, subcell->vecs()[5]);
   EXPECT_EQ(0.0, subcell->vecs()[6]);
   EXPECT_EQ(0.0, subcell->vecs()[7]);
-  EXPECT_NEAR(0.1, subcell->vecs()[8], 1e-10);
+  EXPECT_NEAR(0.1, subcell->vecs()[8], EPS);
 }
 
 
@@ -307,14 +307,14 @@ TEST_F(CellTest2, subcell_example) {
   EXPECT_EQ(9, shape[0]);
   EXPECT_EQ(18, shape[1]);
   EXPECT_EQ(0, shape[2]);
-  EXPECT_NEAR(0.2222222222222222, subcell->vecs()[0], 1e-10);
+  EXPECT_NEAR(0.2222222222222222, subcell->vecs()[0], EPS);
   EXPECT_EQ(0.0, subcell->vecs()[1]);
   EXPECT_EQ(0.0, subcell->vecs()[2]);
   EXPECT_EQ(0.0, subcell->vecs()[3]);
   EXPECT_EQ(0.0, subcell->vecs()[4]);
-  EXPECT_NEAR(0.2222222222222222, subcell->vecs()[5], 1e-10);
+  EXPECT_NEAR(0.2222222222222222, subcell->vecs()[5], EPS);
   EXPECT_EQ(0.0, subcell->vecs()[6]);
-  EXPECT_NEAR(-0.23, subcell->vecs()[7], 1e-10);
+  EXPECT_NEAR(-0.23, subcell->vecs()[7], EPS);
   EXPECT_EQ(0.0, subcell->vecs()[8]);
 }
 
@@ -327,15 +327,15 @@ TEST_F(CellTest3, subcell_example) {
   EXPECT_EQ(14, shape[0]);
   EXPECT_EQ(7, shape[1]);
   EXPECT_EQ(27, shape[2]);
-  EXPECT_NEAR(0.14285714285714285, subcell->vecs()[0], 1e-10);
+  EXPECT_NEAR(0.14285714285714285, subcell->vecs()[0], EPS);
   EXPECT_EQ(0.0, subcell->vecs()[1]);
   EXPECT_EQ(0.0, subcell->vecs()[2]);
   EXPECT_EQ(0.0, subcell->vecs()[3]);
-  EXPECT_NEAR(0.14285714285714285, subcell->vecs()[4], 1e-10);
+  EXPECT_NEAR(0.14285714285714285, subcell->vecs()[4], EPS);
   EXPECT_EQ(0.0, subcell->vecs()[5]);
   EXPECT_EQ(0.0, subcell->vecs()[6]);
   EXPECT_EQ(0.0, subcell->vecs()[7]);
-  EXPECT_NEAR(0.14814814814814814, subcell->vecs()[8], 1e-10);
+  EXPECT_NEAR(0.14814814814814814, subcell->vecs()[8], EPS);
 }
 
 
@@ -518,18 +518,18 @@ TEST_P(CellTestP, iwrap_consistency) {
     cell->to_cart(frac, cart2);
     cell->iadd_vec(cart2, coeffs);
     cell->iwrap_mic(cart2);
-    EXPECT_NEAR(cart2[0], cart1[0], 1e-10);
-    EXPECT_NEAR(cart2[1], cart1[1], 1e-10);
-    EXPECT_NEAR(cart2[2], cart1[2], 1e-10);
+    EXPECT_NEAR(cart2[0], cart1[0], EPS);
+    EXPECT_NEAR(cart2[1], cart1[1], EPS);
+    EXPECT_NEAR(cart2[2], cart1[2], EPS);
     // BOX
     fill_random_double(irep, frac, 3, 0.0, 1.0);
     cell->to_cart(frac, cart1);
     cell->to_cart(frac, cart2);
     cell->iadd_vec(cart2, coeffs);
     cell->iwrap_box(cart2);
-    EXPECT_NEAR(cart2[0], cart1[0], 1e-10);
-    EXPECT_NEAR(cart2[1], cart1[1], 1e-10);
-    EXPECT_NEAR(cart2[2], cart1[2], 1e-10);
+    EXPECT_NEAR(cart2[0], cart1[0], EPS);
+    EXPECT_NEAR(cart2[1], cart1[1], EPS);
+    EXPECT_NEAR(cart2[2], cart1[2], EPS);
   }
 }
 
@@ -541,9 +541,9 @@ TEST_F(CellTest1, to_frac_example) {
   double rcart[3] = {2.5, 4.3, 3.0};
   double rfrac[3];
   mycell->to_frac(rcart, rfrac);
-  EXPECT_NEAR(1.25, rfrac[0], 1e-10);
-  EXPECT_NEAR(4.3, rfrac[1], 1e-10);
-  EXPECT_NEAR(3.0, rfrac[2], 1e-10);
+  EXPECT_NEAR(1.25, rfrac[0], EPS);
+  EXPECT_NEAR(4.3, rfrac[1], EPS);
+  EXPECT_NEAR(3.0, rfrac[2], EPS);
 }
 
 
@@ -551,9 +551,9 @@ TEST_F(CellTest2, to_frac_example) {
   double rcart[3] = {2.5, 4.3, 3.0};
   double rfrac[3];
   mycell->to_frac(rcart, rfrac);
-  EXPECT_NEAR(1.25, rfrac[0], 1e-10);
-  EXPECT_NEAR(0.75, rfrac[1], 1e-10);
-  EXPECT_NEAR(-4.3, rfrac[2], 1e-10);
+  EXPECT_NEAR(1.25, rfrac[0], EPS);
+  EXPECT_NEAR(0.75, rfrac[1], EPS);
+  EXPECT_NEAR(-4.3, rfrac[2], EPS);
 }
 
 
@@ -561,9 +561,9 @@ TEST_F(CellTest3, to_frac_example) {
   double rcart[3] = {2.5, 4.3, 3.0};
   double rfrac[3];
   mycell->to_frac(rcart, rfrac);
-  EXPECT_NEAR(1.25, rfrac[0], 1e-10);
-  EXPECT_NEAR(4.3, rfrac[1], 1e-10);
-  EXPECT_NEAR(0.75, rfrac[2], 1e-10);
+  EXPECT_NEAR(1.25, rfrac[0], EPS);
+  EXPECT_NEAR(4.3, rfrac[1], EPS);
+  EXPECT_NEAR(0.75, rfrac[2], EPS);
 }
 
 
@@ -571,9 +571,9 @@ TEST_F(CellTest1, to_cart_example) {
   double rfrac[3] = {0.5, 0.2, -1.5};
   double rcart[3];
   mycell->to_cart(rfrac, rcart);
-  EXPECT_NEAR(1.0, rcart[0], 1e-10);
-  EXPECT_NEAR(0.2, rcart[1], 1e-10);
-  EXPECT_NEAR(-1.5, rcart[2], 1e-10);
+  EXPECT_NEAR(1.0, rcart[0], EPS);
+  EXPECT_NEAR(0.2, rcart[1], EPS);
+  EXPECT_NEAR(-1.5, rcart[2], EPS);
 }
 
 
@@ -581,9 +581,9 @@ TEST_F(CellTest2, to_cart_example) {
   double rfrac[3] = {0.5, 0.2, -1.5};
   double rcart[3];
   mycell->to_cart(rfrac, rcart);
-  EXPECT_NEAR(1.0, rcart[0], 1e-10);
-  EXPECT_NEAR(1.5, rcart[1], 1e-10);
-  EXPECT_NEAR(0.8, rcart[2], 1e-10);
+  EXPECT_NEAR(1.0, rcart[0], EPS);
+  EXPECT_NEAR(1.5, rcart[1], EPS);
+  EXPECT_NEAR(0.8, rcart[2], EPS);
 }
 
 
@@ -591,9 +591,9 @@ TEST_F(CellTest3, to_cart_example) {
   double rfrac[3] = {0.5, 0.2, -1.5};
   double rcart[3];
   mycell->to_cart(rfrac, rcart);
-  EXPECT_NEAR(1.0, rcart[0], 1e-10);
-  EXPECT_NEAR(0.2, rcart[1], 1e-10);
-  EXPECT_NEAR(-6.0, rcart[2], 1e-10);
+  EXPECT_NEAR(1.0, rcart[0], EPS);
+  EXPECT_NEAR(0.2, rcart[1], EPS);
+  EXPECT_NEAR(-6.0, rcart[2], EPS);
 }
 
 
@@ -606,9 +606,9 @@ TEST_P(CellTestP, to_cart_to_frac_consistency) {
     fill_random_double(irep, rcart1, 3, -5.0, 5.0);
     cell->to_frac(rcart1, rfrac);
     cell->to_cart(rfrac, rcart2);
-    EXPECT_NEAR(rcart2[0], rcart1[0], 1e-10);
-    EXPECT_NEAR(rcart2[1], rcart1[1], 1e-10);
-    EXPECT_NEAR(rcart2[2], rcart1[2], 1e-10);
+    EXPECT_NEAR(rcart2[0], rcart1[0], EPS);
+    EXPECT_NEAR(rcart2[1], rcart1[1], EPS);
+    EXPECT_NEAR(rcart2[2], rcart1[2], EPS);
   }
 }
 
@@ -633,10 +633,10 @@ TEST_P(CellTestP, iadd_vec_consistency) {
     cell->to_frac(cart1, frac1);
     cell->to_frac(cart2, frac2);
     for (int ivec=0; ivec < nvec; ++ivec) {
-      EXPECT_NEAR(coeffs[ivec], frac2[ivec] - frac1[ivec], 1e-10);
+      EXPECT_NEAR(coeffs[ivec], frac2[ivec] - frac1[ivec], EPS);
     }
     for (int ivec=nvec; ivec < 3; ++ivec) {
-      EXPECT_NEAR(0.0, frac2[ivec] - frac1[ivec], 1e-10);
+      EXPECT_NEAR(0.0, frac2[ivec] - frac1[ivec], EPS);
     }
   }
 }
@@ -681,80 +681,80 @@ TEST_P(CellTestP, domain) {
 
 
 TEST_F(CellTest1, example) {
-  EXPECT_NEAR(0.5, mycell->gvec(0)[0], 1e-10);
-  EXPECT_NEAR(0.0, mycell->gvec(0)[1], 1e-10);
-  EXPECT_NEAR(0.0, mycell->gvec(0)[2], 1e-10);
-  EXPECT_NEAR(0.0, mycell->gvec(1)[0], 1e-10);
-  EXPECT_NEAR(1.0, mycell->gvec(1)[1], 1e-10);
-  EXPECT_NEAR(0.0, mycell->gvec(1)[2], 1e-10);
-  EXPECT_NEAR(0.0, mycell->gvec(2)[0], 1e-10);
-  EXPECT_NEAR(0.0, mycell->gvec(2)[1], 1e-10);
-  EXPECT_NEAR(1.0, mycell->gvec(2)[2], 1e-10);
-  EXPECT_NEAR(2.0, mycell->volume(), 1e-10);
-  EXPECT_NEAR(2.0, mycell->lengths()[0], 1e-10);
-  EXPECT_NEAR(1.0, mycell->lengths()[1], 1e-10);
-  EXPECT_NEAR(1.0, mycell->lengths()[2], 1e-10);
-  EXPECT_NEAR(2.0, mycell->spacings()[0], 1e-10);
-  EXPECT_NEAR(1.0, mycell->spacings()[1], 1e-10);
-  EXPECT_NEAR(1.0, mycell->spacings()[2], 1e-10);
-  EXPECT_NEAR(0.5, mycell->glengths()[0], 1e-10);
-  EXPECT_NEAR(1.0, mycell->glengths()[1], 1e-10);
-  EXPECT_NEAR(1.0, mycell->glengths()[2], 1e-10);
-  EXPECT_NEAR(0.5, mycell->gspacings()[0], 1e-10);
-  EXPECT_NEAR(1.0, mycell->gspacings()[1], 1e-10);
-  EXPECT_NEAR(1.0, mycell->gspacings()[2], 1e-10);
+  EXPECT_NEAR(0.5, mycell->gvec(0)[0], EPS);
+  EXPECT_NEAR(0.0, mycell->gvec(0)[1], EPS);
+  EXPECT_NEAR(0.0, mycell->gvec(0)[2], EPS);
+  EXPECT_NEAR(0.0, mycell->gvec(1)[0], EPS);
+  EXPECT_NEAR(1.0, mycell->gvec(1)[1], EPS);
+  EXPECT_NEAR(0.0, mycell->gvec(1)[2], EPS);
+  EXPECT_NEAR(0.0, mycell->gvec(2)[0], EPS);
+  EXPECT_NEAR(0.0, mycell->gvec(2)[1], EPS);
+  EXPECT_NEAR(1.0, mycell->gvec(2)[2], EPS);
+  EXPECT_NEAR(2.0, mycell->volume(), EPS);
+  EXPECT_NEAR(2.0, mycell->lengths()[0], EPS);
+  EXPECT_NEAR(1.0, mycell->lengths()[1], EPS);
+  EXPECT_NEAR(1.0, mycell->lengths()[2], EPS);
+  EXPECT_NEAR(2.0, mycell->spacings()[0], EPS);
+  EXPECT_NEAR(1.0, mycell->spacings()[1], EPS);
+  EXPECT_NEAR(1.0, mycell->spacings()[2], EPS);
+  EXPECT_NEAR(0.5, mycell->glengths()[0], EPS);
+  EXPECT_NEAR(1.0, mycell->glengths()[1], EPS);
+  EXPECT_NEAR(1.0, mycell->glengths()[2], EPS);
+  EXPECT_NEAR(0.5, mycell->gspacings()[0], EPS);
+  EXPECT_NEAR(1.0, mycell->gspacings()[1], EPS);
+  EXPECT_NEAR(1.0, mycell->gspacings()[2], EPS);
 }
 
 
 TEST_F(CellTest2, example) {
-  EXPECT_NEAR(0.5, mycell->gvec(0)[0], 1e-10);
-  EXPECT_NEAR(0.0, mycell->gvec(0)[1], 1e-10);
-  EXPECT_NEAR(0.0, mycell->gvec(0)[2], 1e-10);
-  EXPECT_NEAR(0.0, mycell->gvec(1)[0], 1e-10);
-  EXPECT_NEAR(0.0, mycell->gvec(1)[1], 1e-10);
-  EXPECT_NEAR(0.25, mycell->gvec(1)[2], 1e-10);
-  EXPECT_NEAR(0.0, mycell->gvec(2)[0], 1e-10);
-  EXPECT_NEAR(-1.0, mycell->gvec(2)[1], 1e-10);
-  EXPECT_NEAR(0.0, mycell->gvec(2)[2], 1e-10);
-  EXPECT_NEAR(8.0, mycell->volume(), 1e-10);
-  EXPECT_NEAR(2.0, mycell->lengths()[0], 1e-10);
-  EXPECT_NEAR(4.0, mycell->lengths()[1], 1e-10);
-  EXPECT_NEAR(1.0, mycell->lengths()[2], 1e-10);
-  EXPECT_NEAR(2.0, mycell->spacings()[0], 1e-10);
-  EXPECT_NEAR(4.0, mycell->spacings()[1], 1e-10);
-  EXPECT_NEAR(1.0, mycell->spacings()[2], 1e-10);
-  EXPECT_NEAR(0.5, mycell->glengths()[0], 1e-10);
-  EXPECT_NEAR(0.25, mycell->glengths()[1], 1e-10);
-  EXPECT_NEAR(1.0, mycell->glengths()[2], 1e-10);
-  EXPECT_NEAR(0.5, mycell->gspacings()[0], 1e-10);
-  EXPECT_NEAR(0.25, mycell->gspacings()[1], 1e-10);
-  EXPECT_NEAR(1.0, mycell->gspacings()[2], 1e-10);
+  EXPECT_NEAR(0.5, mycell->gvec(0)[0], EPS);
+  EXPECT_NEAR(0.0, mycell->gvec(0)[1], EPS);
+  EXPECT_NEAR(0.0, mycell->gvec(0)[2], EPS);
+  EXPECT_NEAR(0.0, mycell->gvec(1)[0], EPS);
+  EXPECT_NEAR(0.0, mycell->gvec(1)[1], EPS);
+  EXPECT_NEAR(0.25, mycell->gvec(1)[2], EPS);
+  EXPECT_NEAR(0.0, mycell->gvec(2)[0], EPS);
+  EXPECT_NEAR(-1.0, mycell->gvec(2)[1], EPS);
+  EXPECT_NEAR(0.0, mycell->gvec(2)[2], EPS);
+  EXPECT_NEAR(8.0, mycell->volume(), EPS);
+  EXPECT_NEAR(2.0, mycell->lengths()[0], EPS);
+  EXPECT_NEAR(4.0, mycell->lengths()[1], EPS);
+  EXPECT_NEAR(1.0, mycell->lengths()[2], EPS);
+  EXPECT_NEAR(2.0, mycell->spacings()[0], EPS);
+  EXPECT_NEAR(4.0, mycell->spacings()[1], EPS);
+  EXPECT_NEAR(1.0, mycell->spacings()[2], EPS);
+  EXPECT_NEAR(0.5, mycell->glengths()[0], EPS);
+  EXPECT_NEAR(0.25, mycell->glengths()[1], EPS);
+  EXPECT_NEAR(1.0, mycell->glengths()[2], EPS);
+  EXPECT_NEAR(0.5, mycell->gspacings()[0], EPS);
+  EXPECT_NEAR(0.25, mycell->gspacings()[1], EPS);
+  EXPECT_NEAR(1.0, mycell->gspacings()[2], EPS);
 }
 
 
 TEST_F(CellTest3, example) {
-  EXPECT_NEAR(0.5, mycell->gvec(0)[0], 1e-10);
-  EXPECT_NEAR(0.0, mycell->gvec(0)[1], 1e-10);
-  EXPECT_NEAR(0.0, mycell->gvec(0)[2], 1e-10);
-  EXPECT_NEAR(0.0, mycell->gvec(1)[0], 1e-10);
-  EXPECT_NEAR(1.0, mycell->gvec(1)[1], 1e-10);
-  EXPECT_NEAR(0.0, mycell->gvec(1)[2], 1e-10);
-  EXPECT_NEAR(0.0, mycell->gvec(2)[0], 1e-10);
-  EXPECT_NEAR(0.0, mycell->gvec(2)[1], 1e-10);
-  EXPECT_NEAR(0.25, mycell->gvec(2)[2], 1e-10);
-  EXPECT_NEAR(8.0, mycell->volume(), 1e-10);
-  EXPECT_NEAR(2.0, mycell->lengths()[0], 1e-10);
-  EXPECT_NEAR(1.0, mycell->lengths()[1], 1e-10);
-  EXPECT_NEAR(4.0, mycell->lengths()[2], 1e-10);
-  EXPECT_NEAR(2.0, mycell->spacings()[0], 1e-10);
-  EXPECT_NEAR(1.0, mycell->spacings()[1], 1e-10);
-  EXPECT_NEAR(4.0, mycell->spacings()[2], 1e-10);
-  EXPECT_NEAR(0.5, mycell->glengths()[0], 1e-10);
-  EXPECT_NEAR(1.0, mycell->glengths()[1], 1e-10);
-  EXPECT_NEAR(0.25, mycell->glengths()[2], 1e-10);
-  EXPECT_NEAR(0.5, mycell->gspacings()[0], 1e-10);
-  EXPECT_NEAR(1.0, mycell->gspacings()[1], 1e-10);
-  EXPECT_NEAR(0.25, mycell->gspacings()[2], 1e-10);
+  EXPECT_NEAR(0.5, mycell->gvec(0)[0], EPS);
+  EXPECT_NEAR(0.0, mycell->gvec(0)[1], EPS);
+  EXPECT_NEAR(0.0, mycell->gvec(0)[2], EPS);
+  EXPECT_NEAR(0.0, mycell->gvec(1)[0], EPS);
+  EXPECT_NEAR(1.0, mycell->gvec(1)[1], EPS);
+  EXPECT_NEAR(0.0, mycell->gvec(1)[2], EPS);
+  EXPECT_NEAR(0.0, mycell->gvec(2)[0], EPS);
+  EXPECT_NEAR(0.0, mycell->gvec(2)[1], EPS);
+  EXPECT_NEAR(0.25, mycell->gvec(2)[2], EPS);
+  EXPECT_NEAR(8.0, mycell->volume(), EPS);
+  EXPECT_NEAR(2.0, mycell->lengths()[0], EPS);
+  EXPECT_NEAR(1.0, mycell->lengths()[1], EPS);
+  EXPECT_NEAR(4.0, mycell->lengths()[2], EPS);
+  EXPECT_NEAR(2.0, mycell->spacings()[0], EPS);
+  EXPECT_NEAR(1.0, mycell->spacings()[1], EPS);
+  EXPECT_NEAR(4.0, mycell->spacings()[2], EPS);
+  EXPECT_NEAR(0.5, mycell->glengths()[0], EPS);
+  EXPECT_NEAR(1.0, mycell->glengths()[1], EPS);
+  EXPECT_NEAR(0.25, mycell->glengths()[2], EPS);
+  EXPECT_NEAR(0.5, mycell->gspacings()[0], EPS);
+  EXPECT_NEAR(1.0, mycell->gspacings()[1], EPS);
+  EXPECT_NEAR(0.25, mycell->gspacings()[2], EPS);
 }
 
 
@@ -762,7 +762,7 @@ TEST_P(CellTestP, signed_volume) {
   for (int irep = 0; irep < NREP; ++irep) {
     std::unique_ptr<cl::Cell> cell(create_random_cell(irep));
     double sv = vec3::triple(cell->vec(0), cell->vec(1), cell->vec(2));
-    EXPECT_NEAR(cell->volume(), fabs(sv), 1e-10);
+    EXPECT_NEAR(cell->volume(), fabs(sv), EPS);
     if (nvec < 3) EXPECT_LT(0.0, sv);
   }
 }

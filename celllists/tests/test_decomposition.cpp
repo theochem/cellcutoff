@@ -157,15 +157,15 @@ TEST(DecompositionTest, assign_icell_example_shape) {
   EXPECT_EQ(0, points[2].icell_[0]);
   EXPECT_EQ(1, points[2].icell_[1]);
   EXPECT_EQ(0, points[2].icell_[2]);
-  EXPECT_NEAR(1.1, points[0].cart_[0], 1e-10);
-  EXPECT_NEAR(2.0, points[0].cart_[1], 1e-10);
-  EXPECT_NEAR(3.5, points[0].cart_[2], 1e-10);
-  EXPECT_NEAR(0.0, points[1].cart_[0], 1e-10);
-  EXPECT_NEAR(2.9, points[1].cart_[1], 1e-10);
-  EXPECT_NEAR(0.0, points[1].cart_[2], 1e-10);
-  EXPECT_NEAR(0.7, points[2].cart_[0], 1e-10);
-  EXPECT_NEAR(1.9, points[2].cart_[1], 1e-10);
-  EXPECT_NEAR(0.1, points[2].cart_[2], 1e-10);
+  EXPECT_NEAR(1.1, points[0].cart_[0], EPS);
+  EXPECT_NEAR(2.0, points[0].cart_[1], EPS);
+  EXPECT_NEAR(3.5, points[0].cart_[2], EPS);
+  EXPECT_NEAR(0.0, points[1].cart_[0], EPS);
+  EXPECT_NEAR(2.9, points[1].cart_[1], EPS);
+  EXPECT_NEAR(0.0, points[1].cart_[2], EPS);
+  EXPECT_NEAR(0.7, points[2].cart_[0], EPS);
+  EXPECT_NEAR(1.9, points[2].cart_[1], EPS);
+  EXPECT_NEAR(0.1, points[2].cart_[2], EPS);
 }
 
 
@@ -178,7 +178,7 @@ TEST(DecompositionTest, assign_icell_random_wrap) {
     int shape[3] = {-1, -1, -1};
     std::unique_ptr<cl::Cell> subcell(cell->create_subcell(threshold, shape));
     for (int ivec = 0; ivec < 3; ++ivec)
-      EXPECT_NEAR(cell->spacings()[0], subcell->spacings()[0]*shape[0], 1e-10);
+      EXPECT_NEAR(cell->spacings()[0], subcell->spacings()[0]*shape[0], EPS);
 
     // Generate random points, not yet wrapped in cell
     std::vector<cl::Point> points;

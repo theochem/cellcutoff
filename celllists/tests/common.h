@@ -30,8 +30,12 @@
 namespace cl = celllists;
 
 
+// Number of repetitions on a test with random data
 #define NREP 100
+// Number of random Cartesian points to sample in a test
 #define NPOINT 1000
+// Allowed tolerance when comparing doubles (EPS stands for epsilon.)
+#define EPS 1e-10
 
 
 /* Some notes:
