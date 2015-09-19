@@ -45,10 +45,9 @@ class SphereSlice {
  public:
   SphereSlice(const double* center, const double* normals, double radius);
 
-  // Copy-constructor, move-constructor and assignment make no sense as SphereSlice
-  // is almost constant after construction! Just pass references or pointers
-  // instead.
-  SphereSlice(const SphereSlice& that) = delete;
+  /* Move-constructor and assignment make no sense as the SphereSlice is
+     constant after construction! Just pass a reference or a pointer instead. If needed,
+     a copy can be made to guarantee that the data remains available. */
   SphereSlice(SphereSlice&&) = delete;
   SphereSlice& operator=(const SphereSlice&) = delete;
 

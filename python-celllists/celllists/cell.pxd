@@ -19,35 +19,12 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 #--
-'''Python wrapper for the CellLists library'''
 
 
-import numpy as np
-cimport numpy as np
-np.import_array()
+cdef extern from "celllists/cell.h" namespace "celllists":
+    cdef cppclass Cell:
+        Cell(double* vecs, int nvec) except +
+        Cell();
 
-cimport cell
-
-
-__all__ = ['Cell']
-
-
-cdef class Cell:
-    def __cinit__(self, np.ndarray[double, ndim=2] vecs=None):
-        cdef int nvec = 0
-        self._this = NULL
-        if vecs is None:
-            self._this = new cell.Cell()
-        else:
-            assert vecs.flags['C_CONTIGUOUS']
-            assert vecs.shape[0] <= 3
-            assert vecs.shape[1] == 3
-            nvec = vecs.shape[0]
-            self._this = new cell.Cell(&vecs[0,0], nvec)
-
-    def __init__(self, np.ndarray[double, ndim=2] vecs=None):
-        pass
-
-    def __dealloc__(self):
-        if self._this != NULL:
-            del self._this
+        int nvec();
+        const double* vecs();

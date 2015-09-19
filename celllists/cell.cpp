@@ -143,7 +143,7 @@ Cell* Cell::create_reciprocal() const {
 }
 
 
-Cell* Cell::create_subcell(const double threshold, int* shape) {
+Cell* Cell::create_subcell(const double threshold, int* shape) const {
   // Start by copying all three cell vectors, active or not.
   double new_vecs[9];
   std::copy(vecs_, vecs_ + 9, new_vecs);

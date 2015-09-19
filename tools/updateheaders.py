@@ -88,6 +88,8 @@ def main():
 
     fixers = [
         ('*.py', fix_python),
+        ('*.pyx', fix_python),
+        ('*.pxd', fix_python),
         ('*.txt', fix_txt),
         ('*.cpp', fix_c),
         ('*.h', fix_c),

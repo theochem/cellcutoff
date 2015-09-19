@@ -81,11 +81,11 @@ class Cell {
   */
   Cell() : Cell(nullptr, 0) {}
 
-  // Copy-constructor, move-constructor and assignment make no sense as the Cell is
-  // constant after construction! Just pass a reference or a pointer instead.
-  Cell(const Cell& that) = delete;
-  Cell(Cell&&) = delete;
-  Cell& operator=(const Cell&) = delete;
+  /* Move-constructor and assignment make no sense as the Cell is
+     constant after construction! Just pass a reference or a pointer instead. If needed,
+     a copy can be made to guarantee that the data remains available. */
+  //Cell(Cell&&) = delete;
+  //Cell& operator=(const Cell&) = delete;
 
   /** @brief
           Create a Cell object with the reciprocal cell.
@@ -120,7 +120,7 @@ class Cell {
       @return
           A pointer to a `Cell` object with the subcell.
    */
-  Cell* create_subcell(const double threshold, int* shape);
+  Cell* create_subcell(const double threshold, int* shape) const;
 
 
   //! Returns the number of periodic dimensions.

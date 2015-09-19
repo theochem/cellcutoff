@@ -26,6 +26,11 @@ from distutils.extension import Extension
 from Cython.Distutils import build_ext
 
 
+def parse_cpath():
+    import os
+    return [s for s in os.getenv('CPATH').split(':') if len(s) > 0]
+
+
 setup(
     name='python-celllists',
     version='0.0.0',
@@ -33,11 +38,16 @@ setup(
     author='Toon Verstraelen',
     author_email='Toon.Verstraelen@UGent.be',
     cmdclass = {'build_ext': build_ext},
+    packages = ['celllists'],
+    package_data = {
+        'celllists': ['celllists.pxd', 'cell.pxd'],
+    },
     ext_modules=[
-        Extension("celllists",
-            sources=['celllists.pyx'],
-            depends=['celllists.pxd', 'cell.pxd'],
-            include_dirs=[np.get_include()],
+        Extension("celllists.celllists",
+            sources=['celllists/celllists.pyx'],
+            depends=['celllists/celllists.pxd', 'celllists/cell.pxd'],
+            libraries=['celllists'],
+            include_dirs=[np.get_include()] + parse_cpath(),
             extra_compile_args=['-std=c++11', '-Wall', '-pedantic'],
             language="c++")],
 )
