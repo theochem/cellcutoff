@@ -26,6 +26,7 @@
 
 #include <vector>
 #include <map>
+#include <string>
 
 #include "celllists/cell.h"
 
@@ -45,7 +46,7 @@ class points_not_grouped : public std::domain_error {
 
 class Point {
  public:
-  Point(const double* cart);
+  explicit Point(const double* cart);
   Point(const double* cart, const int* icell);
   bool operator<(const Point& other) const;
 
@@ -94,6 +95,6 @@ inline int robust_wrap(const int index, const int size) {
 }  // namespace celllists
 
 
-#endif  // CELLLISTS_CELL_H_
+#endif  // CELLLISTS_DECOMPOSITION_H_
 
 // vim: textwidth=90 et ts=2 sw=2

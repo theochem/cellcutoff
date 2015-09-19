@@ -20,6 +20,7 @@
 
 
 #include <algorithm>
+#include <vector>
 
 #include <gtest/gtest.h>
 
@@ -235,9 +236,9 @@ TEST(DecompositionTest, cell_map_example) {
     EXPECT_EQ(1, it->second[0]);
     EXPECT_EQ(3, it->second[1]);
     ++it;
-    EXPECT_EQ(2*(ivec==0), it->first[0]);
-    EXPECT_EQ(2*(ivec==1), it->first[1]);
-    EXPECT_EQ(2*(ivec==2), it->first[2]);
+    EXPECT_EQ(2*(ivec == 0), it->first[0]);
+    EXPECT_EQ(2*(ivec == 1), it->first[1]);
+    EXPECT_EQ(2*(ivec == 2), it->first[2]);
     EXPECT_EQ(0, it->second[0]);
     EXPECT_EQ(1, it->second[1]);
   }

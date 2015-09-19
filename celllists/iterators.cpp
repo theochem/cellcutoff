@@ -25,7 +25,9 @@
 
 #include "celllists/decomposition.h"
 
+
 namespace celllists {
+
 
 BarIterator3D::BarIterator3D(const std::vector<int>& bars)
     : bars_(bars), ibar_(0), nbar_(bars.size()/4), icell_({0, 0, 0}), shape_{0, 0, 0},
@@ -73,12 +75,14 @@ BarIterator3D& BarIterator3D::operator++() {
     icell_[2] = robust_wrap(bars_[4*ibar_ + 2], shape_[2], &coeffs_[2]);
   }
   return *this;
-};
+}
+
 
 BarIterator3D BarIterator3D::operator++(int) {
   throw std::logic_error("Don't use the post-increment operator if BarIterator3D.");
   return *this;
 }
+
 
 }  // namespace celllists
 

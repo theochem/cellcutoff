@@ -33,15 +33,15 @@ namespace celllists {
 
 class BarIterator3D {
  public:
-  BarIterator3D(const std::vector<int>& bars);
+  explicit BarIterator3D(const std::vector<int>& bars);
   BarIterator3D(const std::vector<int>& bars, const int* shape);
 
-  bool busy() const { return ibar_ < nbar_; };
+  bool busy() const { return ibar_ < nbar_; }
   BarIterator3D& operator++();
   BarIterator3D operator++(int);
-  const std::array<int, 3> icell() const { return icell_; };
-  const int* coeffs() const { return coeffs_; };
-  size_t nbar() const { return nbar_; };
+  const std::array<int, 3> icell() const { return icell_; }
+  const int* coeffs() const { return coeffs_; }
+  size_t nbar() const { return nbar_; }
 
  private:
   const std::vector<int>& bars_;
@@ -54,6 +54,7 @@ class BarIterator3D {
 
 
 }  // namespace celllists
+
 
 #endif  // CELLLISTS_ITERATORS_H_
 

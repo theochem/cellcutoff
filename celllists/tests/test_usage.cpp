@@ -79,14 +79,15 @@ TEST_P(UsageTestP, points_within_cutoff) {
     cell->iwrap_box(center);
     int shape[3] = {-1, -1, -1};
     std::unique_ptr<cl::Cell> subcell(cell->create_subcell(cutoff*0.2, shape));
-    EXPECT_LT(-1*(nvec<=0), shape[0]);
-    EXPECT_LT(-1*(nvec<=1), shape[1]);
-    EXPECT_LT(-1*(nvec<=2), shape[2]);
+    EXPECT_LT(-1*(nvec <= 0), shape[0]);
+    EXPECT_LT(-1*(nvec <= 1), shape[1]);
+    EXPECT_LT(-1*(nvec <= 2), shape[2]);
 
     // Assign icells to points, sort and make a cell_map.
     cl::assign_icell(*subcell, shape, points.data(), points.size(), sizeof(cl::Point));
     std::sort(points.begin(), points.end());
-    std::unique_ptr<cl::CellMap> cell_map(cl::create_cell_map(points.data(), points.size(), sizeof(cl::Point)));
+    std::unique_ptr<cl::CellMap>
+      cell_map(cl::create_cell_map(points.data(), points.size(), sizeof(cl::Point)));
 
     // Compute the points within the cutoff in the most efficient way, i.e. using
     // Cell::bars_cutoff.
@@ -94,7 +95,7 @@ TEST_P(UsageTestP, points_within_cutoff) {
     size_t nbar = subcell->bars_cutoff(center, cutoff, &bars);
     size_t ncell_bars = 0;
     std::vector<size_t> ipoints_bars;
-    for (cl::BarIterator3D bit(bars, shape); bit.busy(); ++bit){
+    for (cl::BarIterator3D bit(bars, shape); bit.busy(); ++bit) {
       EXPECT_EQ(bit.nbar(), nbar);
       ++ncell_bars;
       auto it = cell_map->find(bit.icell());

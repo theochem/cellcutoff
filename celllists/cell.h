@@ -79,7 +79,7 @@ class Cell {
   /** @brief
           Construct a Cell object without cell vectors.
   */
-  Cell() : Cell(nullptr, 0) {};
+  Cell() : Cell(nullptr, 0) {}
 
   // Copy-constructor, move-constructor and assignment make no sense as the Cell is
   // constant after construction! Just pass a reference or a pointer instead.

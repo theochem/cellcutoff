@@ -21,6 +21,7 @@
 
 #include "celllists/decomposition.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <vector>
@@ -74,7 +75,7 @@ void assign_icell(const Cell &subcell, void* points, size_t npoint, size_t point
 
 
 void assign_icell(const Cell &subcell, const int* shape, void* points, size_t npoint,
-    size_t point_size){
+    size_t point_size) {
   // Check args
   if (!(subcell.nvec() == 3))
     throw std::domain_error("Partitioning is only sensible for 3D subcells.");
@@ -113,14 +114,14 @@ void sort_by_icell(void* points, size_t npoint, size_t point_size) {
 }
 
 
-static inline void _store_in_cell_map(const int* icell_begin, size_t ibegin, size_t iend, CellMap* cell_map){
+static inline void _store_in_cell_map(const int* icell_begin, size_t ibegin, size_t iend,
+    CellMap* cell_map) {
   // Try to store the new range in the cell_map
   auto emplace_output = cell_map->emplace(
     std::array<int, 3>{icell_begin[0], icell_begin[1], icell_begin[2]},
-    std::array<size_t, 2>{ibegin, iend}
-  );
+    std::array<size_t, 2>{ibegin, iend});
   // If the is already present, the input for create_cell_map was incorrect.
-  if (not emplace_output.second) {
+  if (!emplace_output.second) {
     delete cell_map;
     throw points_not_grouped("The given points are not grouped by icell.");
   }
