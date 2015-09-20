@@ -19,52 +19,56 @@
 #--
 
 # Make use of the GTest CMake module
-find_package(GTest REQUIRED)
+find_package(GTest)
 
-# Make sure the header files are found
-include_directories(${GTEST_INCLUDE_DIRS})
+IF (GTest_FOUND)
 
-# Define test source files
-set(TEST_SOURCE_FILES
-  ${CMAKE_CURRENT_SOURCE_DIR}/test_cell.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/test_decomposition.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/test_iterators.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/test_sphere_slice.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/test_usage.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/common.cpp
-)
+    # Make sure the header files are found
+    include_directories(${GTEST_INCLUDE_DIRS})
 
-# The testing executable
-add_executable(test_celllists EXCLUDE_FROM_ALL ${TEST_SOURCE_FILES})
-set_property(TARGET test_celllists PROPERTY CXX_STANDARD 11)
+    # Define test source files
+    set(TEST_SOURCE_FILES
+      ${CMAKE_CURRENT_SOURCE_DIR}/test_cell.cpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/test_decomposition.cpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/test_iterators.cpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/test_sphere_slice.cpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/test_usage.cpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/common.cpp
+    )
 
-# How the testing executable has to be linked...
-target_link_libraries(test_celllists celllists ${GTEST_BOTH_LIBRARIES} gcov pthread)
+    # The testing executable
+    add_executable(test_celllists EXCLUDE_FROM_ALL ${TEST_SOURCE_FILES})
+    set_property(TARGET test_celllists PROPERTY CXX_STANDARD 11)
 
-# Use our own test target because ctest hides relevant output.
-IF(CELLLISTS_DO_COVERAGE)
-    add_custom_target(clean_coverage
-                      COMMAND ${PROJECT_SOURCE_DIR}/tools/coverage_clean.sh
-                      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-                      COMMENT "Removing old coverage statistics")
+    # How the testing executable has to be linked...
+    target_link_libraries(test_celllists celllists ${GTEST_BOTH_LIBRARIES} gcov pthread)
 
-    add_custom_target(check
-                      COMMAND test_celllists
-                      DEPENDS test_celllists clean_coverage
-                      COMMENT "Running tests")
+    # Use our own test target because ctest hides relevant output.
+    IF(CELLLISTS_DO_COVERAGE)
+        add_custom_target(clean_coverage
+                          COMMAND ${PROJECT_SOURCE_DIR}/tools/coverage_clean.sh
+                          WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+                          COMMENT "Removing old coverage statistics")
 
-    add_custom_target(coverage
-                      COMMAND ${PROJECT_SOURCE_DIR}/tools/coverage_analyze.py
-                      DEPENDS check
-                      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-                      COMMENT "Coverage analysis")
+        add_custom_target(check
+                          COMMAND test_celllists
+                          DEPENDS test_celllists clean_coverage
+                          COMMENT "Running tests")
 
-ELSE()
-    add_custom_target(check
-                      COMMAND test_celllists
-                      DEPENDS test_celllists
-                      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-                      COMMENT "Running tests")
+        add_custom_target(coverage
+                          COMMAND ${PROJECT_SOURCE_DIR}/tools/coverage_analyze.py
+                          DEPENDS check
+                          WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+                          COMMENT "Coverage analysis")
 
+    ELSE()
+        add_custom_target(check
+                          COMMAND test_celllists
+                          DEPENDS test_celllists
+                          WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                          COMMENT "Running tests")
+
+
+    ENDIF()
 
 ENDIF()
