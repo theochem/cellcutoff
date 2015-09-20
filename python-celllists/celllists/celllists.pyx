@@ -34,11 +34,9 @@ cimport cell
 __all__ = ['Cell']
 
 
-cdef class Cell:
-    def __cinit__(self, np.ndarray[double, ndim=2] vecs=None, initvoid=False):
-        if initvoid:
-            self._this = NULL
-        elif vecs is None:
+cdef class Cell(object):
+    def __cinit__(self, np.ndarray[double, ndim=2] vecs=None):
+        if vecs is None:
             self._this = new cell.Cell()
         else:
             assert vecs.flags['C_CONTIGUOUS']
