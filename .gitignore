@@ -5,5 +5,5 @@ build
 debug
 install
 tmp
-python-celllists/celllists.cpp
+python-celllists/celllists/celllists.cpp
 python-celllists/build
