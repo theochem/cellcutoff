@@ -41,7 +41,7 @@ BarIterator3D::BarIterator3D(const std::vector<int>& bars)
     icell_[1] = bars_[1];
     icell_[2] = bars_[2];
   }
-};
+}
 
 
 BarIterator3D::BarIterator3D(const std::vector<int>& bars, const int* shape)
