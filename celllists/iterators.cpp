@@ -22,6 +22,7 @@
 #include "celllists/iterators.h"
 
 #include <algorithm>
+#include <stdexcept>
 #include <vector>
 
 #include "celllists/decomposition.h"
@@ -33,6 +34,9 @@ namespace celllists {
 BarIterator::BarIterator(const std::vector<int>& bars, const int nvec, const int* shape)
     : bars_(bars), nvec_(nvec), ibar_(0), shape_(nullptr), icell_unwrapped_(nullptr),
       icell_(nullptr), coeffs_(nullptr), busy_(true) {
+  // Argument checking
+  if ((nvec < 1) || (nvec > 3))
+    throw std::domain_error("BarIterator requires nvec to be 1, 2 or 3.");
   // Allocate arrays
   shape_ = new int[nvec];
   ranges_begin_ = new int[nvec];

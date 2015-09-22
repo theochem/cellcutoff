@@ -52,6 +52,12 @@ TEST(BarIteratorTest, exceptions) {
   std::vector<int> bars{1, 2, 3};
   int shape[3]{2, 3, 4};
 
+  // Tests on allowed nvec
+  EXPECT_THROW(cl::BarIterator(bars, -1), std::domain_error);
+  EXPECT_THROW(cl::BarIterator(bars, 0), std::domain_error);
+  EXPECT_THROW(cl::BarIterator(bars, 4), std::domain_error);
+
+  // Tests related to the size of the bars vector.
   cl::BarIterator bit1(bars, 1);
   EXPECT_THROW(bit1++, std::logic_error);  // No post increment allowed
   EXPECT_THROW(++bit1, std::range_error);  // Cannot increment as ranges is too short
