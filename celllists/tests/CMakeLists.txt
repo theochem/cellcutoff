@@ -21,8 +21,7 @@
 # Make use of the GTest CMake module
 find_package(GTest)
 
-IF (GTest_FOUND)
-
+if (GTEST_FOUND)
     # Make sure the header files are found
     include_directories(${GTEST_INCLUDE_DIRS})
 
@@ -44,7 +43,7 @@ IF (GTest_FOUND)
     target_link_libraries(test_celllists celllists ${GTEST_BOTH_LIBRARIES} gcov pthread)
 
     # Use our own test target because ctest hides relevant output.
-    IF(CELLLISTS_DO_COVERAGE)
+    if(CELLLISTS_DO_COVERAGE)
         add_custom_target(clean_coverage
                           COMMAND ${PROJECT_SOURCE_DIR}/tools/coverage_clean.sh
                           WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
@@ -60,15 +59,11 @@ IF (GTest_FOUND)
                           DEPENDS check
                           WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
                           COMMENT "Coverage analysis")
-
-    ELSE()
+    else()
         add_custom_target(check
                           COMMAND test_celllists
                           DEPENDS test_celllists
                           WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                           COMMENT "Running tests")
-
-
-    ENDIF()
-
-ENDIF()
+    endif()
+endif()

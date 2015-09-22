@@ -300,7 +300,7 @@ size_t Cell::bars_cutoff(const double* center, const double cutoff,
   // Prefix is used to keep track of current bar indices while going into recursion.
   std::vector<int> prefix;
   // Compute bars and return the number of bars
-  bars_cutoff_low(&sphere_slice, &prefix, bars);
+  bars_cutoff_low(&sphere_slice, &prefix, 0, bars);
   return bars->size()/(nvec_ + 1);
 }
 
@@ -320,10 +320,8 @@ Cell::Cell(const double* vecs, const int nvec, const double* gvecs,
 }
 
 
-void Cell::bars_cutoff_low(SphereSlice* slice, std::vector<int>* prefix,
+void Cell::bars_cutoff_low(SphereSlice* slice, std::vector<int>* prefix, int ivec,
     std::vector<int>* bars) const {
-  // Get the vector index for which the range is currently searched
-  int ivec = static_cast<int>(prefix->size());
   // Use SphereSlice object to solve the hard of problem of finding begin and end.
   double begin_exact = 0.0;
   double end_exact = 0.0;
@@ -346,7 +344,7 @@ void Cell::bars_cutoff_low(SphereSlice* slice, std::vector<int>* prefix,
       // Make a new cut in the sphere slice.
       slice->set_cut_begin_end(ivec, i, i + 1);
       // Recursive call in which the remaining details of the bar/bars is/are solved.
-      bars_cutoff_low(slice, prefix, bars);
+      bars_cutoff_low(slice, prefix, ivec + 1, bars);
       // Remove the last element of prefix as it is no longer applicable.
       prefix->pop_back();
     }

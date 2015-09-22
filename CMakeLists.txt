@@ -21,27 +21,30 @@
 cmake_minimum_required(VERSION 3.0)
 project(CellLists CXX)
 
-string(TOUPPER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE)
-IF (CMAKE_BUILD_TYPE STREQUAL "DEBUG")
-    #SET (CMAKE_VERBOSE_MAKEFILE "ON")
-    IF (CMAKE_COMPILER_IS_GNUCXX)
-        # When coding (debug mode), we want to know when there might be trouble ...
-        SET (CMAKE_CXX_FLAGS "-g -O0 -Wall -Wconversion -Wextra -Werror -coverage")
-        SET (CMAKE_C_FLAGS "-g -O0 -Wall -Wconversion -Wextra -Werror -coverage")
-        SET (CMAKE_EXE_LINKER_FLAGS "-coverage")
-        SET (CELLLISTS_DO_COVERAGE "ON")
-    ENDIF ()
-ENDIF ()
-
-
 # Version information
-set (CELLLISTS_MAJOR 0)
-set (CELLLISTS_MINOR 0)
-set (CELLLISTS_PATCH 0)
+set(CELLLISTS_MAJOR 0)
+set(CELLLISTS_MINOR 0)
+set(CELLLISTS_PATCH 0)
 
-set (CELLLISTS_VERSION ${CELLLISTS_MAJOR}.${CELLLISTS_MINOR}.${CELLLISTS_PATCH})
-set (CELLLISTS_SOVERSION ${CELLLISTS_MAJOR}.${CELLLISTS_MINOR})
-set (PROJECT_BRIEF "A 3D domain decomposition library")
+set(CELLLISTS_VERSION ${CELLLISTS_MAJOR}.${CELLLISTS_MINOR}.${CELLLISTS_PATCH})
+set(CELLLISTS_SOVERSION ${CELLLISTS_MAJOR}.${CELLLISTS_MINOR})
+set(PROJECT_BRIEF "A 3D domain decomposition library")
+
+# Configure the compiler
+set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wconversion -Wextra -Werror -pedantic")
+
+# Additional compiler settings when doing a debug build
+string(TOUPPER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE)
+if(CMAKE_BUILD_TYPE STREQUAL "DEBUG")
+    #SET (CMAKE_VERBOSE_MAKEFILE "ON")
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        # When coding (debug mode), we want to know when there might be trouble ...
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -coverage")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_CXX_FLAGS} -coverage")
+        set(CELLLISTS_DO_COVERAGE "ON")
+    endif()
+endif()
+
 
 # Compilation of celllists according to celllists/CMakeLists.txt
 add_subdirectory(celllists)

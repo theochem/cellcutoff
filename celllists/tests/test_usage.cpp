@@ -159,7 +159,7 @@ TEST_P(UsageTestP, points_within_cutoff) {
       for (size_t ipoint = 0; ipoint < points.size(); ++ipoint) {
         double d = vec3::distance(center, points[ipoint].cart_);
         if (d < cutoff) {
-          ipoints_dumb.push_back(static_cast<int>(ipoint));
+          ipoints_dumb.push_back(ipoint);
         }
       }
 

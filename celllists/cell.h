@@ -330,7 +330,7 @@ class Cell {
       the dimension at hand (i.e. the recursion depth). It makes use of the SphereSlice\
       object to find the begin-end range along each cell vector.
    */
-  void bars_cutoff_low(SphereSlice* slice, std::vector<int>* prefix,
+  void bars_cutoff_low(SphereSlice* slice, std::vector<int>* prefix, int ivec,
       std::vector<int>* bars) const;
 
  private:
