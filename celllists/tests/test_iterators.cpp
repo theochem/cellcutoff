@@ -33,7 +33,7 @@
 namespace cl = celllists;
 
 
-class BarIterator3DTestP : public ::testing::TestWithParam<int> {
+class BarIteratorTestP : public ::testing::TestWithParam<int> {
  public:
   virtual void SetUp() {
     nvec = GetParam();
@@ -48,148 +48,113 @@ class BarIterator3DTestP : public ::testing::TestWithParam<int> {
 };
 
 
-TEST(BarIterator3DTest, exceptions) {
+TEST(BarIteratorTest, exceptions) {
   std::vector<int> bars{1, 2, 3};
   int shape[3]{2, 3, 4};
-  EXPECT_THROW(cl::BarIterator3D bit(bars), std::domain_error);
-  EXPECT_THROW(cl::BarIterator3D bit(bars, shape), std::domain_error);
-  bars.push_back(5);
-  cl::BarIterator3D bit(bars, shape);
-  EXPECT_THROW(bit++, std::logic_error);
-  ++bit;  // First increment should be OK.
-  ++bit;  // Second increment should be OK.
-  EXPECT_THROW(++bit, std::range_error);  // Third increment goes too far.
+
+  cl::BarIterator bit1(bars, 1);
+  EXPECT_THROW(bit1++, std::logic_error);  // No post increment allowed
+  EXPECT_THROW(++bit1, std::range_error);  // Cannot increment as ranges is too short
+
+  cl::BarIterator bit1s(bars, 1, shape);
+  EXPECT_THROW(bit1s++, std::logic_error);  // No post increment allowed
+  EXPECT_THROW(++bit1s, std::range_error);  // Cannot increment as ranges is too short
+
+  EXPECT_THROW(cl::BarIterator bit2(bars, 2), std::range_error);
+  EXPECT_THROW(cl::BarIterator bit2s(bars, 2, shape), std::range_error);
+  EXPECT_THROW(cl::BarIterator bit3(bars, 3), std::range_error);
+  EXPECT_THROW(cl::BarIterator bit3s(bars, 3, shape), std::range_error);
 }
 
 
-TEST(BarIterator3DTest, example) {
-  const std::vector<int> bars{1, 2, -2, 1, 5, -3, 7, 11};
-  cl::BarIterator3D it(bars);
+TEST(BarIteratorTest, example_3) {
+  const std::vector<int> bars{
+    1, 2,
+      -2, 0,
+        5, 7,
+        8, 10};
+  cl::BarIterator it(bars, 3);
   EXPECT_TRUE(it.busy());
   EXPECT_EQ(it.icell()[0], 1);
-  EXPECT_EQ(it.icell()[1], 2);
-  EXPECT_EQ(it.icell()[2], -2);
-  EXPECT_EQ(it.coeffs()[0], 0);
-  EXPECT_EQ(it.coeffs()[1], 0);
-  EXPECT_EQ(it.coeffs()[2], 0);
-  ++it;
-  EXPECT_TRUE(it.busy());
-  EXPECT_EQ(it.icell()[0], 1);
-  EXPECT_EQ(it.icell()[1], 2);
-  EXPECT_EQ(it.icell()[2], -1);
+  EXPECT_EQ(it.icell()[1], -2);
+  EXPECT_EQ(it.icell()[2], 5);
   EXPECT_EQ(it.coeffs()[0], 0);
   EXPECT_EQ(it.coeffs()[1], 0);
   EXPECT_EQ(it.coeffs()[2], 0);
   ++it;
   EXPECT_TRUE(it.busy());
   EXPECT_EQ(it.icell()[0], 1);
-  EXPECT_EQ(it.icell()[1], 2);
-  EXPECT_EQ(it.icell()[2], 0);
+  EXPECT_EQ(it.icell()[1], -2);
+  EXPECT_EQ(it.icell()[2], 6);
   EXPECT_EQ(it.coeffs()[0], 0);
   EXPECT_EQ(it.coeffs()[1], 0);
   EXPECT_EQ(it.coeffs()[2], 0);
   ++it;
   EXPECT_TRUE(it.busy());
-  EXPECT_EQ(it.icell()[0], 5);
-  EXPECT_EQ(it.icell()[1], -3);
-  EXPECT_EQ(it.icell()[2], 7);
-  EXPECT_EQ(it.coeffs()[0], 0);
-  EXPECT_EQ(it.coeffs()[1], 0);
-  EXPECT_EQ(it.coeffs()[2], 0);
-  ++it;
-  EXPECT_TRUE(it.busy());
-  EXPECT_EQ(it.icell()[0], 5);
-  EXPECT_EQ(it.icell()[1], -3);
+  EXPECT_EQ(it.icell()[0], 1);
+  EXPECT_EQ(it.icell()[1], -1);
   EXPECT_EQ(it.icell()[2], 8);
   EXPECT_EQ(it.coeffs()[0], 0);
   EXPECT_EQ(it.coeffs()[1], 0);
   EXPECT_EQ(it.coeffs()[2], 0);
   ++it;
   EXPECT_TRUE(it.busy());
-  EXPECT_EQ(it.icell()[0], 5);
-  EXPECT_EQ(it.icell()[1], -3);
+  EXPECT_EQ(it.icell()[0], 1);
+  EXPECT_EQ(it.icell()[1], -1);
   EXPECT_EQ(it.icell()[2], 9);
   EXPECT_EQ(it.coeffs()[0], 0);
   EXPECT_EQ(it.coeffs()[1], 0);
   EXPECT_EQ(it.coeffs()[2], 0);
   ++it;
-  EXPECT_TRUE(it.busy());
-  EXPECT_EQ(it.icell()[0], 5);
-  EXPECT_EQ(it.icell()[1], -3);
-  EXPECT_EQ(it.icell()[2], 10);
-  EXPECT_EQ(it.coeffs()[0], 0);
-  EXPECT_EQ(it.coeffs()[1], 0);
-  EXPECT_EQ(it.coeffs()[2], 0);
-  ++it;
   EXPECT_FALSE(it.busy());
 }
 
 
-TEST(BarIterator3DTest, example_shape) {
-  const std::vector<int> bars{1, 2, -2, 1, 5, -3, 7, 11};
+TEST(BarIteratorTest, example_3_shape) {
+  const std::vector<int> bars{
+    1, 2,
+      -2, 0,
+        5, 7,
+        8, 10};
   const int shape[3]{3, 4, 5};
-  cl::BarIterator3D it(bars, shape);
-  EXPECT_TRUE(it.busy());
-  EXPECT_EQ(it.icell()[0], 1);
-  EXPECT_EQ(it.icell()[1], 2);
-  EXPECT_EQ(it.icell()[2], 3);
-  EXPECT_EQ(it.coeffs()[0], 0);
-  EXPECT_EQ(it.coeffs()[1], 0);
-  EXPECT_EQ(it.coeffs()[2], -1);
-  ++it;
-  EXPECT_TRUE(it.busy());
-  EXPECT_EQ(it.icell()[0], 1);
-  EXPECT_EQ(it.icell()[1], 2);
-  EXPECT_EQ(it.icell()[2], 4);
-  EXPECT_EQ(it.coeffs()[0], 0);
-  EXPECT_EQ(it.coeffs()[1], 0);
-  EXPECT_EQ(it.coeffs()[2], -1);
-  ++it;
+  cl::BarIterator it(bars, 3, shape);
   EXPECT_TRUE(it.busy());
   EXPECT_EQ(it.icell()[0], 1);
   EXPECT_EQ(it.icell()[1], 2);
   EXPECT_EQ(it.icell()[2], 0);
   EXPECT_EQ(it.coeffs()[0], 0);
-  EXPECT_EQ(it.coeffs()[1], 0);
-  EXPECT_EQ(it.coeffs()[2], 0);
-  ++it;
-  EXPECT_TRUE(it.busy());
-  EXPECT_EQ(it.icell()[0], 2);
-  EXPECT_EQ(it.icell()[1], 1);
-  EXPECT_EQ(it.icell()[2], 2);
-  EXPECT_EQ(it.coeffs()[0], 1);
   EXPECT_EQ(it.coeffs()[1], -1);
   EXPECT_EQ(it.coeffs()[2], 1);
   ++it;
   EXPECT_TRUE(it.busy());
-  EXPECT_EQ(it.icell()[0], 2);
-  EXPECT_EQ(it.icell()[1], 1);
+  EXPECT_EQ(it.icell()[0], 1);
+  EXPECT_EQ(it.icell()[1], 2);
+  EXPECT_EQ(it.icell()[2], 1);
+  EXPECT_EQ(it.coeffs()[0], 0);
+  EXPECT_EQ(it.coeffs()[1], -1);
+  EXPECT_EQ(it.coeffs()[2], 1);
+  ++it;
+  EXPECT_TRUE(it.busy());
+  EXPECT_EQ(it.icell()[0], 1);
+  EXPECT_EQ(it.icell()[1], 3);
   EXPECT_EQ(it.icell()[2], 3);
-  EXPECT_EQ(it.coeffs()[0], 1);
+  EXPECT_EQ(it.coeffs()[0], 0);
   EXPECT_EQ(it.coeffs()[1], -1);
   EXPECT_EQ(it.coeffs()[2], 1);
   ++it;
   EXPECT_TRUE(it.busy());
-  EXPECT_EQ(it.icell()[0], 2);
-  EXPECT_EQ(it.icell()[1], 1);
+  EXPECT_EQ(it.icell()[0], 1);
+  EXPECT_EQ(it.icell()[1], 3);
   EXPECT_EQ(it.icell()[2], 4);
-  EXPECT_EQ(it.coeffs()[0], 1);
+  EXPECT_EQ(it.coeffs()[0], 0);
   EXPECT_EQ(it.coeffs()[1], -1);
   EXPECT_EQ(it.coeffs()[2], 1);
-  ++it;
-  EXPECT_TRUE(it.busy());
-  EXPECT_EQ(it.icell()[0], 2);
-  EXPECT_EQ(it.icell()[1], 1);
-  EXPECT_EQ(it.icell()[2], 0);
-  EXPECT_EQ(it.coeffs()[0], 1);
-  EXPECT_EQ(it.coeffs()[1], -1);
-  EXPECT_EQ(it.coeffs()[2], 2);
   ++it;
   EXPECT_FALSE(it.busy());
 }
 
 
-TEST_P(BarIterator3DTestP, example_random) {
+TEST_P(BarIteratorTestP, example_3_random) {
   for (int irep = 0; irep < NREP; ++irep) {
     // Problem definition
     double cutoff = 1.0 + static_cast<double>(irep)/NREP;
@@ -202,26 +167,33 @@ TEST_P(BarIterator3DTestP, example_random) {
     std::unique_ptr<cl::Cell> subcell(cell->create_subcell(cutoff*0.2, shape));
 
     std::vector<int> bars;
-    size_t nbar = subcell->bars_cutoff(center, cutoff, &bars);
-    cl::BarIterator3D bit(bars, shape);
-    EXPECT_EQ(nbar, bit.nbar());
-    for (size_t ibar = 0; ibar < nbar; ++ibar) {
-      std::array<int, 3> icell;
-      int coeffs[3];
-      icell[0] = cl::robust_wrap(bars[4*ibar], shape[0], &coeffs[0]);
-      icell[1] = cl::robust_wrap(bars[4*ibar + 1], shape[1], &coeffs[1]);
-      int begin2 = bars[4*ibar + 2];
-      int end2 = bars[4*ibar + 3];
-      for (int icell2 = begin2; icell2 < end2; ++icell2) {
-        icell[2] = cl::robust_wrap(icell2, shape[2], &coeffs[2]);
-        EXPECT_EQ(icell[0], bit.icell()[0]);
-        EXPECT_EQ(icell[1], bit.icell()[1]);
-        EXPECT_EQ(icell[2], bit.icell()[2]);
-        EXPECT_EQ(coeffs[0], bit.coeffs()[0]);
-        EXPECT_EQ(coeffs[1], bit.coeffs()[1]);
-        EXPECT_EQ(coeffs[2], bit.coeffs()[2]);
-        EXPECT_TRUE(bit.busy());
-        ++bit;
+    subcell->bars_cutoff(center, cutoff, &bars);
+    cl::BarIterator bit(bars, 3, shape);
+
+    int ibar = 2;
+    int icell[3];
+    int coeffs[3];
+    for (int ifrac0 = bars[0]; ifrac0 < bars[1]; ++ifrac0) {
+      icell[0] = cl::robust_wrap(ifrac0, shape[0], &coeffs[0]);
+      int begin1 = bars[ibar];
+      int end1 = bars[ibar+1];
+      ibar += 2;
+      for (int ifrac1 = begin1; ifrac1 < end1; ++ifrac1) {
+        icell[1] = cl::robust_wrap(ifrac1, shape[1], &coeffs[1]);
+        int begin2 = bars[ibar];
+        int end2 = bars[ibar+1];
+        ibar += 2;
+        for (int ifrac2 = begin2; ifrac2 < end2; ++ifrac2) {
+          icell[2] = cl::robust_wrap(ifrac2, shape[2], &coeffs[2]);
+          EXPECT_EQ(icell[0], bit.icell()[0]);
+          EXPECT_EQ(icell[1], bit.icell()[1]);
+          EXPECT_EQ(icell[2], bit.icell()[2]);
+          EXPECT_EQ(coeffs[0], bit.coeffs()[0]);
+          EXPECT_EQ(coeffs[1], bit.coeffs()[1]);
+          EXPECT_EQ(coeffs[2], bit.coeffs()[2]);
+          EXPECT_TRUE(bit.busy());
+          ++bit;
+        }
       }
     }
     EXPECT_FALSE(bit.busy());
@@ -232,7 +204,7 @@ TEST_P(BarIterator3DTestP, example_random) {
 // Instantiation of parameterized tests
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-INSTANTIATE_TEST_CASE_P(BarIterator3DTest0123, BarIterator3DTestP, ::testing::Range(0, 4));
+INSTANTIATE_TEST_CASE_P(BarIteratorTest0123, BarIteratorTestP, ::testing::Range(0, 4));
 
 
 // vim: textwidth=90 et ts=2 sw=2

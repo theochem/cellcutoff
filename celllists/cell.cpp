@@ -286,7 +286,7 @@ size_t Cell::ranges_cutoff(const double* center, const double cutoff,
 }
 
 
-size_t Cell::bars_cutoff(const double* center, const double cutoff,
+void Cell::bars_cutoff(const double* center, const double cutoff,
     std::vector<int>* bars) const {
   // Check arguments
   if (nvec_ == 0) {
@@ -297,11 +297,8 @@ size_t Cell::bars_cutoff(const double* center, const double cutoff,
   }
   // For all the heavy work, a SphereSlice object is used that precomputes a lot.
   SphereSlice sphere_slice(center, gvecs_, cutoff);
-  // Prefix is used to keep track of current bar indices while going into recursion.
-  std::vector<int> prefix;
   // Compute bars and return the number of bars
-  bars_cutoff_low(&sphere_slice, &prefix, 0, bars);
-  return bars->size()/(nvec_ + 1);
+  bars_cutoff_low(&sphere_slice, 0, bars);
 }
 
 
@@ -320,8 +317,7 @@ Cell::Cell(const double* vecs, const int nvec, const double* gvecs,
 }
 
 
-void Cell::bars_cutoff_low(SphereSlice* slice, std::vector<int>* prefix, int ivec,
-    std::vector<int>* bars) const {
+void Cell::bars_cutoff_low(SphereSlice* slice, int ivec, std::vector<int>* bars) const {
   // Use SphereSlice object to solve the hard of problem of finding begin and end.
   double begin_exact = 0.0;
   double end_exact = 0.0;
@@ -329,24 +325,17 @@ void Cell::bars_cutoff_low(SphereSlice* slice, std::vector<int>* prefix, int ive
   int begin = static_cast<int>(floor(begin_exact));
   int end = static_cast<int>(ceil(end_exact));
 
-  if (ivec == nvec_ - 1) {
-    // If we are dealing with the last recursion, just store the bar.
-    for (const auto& i : *prefix)
-      bars->push_back(i);
-    bars->push_back(begin);
-    bars->push_back(end);
-  } else {
+  // Store the current range.
+  bars->push_back(begin);
+  bars->push_back(end);
+  if (ivec < nvec_ - 1) {
     // If this is not yet the last recursion, iterate over the range of integer
     // fractional coordinates, and go one recursion deeper in each iteration.
     for (int i = begin; i < end; ++i) {
-      // Make sure the following recursion knows the indices of the current bar.
-      prefix->push_back(i);
-      // Make a new cut in the sphere slice.
+      // Define a slice (two cuts) in the sphere.
       slice->set_cut_begin_end(ivec, i, i + 1);
       // Recursive call in which the remaining details of the bar/bars is/are solved.
-      bars_cutoff_low(slice, prefix, ivec + 1, bars);
-      // Remove the last element of prefix as it is no longer applicable.
-      prefix->pop_back();
+      bars_cutoff_low(slice, ivec + 1, bars);
     }
   }
 }

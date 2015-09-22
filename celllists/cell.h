@@ -279,8 +279,8 @@ class Cell {
           Selects a cells inside or intersecting with a cutoff sphere.
 
       This function assumes space is divided in a regular grid of subcells. The shape of
-      one subcell is by `vecs` and `nvec`. This function finds all subcells that contain a
-      point within a cutoff sphere.
+      one subcell is defined by `vecs` and `nvec` (>= 1). This function then finds all
+      subcells that overlap with a cutoff sphere.
 
       @param center
           A pointer to 3 doubles that specify the center of the cutoff sphere in
@@ -291,21 +291,24 @@ class Cell {
 
       @param bars
           A std::vector<int> pointer in which the results, i.e. the cells overlapping with
-          the cutoff sphere, are stored. In this output, a range of consecutive of cells
-          along the last cell vector is called a bar and is represented by `(nvec + 1)`
-          integers. Thus, the elements of the bars vectors should be used in groups of
-          `(nvec + 1)`. For a single bar, the last two integers are the fractional
-          coordinates of enclosing crystal planes along the last periodic vector. The
-          preceding indexes in a bar are used to identify the position of the first cell
-          in a bar along all but the last cell vectors. The range in fractional
-          coordinates along these all-but-last directions is `(i, i + 1)`. Finally, the
-          union of all bars is a volume that completely contains the cutoff sphere but
-          does not contain a single cell that does not overlap with the cutoff sphere.
+          the cutoff sphere, are stored.
+
+          To keep the array compact, the following format is used to specify all cells
+          that overlap with the cutoff sphere. The integers are always to be interpreted
+          in (begin, end) pairs, corresponding to crystal planes just before and after the
+          cutoff sphere. The first pair, (begin0, end0), corresponds to the planes along
+          the [100] direction. If `nvec==2`, a list of pairs follows, corresponding to
+          (begin1, end1) ranges along the [010] direction. One such pair is present for
+          each slice of the cutoff sphere along the [100] direction, i.e. for (begin0,
+          begin0 + 1), (begin0 + 1, begin0 + 2), etc. Similarly, if `nvec==3`, each pair
+          for the [010] direction is followed with a set of pairs for the [001] direction.
+
+          The above format assumes that one know `nvec` when parsing the list of integers.
 
       @return
           The number bars. The size of the bars vector is `nbar*(nvec+1)`.
     */
-  size_t bars_cutoff(const double* center, const double cutoff,
+  void bars_cutoff(const double* center, const double cutoff,
       std::vector<int>* bars) const;
 
  protected:
@@ -330,8 +333,7 @@ class Cell {
       the dimension at hand (i.e. the recursion depth). It makes use of the SphereSlice\
       object to find the begin-end range along each cell vector.
    */
-  void bars_cutoff_low(SphereSlice* slice, std::vector<int>* prefix, int ivec,
-      std::vector<int>* bars) const;
+  void bars_cutoff_low(SphereSlice* slice, int ivec, std::vector<int>* bars) const;
 
  private:
   double vecs_[9];        //!< cell vectors, one per row, row-major

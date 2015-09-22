@@ -27,6 +27,7 @@
 #include <gtest/gtest.h>
 
 #include <celllists/cell.h>
+#include <celllists/iterators.h>
 #include <celllists/vec3.h>
 
 #include "common.h"
@@ -972,8 +973,7 @@ TEST_F(CellTest1, bars_cutoff_example) {
 
   // Call
   std::vector<int> bars;
-  size_t nbar = mycell->bars_cutoff(center, cutoff, &bars);
-  EXPECT_EQ(1, nbar);
+  mycell->bars_cutoff(center, cutoff, &bars);
   EXPECT_EQ(2, bars.size());
 
   // Check results
@@ -991,25 +991,24 @@ TEST_F(CellTest2, bars_cutoff_example) {
 
   // Call
   std::vector<int> bars;
-  size_t nbar = mycell->bars_cutoff(center, cutoff, &bars);
-  EXPECT_EQ(6, nbar);
-  EXPECT_EQ(6*3, bars.size());
+  mycell->bars_cutoff(center, cutoff, &bars);
+  EXPECT_EQ((1+6)*2, bars.size());
 
   // Test
-  for (size_t ibar = 0; ibar < nbar; ++ibar) {
-    SCOPED_TRACE(ibar);
-    EXPECT_EQ(ibar - 2, bars[3*ibar]);
-    if (ibar == 0) {
-      EXPECT_EQ(-1, bars[3*ibar + 1]);
-    } else {
-      EXPECT_EQ(-2, bars[3*ibar + 1]);
-    }
-    if ((ibar == 0) || (ibar == 1) || (ibar == 5)) {
-      EXPECT_EQ(1, bars[3*ibar + 2]);
-    } else {
-      EXPECT_EQ(2, bars[3*ibar + 2]);
-    }
-  }
+  EXPECT_EQ(-2, bars[0]);
+  EXPECT_EQ(4, bars[1]);
+  EXPECT_EQ(-1, bars[2]);
+  EXPECT_EQ(1, bars[3]);
+  EXPECT_EQ(-2, bars[4]);
+  EXPECT_EQ(1, bars[5]);
+  EXPECT_EQ(-2, bars[6]);
+  EXPECT_EQ(2, bars[7]);
+  EXPECT_EQ(-2, bars[8]);
+  EXPECT_EQ(2, bars[9]);
+  EXPECT_EQ(-2, bars[10]);
+  EXPECT_EQ(2, bars[11]);
+  EXPECT_EQ(-2, bars[12]);
+  EXPECT_EQ(1, bars[13]);
 }
 
 
@@ -1020,23 +1019,37 @@ TEST_F(CellTest3, bars_cutoff_example) {
 
   // Call
   std::vector<int> bars;
-  size_t nbar = mycell->bars_cutoff(center, cutoff, &bars);
-  EXPECT_EQ(8, nbar);
-  EXPECT_EQ(8*4, bars.size());
+  mycell->bars_cutoff(center, cutoff, &bars);
+  EXPECT_EQ((1+1+4+1+4)*2, bars.size());
 
   // Test
-  for (size_t ibar = 0; ibar < nbar; ++ibar) {
-    std::vector<int> bar(&bars[ibar*4], &bars[(ibar + 1)*4]);
-    EXPECT_EQ(bar[0], ibar/4);
-    EXPECT_EQ(bar[1], ibar%4);
-    EXPECT_EQ(bar[2], 0);
-    EXPECT_EQ(bar[3], 1);
-  }
+  EXPECT_EQ(0, bars[0]);
+  EXPECT_EQ(2, bars[1]);
+  EXPECT_EQ(0, bars[2]);
+  EXPECT_EQ(4, bars[3]);
+  EXPECT_EQ(0, bars[4]);
+  EXPECT_EQ(1, bars[5]);
+  EXPECT_EQ(0, bars[6]);
+  EXPECT_EQ(1, bars[7]);
+  EXPECT_EQ(0, bars[8]);
+  EXPECT_EQ(1, bars[9]);
+  EXPECT_EQ(0, bars[10]);
+  EXPECT_EQ(1, bars[11]);
+  EXPECT_EQ(0, bars[12]);
+  EXPECT_EQ(4, bars[13]);
+  EXPECT_EQ(0, bars[14]);
+  EXPECT_EQ(1, bars[15]);
+  EXPECT_EQ(0, bars[16]);
+  EXPECT_EQ(1, bars[17]);
+  EXPECT_EQ(0, bars[18]);
+  EXPECT_EQ(1, bars[19]);
+  EXPECT_EQ(0, bars[20]);
+  EXPECT_EQ(1, bars[21]);
 }
 
 
 TEST_P(CellTestP, bars_cutoff_random) {
-  size_t nbar_total = 0;
+  size_t ncell_total = 0;
   for (int irep = 0; irep < NREP; ++irep) {
     // Test parameters:
     // - Random cell
@@ -1049,9 +1062,7 @@ TEST_P(CellTestP, bars_cutoff_random) {
 
     // Compute the bars.
     std::vector<int> bars;
-    size_t nbar = cell->bars_cutoff(center, cutoff, &bars);
-    EXPECT_EQ(nbar*(nvec + 1), bars.size());
-    nbar_total += nbar;
+    cell->bars_cutoff(center, cutoff, &bars);
 
     // Construct a random vector in a cubic box around the cutoff sphere.
     double cart[3];
@@ -1072,23 +1083,13 @@ TEST_P(CellTestP, bars_cutoff_random) {
       static_cast<int>(floor(frac[2]))
     };
     bool in_bar = false;
-    for (size_t ibar=0; ibar < nbar; ++ibar) {
-      std::vector<int> bar(&bars[ibar*(nvec + 1)], &bars[(ibar + 1)*(nvec + 1)]);
-
-      if (nvec > 1) {
-        if (bar[0] != index[0])
-          continue;
-      }
-      if (nvec > 2) {
-        if (bar[1] != index[1])
-          continue;
-      }
-      if (index[nvec - 1] < bar[nvec - 1])
-        continue;
-      if (index[nvec - 1] >= bar[nvec])
-        continue;
+    for (cl::BarIterator bit(bars, nvec); bit.busy(); ++bit) {
       in_bar = true;
-      break;
+      for (int ivec = 0; ivec < nvec; ++ivec) {
+        in_bar &= (bit.icell()[ivec] == index[ivec]);
+      }
+      if (in_bar) break;
+      ++ncell_total;
     }
 
     // Does the relative vector sit in the cutoff sphere, taking into account
@@ -1107,11 +1108,41 @@ TEST_P(CellTestP, bars_cutoff_random) {
     // Clean up
   }
   // Sufficiency check
-  EXPECT_LE(NREP*((nvec - 1)*3 + 1), nbar_total);
+  EXPECT_LE(NREP*((nvec - 1)*3 + 1), ncell_total);
 }
 
 
-TEST_P(CellTestP, bars_cutoff_corners) {
+TEST_F(CellTest1, bars_cutoff_corners) {
+  for (int irep = 0; irep < NREP; ++irep) {
+    // Test parameters:
+    // - Random cell
+    std::unique_ptr<cl::Cell> cell(create_random_cell(2*irep));
+    // - Increasing cutoff
+    double cutoff = (irep + 1)*0.1;
+    // - Random center
+    double center[3];
+    fill_random_double(47332 + irep, center, 3, -2.0, 2.0);
+
+    // Compute the bars.
+    std::vector<int> bars;
+    cell->bars_cutoff(center, cutoff, &bars);
+    EXPECT_EQ(2, bars.size());
+
+    // Check the ranges
+    double frac_corner[3] = {0, 0, 0};
+    double cart_corner[3] = {0, 0, 0};
+    cell->to_frac(center, frac_corner);
+    frac_corner[0] = bars[0];
+    cell->to_cart(frac_corner, cart_corner);
+    EXPECT_LE(cutoff, vec3::distance(cart_corner, center));
+    frac_corner[0] = bars[1];
+    cell->to_cart(frac_corner, cart_corner);
+    EXPECT_LE(cutoff, vec3::distance(cart_corner, center));
+  }
+}
+
+
+TEST_F(CellTest2, bars_cutoff_corners) {
   size_t nbar_total = 0;
   for (int irep = 0; irep < NREP; ++irep) {
     // Test parameters:
@@ -1125,70 +1156,127 @@ TEST_P(CellTestP, bars_cutoff_corners) {
 
     // Compute the bars.
     std::vector<int> bars;
-    size_t nbar = cell->bars_cutoff(center, cutoff, &bars);
-    EXPECT_EQ(nbar*(nvec + 1), bars.size());
-    nbar_total += nbar;
+    cell->bars_cutoff(center, cutoff, &bars);
+    EXPECT_LE(4, bars.size());
+    nbar_total += bars.size();
 
-    // Test if the corners of each bar fall outside of the sphere
-    for (size_t ibar=0; ibar < nbar; ++ibar) {
-      std::vector<int> bar(&bars[ibar*(nvec + 1)], &bars[(ibar + 1)*(nvec + 1)]);
+    // Check the ranges
+    double frac_corner[3] = {0, 0, 0};
+    double cart_corner[3] = {0, 0, 0};
+    cell->to_frac(center, frac_corner);
+    int ibar = 2;
+    for (int ifrac0 = bars[0]; ifrac0 < bars[1]; ++ifrac0) {
+      // corner 0,0
+      frac_corner[0] = ifrac0;
+      frac_corner[1] = bars[ibar];
+      cell->to_cart(frac_corner, cart_corner);
+      EXPECT_LE(cutoff, vec3::distance(cart_corner, center));
+      // corner 1,0
+      frac_corner[0] = ifrac0 + 1;
+      frac_corner[1] = bars[ibar];
+      cell->to_cart(frac_corner, cart_corner);
+      EXPECT_LE(cutoff, vec3::distance(cart_corner, center));
+      // corner 0,1
+      frac_corner[0] = ifrac0;
+      frac_corner[1] = bars[ibar + 1];
+      cell->to_cart(frac_corner, cart_corner);
+      EXPECT_LE(cutoff, vec3::distance(cart_corner, center));
+      // corner 1,1
+      frac_corner[0] = ifrac0 + 1;
+      frac_corner[1] = bars[ibar + 1];
+      cell->to_cart(frac_corner, cart_corner);
+      EXPECT_LE(cutoff, vec3::distance(cart_corner, center));
+      ibar += 2;
+    }
+  }
+  // Sufficiency check
+  EXPECT_LE(NREP*10, nbar_total);
+}
 
-      double frac_corner[3] = {0, 0, 0};
-      double cart_corner[3] = {0, 0, 0};
-      double dist;
 
-      // loop of begin and end of the bar (last two integers in the bar).
-      cell->to_frac(center, frac_corner);
-      for (int ilast = 0; ilast < 2; ++ilast) {
-        frac_corner[nvec-1] = bar[nvec-ilast];
-        if (nvec == 1) {
-          cell->to_cart(frac_corner, cart_corner);
-          dist = vec3::distance(cart_corner, center);
-          EXPECT_GT(dist, cutoff);
-        } else if (nvec == 2) {
-          //
-          frac_corner[0] = bar[0];
-          cell->to_cart(frac_corner, cart_corner);
-          dist = vec3::distance(cart_corner, center);
-          EXPECT_GT(dist, cutoff);
-          //
-          frac_corner[0] = bar[0] + 1;
-          cell->to_cart(frac_corner, cart_corner);
-          dist = vec3::distance(cart_corner, center);
-          EXPECT_GT(dist, cutoff);
-        } else if (nvec == 3) {
-          //
-          frac_corner[0] = bar[0];
-          frac_corner[1] = bar[1];
-          cell->to_cart(frac_corner, cart_corner);
-          dist = vec3::distance(cart_corner, center);
-          EXPECT_GT(dist, cutoff);
-          //
-          frac_corner[0] = bar[0] + 1;
-          frac_corner[1] = bar[1];
-          cell->to_cart(frac_corner, cart_corner);
-          dist = vec3::distance(cart_corner, center);
-          EXPECT_GT(dist, cutoff);
-          //
-          frac_corner[0] = bar[0];
-          frac_corner[1] = bar[1] + 1;
-          cell->to_cart(frac_corner, cart_corner);
-          dist = vec3::distance(cart_corner, center);
-          EXPECT_GT(dist, cutoff);
-          //
-          frac_corner[0] = bar[0] + 1;
-          frac_corner[1] = bar[1] + 1;
-          cell->to_cart(frac_corner, cart_corner);
-          dist = vec3::distance(cart_corner, center);
-          EXPECT_GT(dist, cutoff);
-        }
+TEST_F(CellTest3, bars_cutoff_corners) {
+  size_t nbar_total = 0;
+  for (int irep = 0; irep < NREP; ++irep) {
+    // Test parameters:
+    // - Random cell
+    std::unique_ptr<cl::Cell> cell(create_random_cell(2*irep));
+    // - Increasing cutoff
+    double cutoff = (irep + 1)*0.1;
+    // - Random center
+    double center[3];
+    fill_random_double(47332 + irep, center, 3, -2.0, 2.0);
+
+    // Compute the bars.
+    std::vector<int> bars;
+    cell->bars_cutoff(center, cutoff, &bars);
+    EXPECT_LE(6, bars.size());
+    nbar_total += bars.size();
+
+    // Check the ranges
+    double frac_corner[3] = {0, 0, 0};
+    double cart_corner[3] = {0, 0, 0};
+    cell->to_frac(center, frac_corner);
+    int ibar = 2;
+    for (int ifrac0 = bars[0]; ifrac0 < bars[1]; ++ifrac0) {
+      int begin1 = bars[ibar];
+      int end1 = bars[ibar+1];
+      ibar += 2;
+      for (int ifrac1 = begin1; ifrac1 < end1; ++ifrac1) {
+        // corner 0,0,0
+        frac_corner[0] = ifrac0;
+        frac_corner[1] = ifrac1;
+        frac_corner[2] = bars[ibar];
+        cell->to_cart(frac_corner, cart_corner);
+        EXPECT_LE(cutoff, vec3::distance(cart_corner, center));
+        // corner 1,0,0
+        frac_corner[0] = ifrac0 + 1;
+        frac_corner[1] = ifrac1;
+        frac_corner[2] = bars[ibar];
+        cell->to_cart(frac_corner, cart_corner);
+        EXPECT_LE(cutoff, vec3::distance(cart_corner, center));
+        // corner 0,1,0
+        frac_corner[0] = ifrac0;
+        frac_corner[1] = ifrac1 + 1;
+        frac_corner[2] = bars[ibar];
+        cell->to_cart(frac_corner, cart_corner);
+        EXPECT_LE(cutoff, vec3::distance(cart_corner, center));
+        // corner 1,1,0
+        frac_corner[0] = ifrac0 + 1;
+        frac_corner[1] = ifrac1 + 1;
+        frac_corner[2] = bars[ibar];
+        cell->to_cart(frac_corner, cart_corner);
+        EXPECT_LE(cutoff, vec3::distance(cart_corner, center));
+        // corner 0,0,1
+        frac_corner[0] = ifrac0;
+        frac_corner[1] = ifrac1;
+        frac_corner[2] = bars[ibar + 1];
+        cell->to_cart(frac_corner, cart_corner);
+        EXPECT_LE(cutoff, vec3::distance(cart_corner, center));
+        // corner 1,0,1
+        frac_corner[0] = ifrac0 + 1;
+        frac_corner[1] = ifrac1;
+        frac_corner[2] = bars[ibar + 1];
+        cell->to_cart(frac_corner, cart_corner);
+        EXPECT_LE(cutoff, vec3::distance(cart_corner, center));
+        // corner 0,1,1
+        frac_corner[0] = ifrac0;
+        frac_corner[1] = ifrac1 + 1;
+        frac_corner[2] = bars[ibar + 1];
+        cell->to_cart(frac_corner, cart_corner);
+        EXPECT_LE(cutoff, vec3::distance(cart_corner, center));
+        // corner 1,1,1
+        frac_corner[0] = ifrac0 + 1;
+        frac_corner[1] = ifrac1 + 1;
+        frac_corner[2] = bars[ibar + 1];
+        cell->to_cart(frac_corner, cart_corner);
+        EXPECT_LE(cutoff, vec3::distance(cart_corner, center));
+        ibar += 2;
       }
     }
   }
   // Sufficiency check
-  EXPECT_LE(NREP*((nvec - 1)*3 + 1), nbar_total);
+  EXPECT_LE(NREP*14, nbar_total);
 }
-
 
 // Instantiation of parameterized tests
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

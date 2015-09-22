@@ -92,13 +92,14 @@ TEST_P(UsageTestP, points_within_cutoff) {
     // Compute the points within the cutoff in the most efficient way, i.e. using
     // Cell::bars_cutoff.
     std::vector<int> bars;
-    size_t nbar = subcell->bars_cutoff(center, cutoff, &bars);
+    subcell->bars_cutoff(center, cutoff, &bars);
     size_t ncell_bars = 0;
     std::vector<size_t> ipoints_bars;
-    for (cl::BarIterator3D bit(bars, shape); bit.busy(); ++bit) {
-      EXPECT_EQ(bit.nbar(), nbar);
+    std::array<int, 3> key;
+    for (cl::BarIterator bit(bars, 3, shape); bit.busy(); ++bit) {
       ++ncell_bars;
-      auto it = cell_map->find(bit.icell());
+      std::copy(bit.icell(), bit.icell() + 3, key.data());
+      auto it = cell_map->find(key);
       if (it != cell_map->end()) {
         for (size_t ipoint = it->second[0]; ipoint < it->second[1]; ++ipoint) {
           double cart[3];

@@ -31,25 +31,33 @@
 namespace celllists {
 
 
-class BarIterator3D {
+class BarIterator {
  public:
-  explicit BarIterator3D(const std::vector<int>& bars);
-  BarIterator3D(const std::vector<int>& bars, const int* shape);
+  BarIterator(const std::vector<int>& bars, const int nvec, const int* shape);
+  BarIterator(const std::vector<int>& bars, const int nvec)
+      : BarIterator(bars, nvec, nullptr) {};
+  ~BarIterator();
 
-  bool busy() const { return ibar_ < nbar_; }
-  BarIterator3D& operator++();
-  BarIterator3D operator++(int);
-  const std::array<int, 3> icell() const { return icell_; }
+  bool busy() const { return busy_; }
+  BarIterator& operator++();
+  BarIterator operator++(int);
+  const int* icell() const { return icell_; }
   const int* coeffs() const { return coeffs_; }
-  size_t nbar() const { return nbar_; }
 
  private:
+  void take_range(const int ivec);
+  void increment(const int ivec);
+
   const std::vector<int>& bars_;
+  const int nvec_;
   size_t ibar_;
-  const size_t nbar_;
-  std::array<int, 3> icell_;
-  int shape_[3];
-  int coeffs_[3];
+  int* shape_;
+  int* ranges_begin_;
+  int* ranges_end_;
+  int* icell_unwrapped_;
+  int* icell_;
+  int* coeffs_;
+  bool busy_;
 };
 
 
