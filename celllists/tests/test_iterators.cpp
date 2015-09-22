@@ -73,6 +73,114 @@ TEST(BarIteratorTest, exceptions) {
 }
 
 
+TEST(BarIteratorTest, example_1) {
+  const std::vector<int> bars{1, 4};
+  cl::BarIterator it(bars, 1);
+  EXPECT_TRUE(it.busy());
+  EXPECT_EQ(it.icell()[0], 1);
+  EXPECT_EQ(it.coeffs()[0], 0);
+  ++it;
+  EXPECT_TRUE(it.busy());
+  EXPECT_EQ(it.icell()[0], 2);
+  EXPECT_EQ(it.coeffs()[0], 0);
+  ++it;
+  EXPECT_TRUE(it.busy());
+  EXPECT_EQ(it.icell()[0], 3);
+  EXPECT_EQ(it.coeffs()[0], 0);
+  ++it;
+  EXPECT_FALSE(it.busy());
+}
+
+
+TEST(BarIteratorTest, example_1_shape) {
+  const std::vector<int> bars{1, 4};
+  const int shape[1]{3};
+  cl::BarIterator it(bars, 1, shape);
+  EXPECT_TRUE(it.busy());
+  EXPECT_EQ(it.icell()[0], 1);
+  EXPECT_EQ(it.coeffs()[0], 0);
+  ++it;
+  EXPECT_TRUE(it.busy());
+  EXPECT_EQ(it.icell()[0], 2);
+  EXPECT_EQ(it.coeffs()[0], 0);
+  ++it;
+  EXPECT_TRUE(it.busy());
+  EXPECT_EQ(it.icell()[0], 0);
+  EXPECT_EQ(it.coeffs()[0], 1);
+  ++it;
+  EXPECT_FALSE(it.busy());
+}
+
+
+TEST(BarIteratorTest, example_2) {
+  const std::vector<int> bars{
+    1, 3,
+      -2, 0,
+       5, 7};
+  cl::BarIterator it(bars, 2);
+  EXPECT_TRUE(it.busy());
+  EXPECT_EQ(it.icell()[0], 1);
+  EXPECT_EQ(it.icell()[1], -2);
+  EXPECT_EQ(it.coeffs()[0], 0);
+  EXPECT_EQ(it.coeffs()[1], 0);
+  ++it;
+  EXPECT_TRUE(it.busy());
+  EXPECT_EQ(it.icell()[0], 1);
+  EXPECT_EQ(it.icell()[1], -1);
+  EXPECT_EQ(it.coeffs()[0], 0);
+  EXPECT_EQ(it.coeffs()[1], 0);
+  ++it;
+  EXPECT_TRUE(it.busy());
+  EXPECT_EQ(it.icell()[0], 2);
+  EXPECT_EQ(it.icell()[1], 5);
+  EXPECT_EQ(it.coeffs()[0], 0);
+  EXPECT_EQ(it.coeffs()[1], 0);
+  ++it;
+  EXPECT_TRUE(it.busy());
+  EXPECT_EQ(it.icell()[0], 2);
+  EXPECT_EQ(it.icell()[1], 6);
+  EXPECT_EQ(it.coeffs()[0], 0);
+  EXPECT_EQ(it.coeffs()[1], 0);
+  ++it;
+  EXPECT_FALSE(it.busy());
+}
+
+
+TEST(BarIteratorTest, example_2_shape) {
+  const std::vector<int> bars{
+    4, 6,
+      -2, 0,
+       5, 7};
+  const int shape[2]{3, 2};
+  cl::BarIterator it(bars, 2, shape);
+  EXPECT_TRUE(it.busy());
+  EXPECT_EQ(it.icell()[0], 1);
+  EXPECT_EQ(it.icell()[1], 0);
+  EXPECT_EQ(it.coeffs()[0], 1);
+  EXPECT_EQ(it.coeffs()[1], -1);
+  ++it;
+  EXPECT_TRUE(it.busy());
+  EXPECT_EQ(it.icell()[0], 1);
+  EXPECT_EQ(it.icell()[1], 1);
+  EXPECT_EQ(it.coeffs()[0], 1);
+  EXPECT_EQ(it.coeffs()[1], -1);
+  ++it;
+  EXPECT_TRUE(it.busy());
+  EXPECT_EQ(it.icell()[0], 2);
+  EXPECT_EQ(it.icell()[1], 1);
+  EXPECT_EQ(it.coeffs()[0], 1);
+  EXPECT_EQ(it.coeffs()[1], 2);
+  ++it;
+  EXPECT_TRUE(it.busy());
+  EXPECT_EQ(it.icell()[0], 2);
+  EXPECT_EQ(it.icell()[1], 0);
+  EXPECT_EQ(it.coeffs()[0], 1);
+  EXPECT_EQ(it.coeffs()[1], 3);
+  ++it;
+  EXPECT_FALSE(it.busy());
+}
+
+
 TEST(BarIteratorTest, example_3) {
   const std::vector<int> bars{
     1, 2,
@@ -171,6 +279,9 @@ TEST_P(BarIteratorTestP, example_3_random) {
     cell->iwrap_box(center);
     int shape[3] = {-1, -1, -1};
     std::unique_ptr<cl::Cell> subcell(cell->create_subcell(cutoff*0.2, shape));
+    EXPECT_LT(-1, shape[0]);
+    EXPECT_LT(-1, shape[1]);
+    EXPECT_LT(-1, shape[2]);
 
     std::vector<int> bars;
     subcell->bars_cutoff(center, cutoff, &bars);
