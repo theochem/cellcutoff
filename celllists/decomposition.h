@@ -25,7 +25,7 @@
 #define CELLLISTS_DECOMPOSITION_H_
 
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <string>
 
 #include "celllists/cell.h"
@@ -56,7 +56,18 @@ class Point {
 
 
 // A typedef for cell_map objects
-typedef std::map<std::array<int, 3>, std::array<size_t, 2>> CellMap;
+struct icell_hash {
+  size_t operator()(const std::array<int, 3>& icell) const {
+    const int small = 4*(icell[0] < 0) + 2*(icell[1] < 0) + (icell[2] < 0);
+    const size_t x = abs(icell[0]) + (icell[0] >= 0);
+    const size_t y = abs(icell[1]) + (icell[1] >= 0);
+    const size_t z = abs(icell[2]) + (icell[2] >= 0);
+    const size_t d0 = x + y + z;
+    const size_t d1 = x + y;
+    return (((d0-3)*(d0-2)*(d0-1))/6 + ((d1-2)*(d1-1))/2 + (x-1))*8 + small;
+  }
+};
+typedef std::unordered_map<std::array<int, 3>, std::array<size_t, 2>, icell_hash> CellMap;
 
 //! Assigns all cell indexes
 void assign_icell(const Cell &subcell, void* points, size_t npoint, size_t point_size);
