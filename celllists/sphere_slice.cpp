@@ -47,7 +47,7 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
   cut_end[0] = 0.0;
   cut_end[1] = 0.0;
   // Compute from derived data members
-  radius_sq = radius_*radius_;
+  radius_sq_ = radius_*radius_;
   for (int id_axis=0; id_axis < 3; ++id_axis) {
     const double* axis = normals_ + 3*id_axis;
     for (int id_cut=0; id_cut < 3; ++id_cut) {
@@ -274,7 +274,7 @@ void SphereSlice::solve_plane_low(const int id_axis, const int id_cut,
   // The amount lost from the total radius squared.
   double lost_radius_sq = delta_cut*delta_cut/norms_sq[id_cut];
   // The rest of the radius squared is for the size of the circle.
-  double circle_radius_sq = radius_sq - lost_radius_sq;
+  double circle_radius_sq = radius_sq_ - lost_radius_sq;
   // Check if an intersecting circle exists, if not return;
   if (circle_radius_sq < 0) {
     *begin = NAN;
@@ -333,7 +333,7 @@ void SphereSlice::solve_line_low(const int id_axis, const int id_cut0, const int
   vec3::iadd(line_center, center_);
 
   // Compute the remaining line radius
-  double line_radius_sq = radius_sq - lost_radius_sq;
+  double line_radius_sq = radius_sq_ - lost_radius_sq;
   if (line_radius_sq < 0) {
     *begin = NAN;
     *end = NAN;
