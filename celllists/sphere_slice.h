@@ -98,8 +98,8 @@ class SphereSlice {
   double norms_[3];
   double frac_radii_[3];
   double frac_center_[3];
-  double sphere_frac_begin[3];
-  double sphere_frac_end[3];
+  double sphere_frac_begin_[3];
+  double sphere_frac_end_[3];
   double radius_normals_[9];
   double sphere_point_begin[9];
   double sphere_point_end[9];

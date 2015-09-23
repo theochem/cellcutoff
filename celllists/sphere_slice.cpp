@@ -58,8 +58,8 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
     norms_[id_axis] = sqrt(norms_sq_[id_axis]);
     frac_radii_[id_axis] = radius_*norms_[id_axis];
     frac_center_[id_axis] = vec3::dot(center_, axis);
-    sphere_frac_begin[id_axis] = frac_center_[id_axis] - frac_radii_[id_axis];
-    sphere_frac_end[id_axis] = frac_center_[id_axis] + frac_radii_[id_axis];
+    sphere_frac_begin_[id_axis] = frac_center_[id_axis] - frac_radii_[id_axis];
+    sphere_frac_end_[id_axis] = frac_center_[id_axis] + frac_radii_[id_axis];
     vec3::copy(axis, radius_normals_ + 3*id_axis);
     vec3::iscale(radius_normals_ + 3*id_axis, radius_/norms_[id_axis]);
     vec3::copy(center_, sphere_point_begin + 3*id_axis);
@@ -221,8 +221,8 @@ void SphereSlice::solve_full_low(const int id_axis, double* begin,
   // Check the axis
   CHECK_ID(id_axis);
   // Everything is precomputed...
-  *begin = sphere_frac_begin[id_axis];
-  *end = sphere_frac_end[id_axis];
+  *begin = sphere_frac_begin_[id_axis];
+  *end = sphere_frac_end_[id_axis];
   if (point_begin != nullptr)
     vec3::copy(sphere_point_begin + 3*id_axis, point_begin);
   if (point_end != nullptr)
