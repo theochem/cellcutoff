@@ -21,7 +21,7 @@
 # Make use of the GTest CMake module
 find_package(GTest)
 
-if (GTEST_FOUND)
+if(GTEST_FOUND)
     # Make sure the header files are found
     include_directories(${GTEST_INCLUDE_DIRS})
 
