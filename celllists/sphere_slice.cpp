@@ -52,7 +52,7 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
     const double* axis = normals_ + 3*id_axis;
     for (int id_cut=0; id_cut < 3; ++id_cut) {
       const double* cut_normal = normals_ + 3*id_cut;
-      dots[id_axis + 3*id_cut] = vec3::dot(axis, cut_normal);
+      dots_[id_axis + 3*id_cut] = vec3::dot(axis, cut_normal);
     }
     norms_sq_[id_axis] = vec3::normsq(axis);
     norms_[id_axis] = sqrt(norms_sq_[id_axis]);
@@ -70,8 +70,8 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
   for (int id_axis=0; id_axis < 3; ++id_axis) {
     for (int id_cut=0; id_cut < 3; ++id_cut) {
       denoms[id_axis + 3*id_cut] = (
-          dots[id_axis + 3*id_cut]*dots[id_axis + 3*id_cut] -
-          dots[id_axis + 3*id_axis]*dots[id_cut + 3*id_cut]);
+          dots_[id_axis + 3*id_cut]*dots_[id_axis + 3*id_cut] -
+          dots_[id_axis + 3*id_axis]*dots_[id_cut + 3*id_cut]);
     }
   }
   for (int id_axis=0; id_axis < 3; ++id_axis) {
@@ -365,7 +365,7 @@ double SphereSlice::compute_plane_intersection(const int id_cut0, const int id_c
 
   // Find the nearest point where the two planes cross
   double dot00 = norms_sq_[id_cut0];
-  double dot01 = dots[id_cut0 + 3*id_cut1];
+  double dot01 = dots_[id_cut0 + 3*id_cut1];
   double dot11 = norms_sq_[id_cut1];
   double denom = denoms[id_cut0 + 3*id_cut1];
   double ratio0 = (cut1*dot01 - cut0*dot11)/denom;
