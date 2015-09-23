@@ -81,12 +81,6 @@ class Cell {
   */
   Cell() : Cell(nullptr, 0) {}
 
-  /* Move-constructor and assignment make no sense as the Cell is
-     constant after construction! Just pass a reference or a pointer instead. If needed,
-     a copy can be made to guarantee that the data remains available. */
-  //Cell(Cell&&) = delete;
-  //Cell& operator=(const Cell&) = delete;
-
   /** @brief
           Create a Cell object with the reciprocal cell.
 

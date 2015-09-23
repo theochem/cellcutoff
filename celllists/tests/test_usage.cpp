@@ -64,18 +64,18 @@ TEST_P(UsageTestP, points_within_cutoff) {
     // Select a random center and a cutoff
     double cutoff = 1.0 + static_cast<double>(irep)/NREP;
     double center[3];
-    fill_random_double(irep, center, 3, -cutoff, cutoff);
+    unsigned int seed  = fill_random_double(irep, center, 3, -cutoff, cutoff);
 
     // Generate a set of random points (in and beyond cutoff)
     std::vector<cl::Point> points;
     for (int ipoint = 0; ipoint < NPOINT; ++ipoint) {
       double cart[3];
-      fill_random_double(irep*NPOINT + ipoint, cart, 3, -cutoff, cutoff);
+      seed = fill_random_double(seed, cart, 3, -cutoff, cutoff);
       points.push_back(cl::Point(cart));
     }
 
     // Make a reasonable cell and subcell
-    std::unique_ptr<cl::Cell> cell(create_random_cell(irep+NREP, cutoff, 0.6, false));
+    std::unique_ptr<cl::Cell> cell(create_random_cell(seed, cutoff, 0.6, false));
     cell->iwrap_box(center);
     int shape[3] = {-1, -1, -1};
     std::unique_ptr<cl::Cell> subcell(cell->create_subcell(cutoff*0.2, shape));
@@ -90,28 +90,19 @@ TEST_P(UsageTestP, points_within_cutoff) {
       cell_map(cl::create_cell_map(points.data(), points.size(), sizeof(cl::Point)));
 
     // Compute the points within the cutoff in the most efficient way, i.e. using
-    // Cell::bars_cutoff.
-    std::vector<int> bars;
-    subcell->bars_cutoff(center, cutoff, &bars);
-    size_t ncell_bars = 0;
+    // the DeltaIterator.
     std::vector<size_t> ipoints_bars;
-    std::array<int, 3> key;
-    for (cl::BarIterator bit(bars, 3, shape); bit.busy(); ++bit) {
-      ++ncell_bars;
-      std::copy(bit.icell(), bit.icell() + 3, key.data());
-      auto it = cell_map->find(key);
-      if (it != cell_map->end()) {
-        for (size_t ipoint = it->second[0]; ipoint < it->second[1]; ++ipoint) {
-          double cart[3];
-          std::copy(points[ipoint].cart_, points[ipoint].cart_ + 3, cart);
-          cell->iadd_vec(cart, bit.coeffs());
-          double d = vec3::distance(center, cart);
-          if (d < cutoff) {
-            ++npoint_total;
-            ipoints_bars.push_back(ipoint);
-          }
-        }
-      }
+    std::set<std::array<double, 3>> deltas;
+    for (cl::DeltaIterator dit(*subcell, shape, center, cutoff, points.data(), points.size(),
+         sizeof(cl::Point), *cell_map); dit.busy(); ++dit) {
+      ++npoint_total;
+      ipoints_bars.push_back(dit.ipoint());
+      EXPECT_NEAR(dit.distance(), vec3::norm(dit.delta()), EPS);
+      // No duplicates allowed!
+      std::array<double, 3> delta;
+      std::copy(dit.delta(), dit.delta() + 3, delta.data());
+      EXPECT_EQ(0, deltas.count(delta));
+      deltas.insert(delta);
     }
     std::sort(ipoints_bars.begin(), ipoints_bars.end());
 
@@ -120,7 +111,7 @@ TEST_P(UsageTestP, points_within_cutoff) {
     int ranges_begin[3];
     int ranges_end[3];
     size_t ncell = subcell->ranges_cutoff(center, cutoff, ranges_begin, ranges_end);
-    EXPECT_LE(ncell_bars, ncell);
+    EXPECT_LT(0, ncell);
     std::vector<size_t> ipoints_ranges;
     for (int icell0 = ranges_begin[0]; icell0 < ranges_end[0]; ++icell0) {
       for (int icell1 = ranges_begin[1]; icell1 < ranges_end[1]; ++icell1) {

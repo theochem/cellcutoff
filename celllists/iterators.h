@@ -27,6 +27,9 @@
 #include <vector>
 #include <array>
 
+#include "celllists/cell.h"
+#include "celllists/decomposition.h"
+
 
 namespace celllists {
 
@@ -41,6 +44,7 @@ class BarIterator {
   bool busy() const { return busy_; }
   BarIterator& operator++();
   BarIterator operator++(int);
+
   const int* icell() const { return icell_; }
   const int* coeffs() const { return coeffs_; }
 
@@ -58,6 +62,52 @@ class BarIterator {
   int* icell_;
   int* coeffs_;
   bool busy_;
+};
+
+
+class DeltaIterator {
+ public:
+  DeltaIterator(const Cell& subcell, const int* shape, const double* center,
+      const double cutoff, const void* points, const size_t npoint,
+      const size_t point_size, const CellMap& cell_map);
+  DeltaIterator(const Cell& subcell, const double* center,
+      const double cutoff, const void* points, const size_t npoint,
+      const size_t point_size, const CellMap& cell_map)
+      : DeltaIterator(subcell, nullptr, center, cutoff, points, npoint, point_size,
+        cell_map) {}
+  ~DeltaIterator();
+
+  bool busy() const { return bar_iterator_->busy(); }
+  DeltaIterator& operator++();
+  DeltaIterator operator++(int);
+
+  const double* delta() const { return delta_; }
+  double distance() const { return distance_; }
+  size_t ipoint() const { return ipoint_; }
+
+ private:
+  void increment(bool initialization);
+
+  // Provided through constructor
+  const Cell& subcell_;
+  int* shape_;
+  const double center_[3];
+  const double cutoff_;
+  const char* points_char_;
+  const size_t npoint_;
+  const size_t point_size_;
+  const CellMap& cell_map_;
+
+  // Internal data
+  std::vector<int> bars_;
+  BarIterator* bar_iterator_;
+  const Point* point_;
+  double cell_delta_[3];
+  double delta_[3];
+  double distance_;
+  size_t ipoint_;
+  size_t ibegin_;
+  size_t iend_;
 };
 
 

@@ -19,6 +19,7 @@
 //--
 
 
+#include <cmath>
 #include <vector>
 
 #include <gtest/gtest.h>
@@ -315,6 +316,117 @@ TEST_P(BarIteratorTestP, example_3_random) {
     }
     EXPECT_FALSE(bit.busy());
   }
+}
+
+
+// DeltaIterator
+// ~~~~~~~~~~~~~
+
+TEST(DeltaIteratorTest, exception) {
+  double vecs[9]{2.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+  cl::Cell subcell(vecs, 3);
+  const double center[3]{0.0, 0.0, 0.0};
+  std::vector<cl::Point> points;
+  cl::CellMap cell_map;
+  cl::DeltaIterator dit1(subcell, nullptr, center, 1e-15, points.data(), points.size(),
+      sizeof(cl::Point), cell_map);
+  EXPECT_THROW(dit1++, std::logic_error);
+}
+
+TEST(DeltaIteratorTest, examples) {
+  // Problem definition: points, cell and cell_map, center and cutoff
+  // 1) points
+  std::vector<cl::Point> points;
+  double cart_0[3]{9.0, 9.0, 99.0};
+  double cart_1[3]{22.5, 0.0, 0.0};
+  double cart_2[3]{4.0, 5.1, -3.0};
+  double cart_3[3]{4.0, 5.2, -3.0};
+  points.emplace_back(cart_0);
+  points.emplace_back(cart_1);
+  points.emplace_back(cart_2);
+  points.emplace_back(cart_3);
+  // 2) cell and shape
+  double vecs[9]{2.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+  cl::Cell subcell(vecs, 3);
+  int shape[3]{10, 20, 20};
+  // 3) cell_map (no need to sort, as they already are sorted)
+  cl::assign_icell(subcell, shape, points.data(), points.size(), sizeof(cl::Point));
+  std::unique_ptr<cl::CellMap> cell_map(cl::create_cell_map(points.data(), points.size(), sizeof(cl::Point)));
+  // 4) center and cutoff
+  double center[3]{1.0, 1.0, 1.0};
+  double cutoff = 10.0;
+
+  // Construct the iterator and go through every point, one by one
+  cl::DeltaIterator dit1(subcell, shape, center, cutoff, points.data(), points.size(),
+      sizeof(cl::Point), *cell_map);
+  EXPECT_TRUE(dit1.busy());
+
+  // First iteration
+  EXPECT_NEAR(1.5, dit1.delta()[0], EPS);
+  EXPECT_NEAR(-1.0, dit1.delta()[1], EPS);
+  EXPECT_NEAR(-1.0, dit1.delta()[2], EPS);
+  EXPECT_NEAR(sqrt(1.5*1.5 + 1.0 + 1.0), dit1.distance(), EPS);
+  EXPECT_EQ(1, dit1.ipoint());
+  ++dit1;
+  EXPECT_TRUE(dit1.busy());
+  // Second iteration
+  EXPECT_NEAR(3.0, dit1.delta()[0], EPS);
+  EXPECT_NEAR(4.1, dit1.delta()[1], EPS);
+  EXPECT_NEAR(-4.0, dit1.delta()[2], EPS);
+  EXPECT_NEAR(sqrt(3.0*3.0 + 4.1*4.1 + 4.0*4.0), dit1.distance(), EPS);
+  EXPECT_EQ(2, dit1.ipoint());
+  ++dit1;
+  EXPECT_TRUE(dit1.busy());
+  // First iteration
+  EXPECT_NEAR(3.0, dit1.delta()[0], EPS);
+  EXPECT_NEAR(4.2, dit1.delta()[1], EPS);
+  EXPECT_NEAR(-4.0, dit1.delta()[2], EPS);
+  EXPECT_NEAR(sqrt(3.0*3.0 + 4.2*4.2 + 4.0*4.0), dit1.distance(), EPS);
+  EXPECT_EQ(3, dit1.ipoint());
+  ++dit1;
+  EXPECT_FALSE(dit1.busy());
+
+  // Same thing, this time without shape argument
+  points[0].cart_[0] = 0.0;
+  points[0].cart_[1] = 0.0;
+  points[0].cart_[2] = 0.0;
+  points[1].cart_[0] = cart_1[0];
+  points[2].cart_[2] = cart_2[2];
+  points[3].cart_[2] = cart_3[2];
+  cl::assign_icell(subcell, points.data(), points.size(), sizeof(cl::Point));
+  EXPECT_EQ(11, points[1].icell_[0]);
+  EXPECT_EQ(-3, points[2].icell_[2]);
+  EXPECT_EQ(-3, points[3].icell_[2]);
+  cell_map.reset(cl::create_cell_map(points.data(), points.size(), sizeof(cl::Point)));
+  cl::DeltaIterator dit2(subcell, center, cutoff, points.data(), points.size(),
+      sizeof(cl::Point), *cell_map);
+  EXPECT_TRUE(dit2.busy());
+
+  // First iteration
+  EXPECT_NEAR(-1.0, dit2.delta()[0], EPS);
+  EXPECT_NEAR(-1.0, dit2.delta()[1], EPS);
+  EXPECT_NEAR(-1.0, dit2.delta()[2], EPS);
+  EXPECT_NEAR(sqrt(3.0), dit2.distance(), EPS);
+  EXPECT_EQ(0, dit2.ipoint());
+  ++dit2;
+  EXPECT_TRUE(dit2.busy());
+  // First iteration
+  EXPECT_NEAR(3.0, dit2.delta()[0], EPS);
+  EXPECT_NEAR(4.1, dit2.delta()[1], EPS);
+  EXPECT_NEAR(-4.0, dit2.delta()[2], EPS);
+  EXPECT_NEAR(sqrt(3.0*3.0 + 4.1*4.1 + 4.0*4.0), dit2.distance(), EPS);
+  EXPECT_EQ(2, dit2.ipoint());
+  ++dit2;
+  EXPECT_TRUE(dit2.busy());
+  // Second iteration
+  EXPECT_NEAR(3.0, dit2.delta()[0], EPS);
+  EXPECT_NEAR(4.2, dit2.delta()[1], EPS);
+  EXPECT_NEAR(-4.0, dit2.delta()[2], EPS);
+  EXPECT_NEAR(sqrt(3.0*3.0 + 4.2*4.2 + 4.0*4.0), dit2.distance(), EPS);
+  EXPECT_EQ(3, dit2.ipoint());
+  ++dit2;
+  EXPECT_FALSE(dit2.busy());
+
 }
 
 
