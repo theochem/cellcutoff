@@ -34,10 +34,10 @@ namespace celllists {
     if ((ARG < 0) || (ARG >= 3)) throw std::domain_error(#ARG " must be 0, 1 or 2.")
 
 
-SphereSlice::SphereSlice(const double* center, const double* normals, double radius) :
-    center_(center), normals_(normals), radius(radius) {
+SphereSlice::SphereSlice(const double* center, const double* normals, double radius)
+    : center_(center), normals_(normals), radius_(radius) {
   // Check sanity of arguments
-  if (radius <= 0)
+  if (radius_ <= 0)
     throw std::domain_error("radius must be strictly positive.");
   if (vec3::triple(normals_, normals_ + 3, normals_ + 6) == 0.0)
     throw std::domain_error("The three normals must be linearly independent.");
@@ -47,7 +47,7 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
   cut_end[0] = 0.0;
   cut_end[1] = 0.0;
   // Compute from derived data members
-  radius_sq = radius*radius;
+  radius_sq = radius_*radius_;
   for (int id_axis=0; id_axis < 3; ++id_axis) {
     const double* axis = normals_ + 3*id_axis;
     for (int id_cut=0; id_cut < 3; ++id_cut) {
@@ -56,12 +56,12 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
     }
     norms_sq[id_axis] = vec3::normsq(axis);
     norms[id_axis] = sqrt(norms_sq[id_axis]);
-    frac_radii[id_axis] = radius*norms[id_axis];
+    frac_radii[id_axis] = radius_*norms[id_axis];
     frac_center_[id_axis] = vec3::dot(center_, axis);
     sphere_frac_begin[id_axis] = frac_center_[id_axis] - frac_radii[id_axis];
     sphere_frac_end[id_axis] = frac_center_[id_axis] + frac_radii[id_axis];
     vec3::copy(axis, radius_normals_ + 3*id_axis);
-    vec3::iscale(radius_normals_ + 3*id_axis, radius/norms[id_axis]);
+    vec3::iscale(radius_normals_ + 3*id_axis, radius_/norms[id_axis]);
     vec3::copy(center_, sphere_point_begin + 3*id_axis);
     vec3::iadd(sphere_point_begin + 3*id_axis, radius_normals_ + 3*id_axis, -1);
     vec3::copy(center_, sphere_point_end + 3*id_axis);
