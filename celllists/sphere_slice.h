@@ -84,7 +84,7 @@ class SphereSlice {
 
  private:
   // Constant independent data members
-  const double* center;
+  const double* center_;
   const double* normals;
   const double radius;
 
@@ -97,7 +97,7 @@ class SphereSlice {
   double norms_sq[3];
   double norms[3];
   double frac_radii[3];
-  double frac_center[3];
+  double frac_center_[3];
   double sphere_frac_begin[3];
   double sphere_frac_end[3];
   double radius_normals[9];

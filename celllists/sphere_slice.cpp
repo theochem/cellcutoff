@@ -35,7 +35,7 @@ namespace celllists {
 
 
 SphereSlice::SphereSlice(const double* center, const double* normals, double radius) :
-    center(center), normals(normals), radius(radius) {
+    center_(center), normals(normals), radius(radius) {
   // Check sanity of arguments
   if (radius <= 0)
     throw std::domain_error("radius must be strictly positive.");
@@ -57,14 +57,14 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
     norms_sq[id_axis] = vec3::normsq(axis);
     norms[id_axis] = sqrt(norms_sq[id_axis]);
     frac_radii[id_axis] = radius*norms[id_axis];
-    frac_center[id_axis] = vec3::dot(center, axis);
-    sphere_frac_begin[id_axis] = frac_center[id_axis] - frac_radii[id_axis];
-    sphere_frac_end[id_axis] = frac_center[id_axis] + frac_radii[id_axis];
+    frac_center_[id_axis] = vec3::dot(center_, axis);
+    sphere_frac_begin[id_axis] = frac_center_[id_axis] - frac_radii[id_axis];
+    sphere_frac_end[id_axis] = frac_center_[id_axis] + frac_radii[id_axis];
     vec3::copy(axis, radius_normals + 3*id_axis);
     vec3::iscale(radius_normals + 3*id_axis, radius/norms[id_axis]);
-    vec3::copy(center, sphere_point_begin + 3*id_axis);
+    vec3::copy(center_, sphere_point_begin + 3*id_axis);
     vec3::iadd(sphere_point_begin + 3*id_axis, radius_normals + 3*id_axis, -1);
-    vec3::copy(center, sphere_point_end + 3*id_axis);
+    vec3::copy(center_, sphere_point_end + 3*id_axis);
     vec3::iadd(sphere_point_end + 3*id_axis, radius_normals + 3*id_axis);
   }
   for (int id_axis=0; id_axis < 3; ++id_axis) {
@@ -270,7 +270,7 @@ void SphereSlice::solve_plane_low(const int id_axis, const int id_cut,
    */
   // The difference in reduced coordinate between the center of the sphere
   // and the center of the circle.
-  double delta_cut = frac_cut - frac_center[id_cut];
+  double delta_cut = frac_cut - frac_center_[id_cut];
   // The amount lost from the total radius squared.
   double lost_radius_sq = delta_cut*delta_cut/norms_sq[id_cut];
   // The rest of the radius squared is for the size of the circle.
@@ -286,7 +286,7 @@ void SphereSlice::solve_plane_low(const int id_axis, const int id_cut,
 
   // Compute the center of the circle
   double circle_center[3];
-  vec3::copy(center, circle_center);
+  vec3::copy(center_, circle_center);
   vec3::iadd(circle_center, cut_normal, delta_cut/norms_sq[id_cut]);
 
   // Get a vector orthogonal to cut_normal, in the plane of axis;
@@ -324,13 +324,13 @@ void SphereSlice::solve_line_low(const int id_axis, const int id_cut0, const int
   const double* cut1_normal = normals + 3*id_cut1;
 
   // Cuts relative to the center
-  double delta_cut0 = frac_cut0 - frac_center[id_cut0];
-  double delta_cut1 = frac_cut1 - frac_center[id_cut1];
+  double delta_cut0 = frac_cut0 - frac_center_[id_cut0];
+  double delta_cut1 = frac_cut1 - frac_center_[id_cut1];
 
   double line_center[3];
   double lost_radius_sq = compute_plane_intersection(id_cut0, id_cut1,
       delta_cut0, delta_cut1, line_center);
-  vec3::iadd(line_center, center);
+  vec3::iadd(line_center, center_);
 
   // Compute the remaining line radius
   double line_radius_sq = radius_sq - lost_radius_sq;
