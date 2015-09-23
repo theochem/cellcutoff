@@ -56,10 +56,10 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
     }
     norms_sq_[id_axis] = vec3::normsq(axis);
     norms_[id_axis] = sqrt(norms_sq_[id_axis]);
-    frac_radii[id_axis] = radius_*norms_[id_axis];
+    frac_radii_[id_axis] = radius_*norms_[id_axis];
     frac_center_[id_axis] = vec3::dot(center_, axis);
-    sphere_frac_begin[id_axis] = frac_center_[id_axis] - frac_radii[id_axis];
-    sphere_frac_end[id_axis] = frac_center_[id_axis] + frac_radii[id_axis];
+    sphere_frac_begin[id_axis] = frac_center_[id_axis] - frac_radii_[id_axis];
+    sphere_frac_end[id_axis] = frac_center_[id_axis] + frac_radii_[id_axis];
     vec3::copy(axis, radius_normals_ + 3*id_axis);
     vec3::iscale(radius_normals_ + 3*id_axis, radius_/norms_[id_axis]);
     vec3::copy(center_, sphere_point_begin + 3*id_axis);
