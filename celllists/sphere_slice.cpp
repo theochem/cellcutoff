@@ -35,11 +35,11 @@ namespace celllists {
 
 
 SphereSlice::SphereSlice(const double* center, const double* normals, double radius) :
-    center_(center), normals(normals), radius(radius) {
+    center_(center), normals_(normals), radius(radius) {
   // Check sanity of arguments
   if (radius <= 0)
     throw std::domain_error("radius must be strictly positive.");
-  if (vec3::triple(normals, normals + 3, normals + 6) == 0.0)
+  if (vec3::triple(normals_, normals_ + 3, normals_ + 6) == 0.0)
     throw std::domain_error("The three normals must be linearly independent.");
   // Initialize variable data members
   cut_begin[0] = 0.0;
@@ -49,9 +49,9 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
   // Compute from derived data members
   radius_sq = radius*radius;
   for (int id_axis=0; id_axis < 3; ++id_axis) {
-    const double* axis = normals + 3*id_axis;
+    const double* axis = normals_ + 3*id_axis;
     for (int id_cut=0; id_cut < 3; ++id_cut) {
-      const double* cut_normal = normals + 3*id_cut;
+      const double* cut_normal = normals_ + 3*id_cut;
       dots[id_axis + 3*id_cut] = vec3::dot(axis, cut_normal);
     }
     norms_sq[id_axis] = vec3::normsq(axis);
@@ -60,12 +60,12 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
     frac_center_[id_axis] = vec3::dot(center_, axis);
     sphere_frac_begin[id_axis] = frac_center_[id_axis] - frac_radii[id_axis];
     sphere_frac_end[id_axis] = frac_center_[id_axis] + frac_radii[id_axis];
-    vec3::copy(axis, radius_normals + 3*id_axis);
-    vec3::iscale(radius_normals + 3*id_axis, radius/norms[id_axis]);
+    vec3::copy(axis, radius_normals_ + 3*id_axis);
+    vec3::iscale(radius_normals_ + 3*id_axis, radius/norms[id_axis]);
     vec3::copy(center_, sphere_point_begin + 3*id_axis);
-    vec3::iadd(sphere_point_begin + 3*id_axis, radius_normals + 3*id_axis, -1);
+    vec3::iadd(sphere_point_begin + 3*id_axis, radius_normals_ + 3*id_axis, -1);
     vec3::copy(center_, sphere_point_end + 3*id_axis);
-    vec3::iadd(sphere_point_end + 3*id_axis, radius_normals + 3*id_axis);
+    vec3::iadd(sphere_point_end + 3*id_axis, radius_normals_ + 3*id_axis);
   }
   for (int id_axis=0; id_axis < 3; ++id_axis) {
     for (int id_cut=0; id_cut < 3; ++id_cut) {
@@ -75,14 +75,14 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
     }
   }
   for (int id_axis=0; id_axis < 3; ++id_axis) {
-    const double* axis = normals + 3*id_axis;
+    const double* axis = normals_ + 3*id_axis;
     for (int id_cut=0; id_cut < 3; ++id_cut) {
       /* Define a vector orthogonal to cut_normal, in the plane of axis
          and cut_normal. The length of the vector is such that, when added
          to the center of the circle, it just ends on the circle edge. The
          direction is chosen to either minimize or maximise the projection
          on axis. */
-      const double* cut_normal = normals + 3*id_cut;
+      const double* cut_normal = normals_ + 3*id_cut;
       double ortho[3] = {0.0, 0.0, 0.0};
       if (id_cut != id_axis) {
         // Copy of axis -> in plane of axis
@@ -259,10 +259,10 @@ void SphereSlice::solve_plane_low(const int id_axis, const int id_cut,
     double* point_begin, double* point_end) const {
   // Get the axis
   CHECK_ID(id_axis);
-  const double* axis = normals + 3*id_axis;
+  const double* axis = normals_ + 3*id_axis;
   // Get the cut_normal
   CHECK_ID(id_cut);
-  const double* cut_normal = normals + 3*id_cut;
+  const double* cut_normal = normals_ + 3*id_cut;
 
   /* Define the parameters of a circle that is the intersection of
        - the sphere
@@ -319,9 +319,9 @@ void SphereSlice::solve_line_low(const int id_axis, const int id_cut0, const int
   CHECK_ID(id_cut1);
 
   // Select the vectors
-  const double* axis = normals + 3*id_axis;
-  const double* cut0_normal = normals + 3*id_cut0;
-  const double* cut1_normal = normals + 3*id_cut1;
+  const double* axis = normals_ + 3*id_axis;
+  const double* cut0_normal = normals_ + 3*id_cut0;
+  const double* cut1_normal = normals_ + 3*id_cut1;
 
   // Cuts relative to the center
   double delta_cut0 = frac_cut0 - frac_center_[id_cut0];
@@ -360,8 +360,8 @@ double SphereSlice::compute_plane_intersection(const int id_cut0, const int id_c
   CHECK_ID(id_cut1);
 
   // Select the vectors
-  const double* cut0_normal = normals + 3*id_cut0;
-  const double* cut1_normal = normals + 3*id_cut1;
+  const double* cut0_normal = normals_ + 3*id_cut0;
+  const double* cut1_normal = normals_ + 3*id_cut1;
 
   // Find the nearest point where the two planes cross
   double dot00 = norms_sq[id_cut0];
@@ -386,7 +386,7 @@ bool SphereSlice::inside_cuts(const int id_cut, const double* point) const {
   // if id_cut == -1, the test always passes, i.e. bounds are not imposed.
   if (id_cut == -1) return true;
   CHECK_ID(id_cut);
-  const double* cut_normal = normals + 3*id_cut;
+  const double* cut_normal = normals_ + 3*id_cut;
   double frac_cut = vec3::dot(point, cut_normal);
   return (frac_cut > cut_begin[id_cut]) && (frac_cut < cut_end[id_cut]);
 }
