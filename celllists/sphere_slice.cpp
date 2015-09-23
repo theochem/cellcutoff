@@ -54,14 +54,14 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
       const double* cut_normal = normals_ + 3*id_cut;
       dots[id_axis + 3*id_cut] = vec3::dot(axis, cut_normal);
     }
-    norms_sq[id_axis] = vec3::normsq(axis);
-    norms[id_axis] = sqrt(norms_sq[id_axis]);
-    frac_radii[id_axis] = radius_*norms[id_axis];
+    norms_sq_[id_axis] = vec3::normsq(axis);
+    norms_[id_axis] = sqrt(norms_sq_[id_axis]);
+    frac_radii[id_axis] = radius_*norms_[id_axis];
     frac_center_[id_axis] = vec3::dot(center_, axis);
     sphere_frac_begin[id_axis] = frac_center_[id_axis] - frac_radii[id_axis];
     sphere_frac_end[id_axis] = frac_center_[id_axis] + frac_radii[id_axis];
     vec3::copy(axis, radius_normals_ + 3*id_axis);
-    vec3::iscale(radius_normals_ + 3*id_axis, radius_/norms[id_axis]);
+    vec3::iscale(radius_normals_ + 3*id_axis, radius_/norms_[id_axis]);
     vec3::copy(center_, sphere_point_begin + 3*id_axis);
     vec3::iadd(sphere_point_begin + 3*id_axis, radius_normals_ + 3*id_axis, -1);
     vec3::copy(center_, sphere_point_end + 3*id_axis);
@@ -91,7 +91,7 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
         //  -> in plane of axis and cut_normal
         //  -> orthogonal to cut_normal
         vec3::iadd(ortho, cut_normal,
-                   -vec3::dot(axis, cut_normal)/norms_sq[id_cut]);
+                   -vec3::dot(axis, cut_normal)/norms_sq_[id_cut]);
         // Normalize
         vec3::iscale(ortho, 1.0/vec3::norm(ortho));
       }
@@ -272,7 +272,7 @@ void SphereSlice::solve_plane_low(const int id_axis, const int id_cut,
   // and the center of the circle.
   double delta_cut = frac_cut - frac_center_[id_cut];
   // The amount lost from the total radius squared.
-  double lost_radius_sq = delta_cut*delta_cut/norms_sq[id_cut];
+  double lost_radius_sq = delta_cut*delta_cut/norms_sq_[id_cut];
   // The rest of the radius squared is for the size of the circle.
   double circle_radius_sq = radius_sq_ - lost_radius_sq;
   // Check if an intersecting circle exists, if not return;
@@ -287,7 +287,7 @@ void SphereSlice::solve_plane_low(const int id_axis, const int id_cut,
   // Compute the center of the circle
   double circle_center[3];
   vec3::copy(center_, circle_center);
-  vec3::iadd(circle_center, cut_normal, delta_cut/norms_sq[id_cut]);
+  vec3::iadd(circle_center, cut_normal, delta_cut/norms_sq_[id_cut]);
 
   // Get a vector orthogonal to cut_normal, in the plane of axis;
   double ortho[3];
@@ -364,9 +364,9 @@ double SphereSlice::compute_plane_intersection(const int id_cut0, const int id_c
   const double* cut1_normal = normals_ + 3*id_cut1;
 
   // Find the nearest point where the two planes cross
-  double dot00 = norms_sq[id_cut0];
+  double dot00 = norms_sq_[id_cut0];
   double dot01 = dots[id_cut0 + 3*id_cut1];
-  double dot11 = norms_sq[id_cut1];
+  double dot11 = norms_sq_[id_cut1];
   double denom = denoms[id_cut0 + 3*id_cut1];
   double ratio0 = (cut1*dot01 - cut0*dot11)/denom;
   double ratio1 = (cut0*dot01 - cut1*dot00)/denom;

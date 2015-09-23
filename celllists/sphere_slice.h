@@ -94,8 +94,8 @@ class SphereSlice {
 
   // Derived from constant data members upon construction
   double radius_sq_;
-  double norms_sq[3];
-  double norms[3];
+  double norms_sq_[3];
+  double norms_[3];
   double frac_radii[3];
   double frac_center_[3];
   double sphere_frac_begin[3];
