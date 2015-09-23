@@ -104,8 +104,8 @@ class SphereSlice {
   double sphere_point_begin_[9];
   double sphere_point_end_[9];
   double dots_[9];
-  double denoms[9];
-  double cut_ortho[27];
+  double denoms_[9];
+  double cut_ortho_[27];
 };
 
 void compute_begin_end(const double* other_center, const double* ortho,
