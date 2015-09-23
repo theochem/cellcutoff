@@ -101,8 +101,8 @@ class SphereSlice {
   double sphere_frac_begin_[3];
   double sphere_frac_end_[3];
   double radius_normals_[9];
-  double sphere_point_begin[9];
-  double sphere_point_end[9];
+  double sphere_point_begin_[9];
+  double sphere_point_end_[9];
   double dots[9];
   double denoms[9];
   double cut_ortho[27];
