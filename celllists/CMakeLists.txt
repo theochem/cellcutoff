@@ -36,7 +36,6 @@ set(SOURCE_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/decomposition.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/iterators.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/sphere_slice.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/vec3.cpp
 )
 
 # Define header files
