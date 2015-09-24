@@ -28,3 +28,10 @@ cdef extern from "celllists/cell.h" namespace "celllists":
 
         int nvec();
         const double* vecs();
+        const double* gvecs();
+        double volume();
+        double gvolume();
+        const double* lengths();
+        const double* glengths();
+        const double* spacings();
+        const double* gspacings();

@@ -52,12 +52,50 @@ cdef class Cell(object):
         if self._this != NULL:
             del self._this
 
+    property nvec:
+        def __get__(self):
+            return self._this.nvec()
+
     property vecs:
         def __get__(self):
             cdef np.ndarray[double, ndim=2] vecs = np.zeros((3, 3), float)
             memcpy(&vecs[0, 0], self._this.vecs(), sizeof(double)*9);
             return vecs
 
-    property nvec:
+    property gvecs:
         def __get__(self):
-            return self._this.nvec()
+            cdef np.ndarray[double, ndim=2] gvecs = np.zeros((3, 3), float)
+            memcpy(&gvecs[0, 0], self._this.gvecs(), sizeof(double)*9);
+            return gvecs
+
+    property volume:
+        def __get__(self):
+            return self._this.volume()
+
+    property gvolume:
+        def __get__(self):
+            return self._this.gvolume()
+
+    property lengths:
+        def __get__(self):
+            cdef np.ndarray[double, ndim=1] lengths = np.zeros(3, float)
+            memcpy(&lengths[0], self._this.lengths(), sizeof(double)*3);
+            return lengths
+
+    property glengths:
+        def __get__(self):
+            cdef np.ndarray[double, ndim=1] glengths = np.zeros(3, float)
+            memcpy(&glengths[0], self._this.glengths(), sizeof(double)*3);
+            return glengths
+
+    property spacings:
+        def __get__(self):
+            cdef np.ndarray[double, ndim=1] spacings = np.zeros(3, float)
+            memcpy(&spacings[0], self._this.spacings(), sizeof(double)*3);
+            return spacings
+
+    property gspacings:
+        def __get__(self):
+            cdef np.ndarray[double, ndim=1] gspacings = np.zeros(3, float)
+            memcpy(&gspacings[0], self._this.gspacings(), sizeof(double)*3);
+            return gspacings
