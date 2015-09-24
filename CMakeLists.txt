@@ -32,20 +32,21 @@ set(CELLLISTS_VERSION ${CELLLISTS_MAJOR}.${CELLLISTS_MINOR}.${CELLLISTS_PATCH})
 set(CELLLISTS_SOVERSION ${CELLLISTS_MAJOR}.${CELLLISTS_MINOR})
 set(PROJECT_BRIEF "A 3D domain decomposition library")
 
-# Configure the compiler
-set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wconversion -Wextra -Werror -pedantic")
+# General compiler flags
+set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wconversion -Wextra")
 
 # Additional compiler settings when doing a debug build
 string(TOUPPER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE)
 if(CMAKE_BUILD_TYPE STREQUAL "DEBUG")
-    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # These settings are only useful in dev mode.
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -pedantic")
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         # When coding (debug mode), we want to know when there might be trouble ...
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -coverage")
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_CXX_FLAGS} -coverage")
         set(CELLLISTS_DO_COVERAGE "ON")
     endif()
 endif()
-
 
 # Compilation of celllists according to celllists/CMakeLists.txt
 add_subdirectory(celllists)

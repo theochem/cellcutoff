@@ -1,9 +1,9 @@
 *.o
 *.so*
 *.pyc
-build
 debug
-install
+release
+relwithdebinfo
 tmp
 python-celllists/celllists/celllists.cpp
 python-celllists/build

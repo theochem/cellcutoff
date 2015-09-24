@@ -461,14 +461,14 @@ TEST_P(CellTestP, iwrap_mic_random) {
 
     // For test sufficiency check
     cell->to_frac(delta, frac);
-    for (int ivec=0; ivec < nvec; ++ivec) {
+    for (int ivec = 0; ivec < nvec; ++ivec) {
       if (fabs(frac[ivec] > 0.5)) ++num_wrapped;
     }
 
     // Actual test
     cell->iwrap_mic(delta);
     cell->to_frac(delta, frac);
-    for (int ivec=0; ivec < nvec; ++ivec) {
+    for (int ivec = 0; ivec < nvec; ++ivec) {
       EXPECT_LE(-0.5, frac[ivec]);
       EXPECT_GT(0.5, frac[ivec]);
     }
@@ -488,14 +488,14 @@ TEST_P(CellTestP, iwrap_box_random) {
 
     // For test sufficiency check
     cell->to_frac(delta, frac);
-    for (int ivec=0; ivec < nvec; ++ivec) {
+    for (int ivec = 0; ivec < nvec; ++ivec) {
       if (fabs(frac[ivec] > 0.5)) ++num_wrapped;
     }
 
     // Actual test
     cell->iwrap_box(delta);
     cell->to_frac(delta, frac);
-    for (int ivec=0; ivec < nvec; ++ivec) {
+    for (int ivec = 0; ivec < nvec; ++ivec) {
       EXPECT_LE(0.0, frac[ivec]);
       EXPECT_GT(1.0, frac[ivec]);
     }
