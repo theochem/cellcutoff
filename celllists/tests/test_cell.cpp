@@ -238,6 +238,7 @@ TEST_P(CellTestP, create_subcell_simple) {
   cl::Cell cell(vecs, nvec);
   int shape[3] = {-1, -1, -1};
   double threshold = 0.1;
+  EXPECT_THROW(cell.create_subcell(-1.0, nullptr), std::domain_error);
   std::unique_ptr<cl::Cell> subcell(cell.create_subcell(threshold, shape));
   EXPECT_EQ(3, subcell->nvec());
   EXPECT_EQ(0.1, subcell->vecs()[0]);

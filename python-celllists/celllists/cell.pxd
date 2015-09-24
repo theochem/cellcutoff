@@ -24,14 +24,16 @@
 cdef extern from "celllists/cell.h" namespace "celllists":
     cdef cppclass Cell:
         Cell(double* vecs, int nvec) except +
-        Cell();
+        Cell()
 
-        int nvec();
-        const double* vecs();
-        const double* gvecs();
-        double volume();
-        double gvolume();
-        const double* lengths();
-        const double* glengths();
-        const double* spacings();
-        const double* gspacings();
+        Cell* create_subcell(const double threshold, int* shape) except +
+
+        int nvec()
+        const double* vecs()
+        const double* gvecs()
+        double volume()
+        double gvolume()
+        const double* lengths()
+        const double* glengths()
+        const double* spacings()
+        const double* gspacings()

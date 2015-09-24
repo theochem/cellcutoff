@@ -35,8 +35,10 @@ __all__ = ['Cell']
 
 
 cdef class Cell(object):
-    def __cinit__(self, np.ndarray[double, ndim=2] vecs=None):
-        if vecs is None:
+    def __cinit__(self, np.ndarray[double, ndim=2] vecs=None, initvoid=False):
+        if initvoid:
+            self._this = NULL
+        elif vecs is None:
             self._this = new cell.Cell()
         else:
             assert vecs.flags['C_CONTIGUOUS']
@@ -51,6 +53,13 @@ cdef class Cell(object):
     def __dealloc__(self):
         if self._this != NULL:
             del self._this
+
+    def create_subcell(self, double threshold):
+        cdef np.ndarray[int, ndim=1] shape = np.zeros(3, int)
+        cdef cell.Cell* cpp_cell = self._this.create_subcell(threshold, &shape[0])
+        cell = Cell(initvoid=True)
+        cell._this = cpp_cell
+        return cell, shape
 
     property nvec:
         def __get__(self):

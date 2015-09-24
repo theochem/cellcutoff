@@ -144,6 +144,9 @@ Cell* Cell::create_reciprocal() const {
 
 
 Cell* Cell::create_subcell(const double threshold, int* shape) const {
+  // Check arguments
+  if (threshold <= 0.0)
+    throw std::domain_error("threshold must be positive for create_subcell.");
   // Start by copying all three cell vectors, active or not.
   double new_vecs[9];
   std::copy(vecs_, vecs_ + 9, new_vecs);
