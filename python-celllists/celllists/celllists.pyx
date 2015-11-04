@@ -63,15 +63,15 @@ cdef class Cell(object):
             del self._this
 
     def subcell(self, double threshold):
-        cdef np.ndarray[int, ndim=1] shape = np.zeros(3, int)
+        cdef np.ndarray[int, ndim=1] shape = np.zeros(3, np.intc)
         cdef cell.Cell* cpp_cell = self._this.create_subcell(threshold, &shape[0])
-        cell = Cell(initvoid=True)
+        cdef Cell cell = Cell.__new__(Cell, None, initvoid=True)
         cell._this = cpp_cell
         return cell, shape
 
     def reciprocal(self):
         cdef cell.Cell* cpp_cell = self._this.create_reciprocal()
-        cell = Cell(initvoid=True)
+        cdef Cell cell = Cell.__new__(Cell, None, initvoid=True)
         cell._this = cpp_cell
         return cell
 
