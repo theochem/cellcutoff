@@ -27,6 +27,7 @@ cdef extern from "celllists/cell.h" namespace "celllists":
         Cell()
 
         Cell* create_subcell(const double threshold, int* shape) except +
+        Cell* create_reciprocal()
 
         int nvec()
         const double* vecs()

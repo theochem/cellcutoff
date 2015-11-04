@@ -62,12 +62,18 @@ cdef class Cell(object):
         if self._this != NULL:
             del self._this
 
-    def create_subcell(self, double threshold):
+    def subcell(self, double threshold):
         cdef np.ndarray[int, ndim=1] shape = np.zeros(3, int)
         cdef cell.Cell* cpp_cell = self._this.create_subcell(threshold, &shape[0])
         cell = Cell(initvoid=True)
         cell._this = cpp_cell
         return cell, shape
+
+    def reciprocal(self):
+        cdef cell.Cell* cpp_cell = self._this.create_reciprocal()
+        cell = Cell(initvoid=True)
+        cell._this = cpp_cell
+        return cell
 
     property nvec:
         def __get__(self):
