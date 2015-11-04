@@ -117,6 +117,50 @@ cdef class Cell(object):
             memcpy(&gspacings[0], self._this.gspacings(), sizeof(double)*3);
             return gspacings
 
+    def iwrap_mic(self, delta):
+        if isinstance(delta, np.ndarray):
+            if len(delta.shape) == 1:
+                self._iwrap_mic_one(delta)
+            elif len(delta.shape) == 2:
+                self._iwrap_mic_many(delta)
+            else:
+                raise TypeError('The argument delta must be a one- or two-dimensional numpy array.')
+        else:
+            raise TypeError('The argument delta must be a numpy array.')
+
+    def _iwrap_mic_one(self, np.ndarray[double, ndim=1] delta not None):
+        check_array_arg('delta', delta, (3,))
+        self._this.iwrap_mic(&delta[0])
+
+    def _iwrap_mic_many(self, np.ndarray[double, ndim=2] deltas not None):
+        check_array_arg('deltas', deltas, (-1, 3))
+        cdef int i
+        cdef int n = deltas.shape[0]
+        for i in range(n):
+            self._this.iwrap_mic(&deltas[i, 0])
+
+    def iwrap_box(self, delta):
+        if isinstance(delta, np.ndarray):
+            if len(delta.shape) == 1:
+                self._iwrap_box_one(delta)
+            elif len(delta.shape) == 2:
+                self._iwrap_box_many(delta)
+            else:
+                raise TypeError('The argument delta must be a one- or two-dimensional numpy array.')
+        else:
+            raise TypeError('The argument delta must be a numpy array.')
+
+    def _iwrap_box_one(self, np.ndarray[double, ndim=1] delta not None):
+        check_array_arg('delta', delta, (3,))
+        self._this.iwrap_box(&delta[0])
+
+    def _iwrap_box_many(self, np.ndarray[double, ndim=2] deltas not None):
+        check_array_arg('deltas', deltas, (-1, 3))
+        cdef int i
+        cdef int n = deltas.shape[0]
+        for i in range(n):
+            self._this.iwrap_box(&deltas[i, 0])
+
     def ranges_cutoff(self, np.ndarray[double, ndim=1] center not None, double cutoff):
         check_array_arg('center', center, (3,))
         cdef np.ndarray[int, ndim=1] ranges_begin = np.zeros(3, np.intc)
