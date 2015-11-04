@@ -37,3 +37,6 @@ cdef extern from "celllists/cell.h" namespace "celllists":
         const double* glengths()
         const double* spacings()
         const double* gspacings()
+
+        size_t ranges_cutoff(const double* center, double cutoff, int* ranges_begin,
+            int* ranges_end) const;

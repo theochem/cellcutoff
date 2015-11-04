@@ -34,6 +34,15 @@ cimport cell
 __all__ = ['Cell']
 
 
+def check_array_arg(name, arg, expected_shape):
+    if not arg.flags['C_CONTIGUOUS']:
+        raise TypeError('Argument %s must be C_CONTIHUOUS.' % arg)
+    for i, n in enumerate(expected_shape):
+        if n >= 0 and arg.shape[i] != n:
+            raise TypeError(('Axis %i of argument %s has length %i but while '
+                             'expecting %i') % (i, name, arg.shape[i], n))
+
+
 cdef class Cell(object):
     def __cinit__(self, np.ndarray[double, ndim=2] vecs=None, initvoid=False):
         if initvoid:
@@ -41,9 +50,8 @@ cdef class Cell(object):
         elif vecs is None:
             self._this = new cell.Cell()
         else:
-            assert vecs.flags['C_CONTIGUOUS']
+            check_array_arg('vecs', vecs, (-1, 3))
             assert vecs.shape[0] <= 3
-            assert vecs.shape[1] == 3
             nvec = vecs.shape[0]
             self._this = new cell.Cell(&vecs[0,0], nvec)
 
@@ -108,3 +116,10 @@ cdef class Cell(object):
             cdef np.ndarray[double, ndim=1] gspacings = np.zeros(3, float)
             memcpy(&gspacings[0], self._this.gspacings(), sizeof(double)*3);
             return gspacings
+
+    def ranges_cutoff(self, np.ndarray[double, ndim=1] center not None, double cutoff):
+        check_array_arg('center', center, (3,))
+        cdef np.ndarray[int, ndim=1] ranges_begin = np.zeros(3, np.intc)
+        cdef np.ndarray[int, ndim=1] ranges_end = np.zeros(3, np.intc)
+        self._this.ranges_cutoff(&center[0], cutoff, &ranges_begin[0], &ranges_end[0])
+        return ranges_begin, ranges_end
