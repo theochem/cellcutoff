@@ -21,6 +21,8 @@
 #--
 
 
+from libcpp cimport bool
+
 cdef extern from "celllists/cell.h" namespace "celllists":
     cdef cppclass Cell:
         Cell(double* vecs, int nvec) except +
@@ -38,6 +40,11 @@ cdef extern from "celllists/cell.h" namespace "celllists":
         const double* glengths()
         const double* spacings()
         const double* gspacings()
+        const bool cubic()
+        const bool cuboid()
+
+        void to_frac(double* cart, double* frac)
+        void to_cart(double* frac, double* cart)
 
         void iwrap_mic(double* delta);
         void iwrap_box(double* delta);

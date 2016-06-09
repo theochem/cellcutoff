@@ -123,6 +123,26 @@ cdef class Cell(object):
             memcpy(&gspacings[0], self._this.gspacings(), sizeof(double)*3);
             return gspacings
 
+    property cubic:
+        def __get__(self):
+            return self._this.cubic()
+
+    property cuboid:
+        def __get__(self):
+            return self._this.cuboid()
+
+    def to_frac(self, np.ndarray[double, ndim=1] cart not None):
+        check_array_arg('cart', cart, (3,))
+        cdef np.ndarray[double, ndim=1] frac = np.zeros(3, float)
+        self._this.to_frac(&cart[0], &frac[0])
+        return frac
+
+    def to_cart(self, np.ndarray[double, ndim=1] frac not None):
+        check_array_arg('frac', frac, (3,))
+        cdef np.ndarray[double, ndim=1] cart = np.zeros(3, float)
+        self._this.to_cart(&frac[0], &cart[0])
+        return cart
+
     def iwrap_mic(self, delta):
         if isinstance(delta, np.ndarray):
             if len(delta.shape) == 1:
