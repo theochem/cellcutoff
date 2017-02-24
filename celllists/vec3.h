@@ -22,6 +22,7 @@
 #ifndef CELLLISTS_VEC3_H_
 #define CELLLISTS_VEC3_H_
 
+#include <cmath>
 
 namespace celllists {
 namespace vec3 {

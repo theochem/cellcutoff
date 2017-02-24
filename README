@@ -1,0 +1,13 @@
+CellList is a 3D domain decomposition library.
+
+Build and install instructions (in home directory):
+
+    mkdir build
+    cd build
+    cmake .. -DCMAKE_BUILD_TYPE=release -DCMAKE_INSTALL_PREFIX=${HOME}/.local
+    make
+    make install
+
+Testing instructions (in the build directory, after install):
+
+    make check
