@@ -33,7 +33,7 @@ def parse_cpath():
 
 setup(
     name='python-celllists',
-    version='0.0.0',
+    version='0.0.0b1',
     description='CellList is a 3D domain decomposition library.',
     author='Toon Verstraelen',
     author_email='Toon.Verstraelen@UGent.be',

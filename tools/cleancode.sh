@@ -4,7 +4,10 @@ echo "Cleaning code in ${PWD} and subdirectories."
 # here.
 rm -vf python-celllists/celllists/celllists.cpp
 rm -vf python-celllists/celllists/*.pyc
+rm -vf python-celllists/MANIFEST
 rm -vfr python-celllists/build
+rm -vfr python-celllists/dist
+rm -vf *.tar.bz2
 # split output of find at newlines.
 IFS=$'\n'
 # send all relevant files to the code cleaner

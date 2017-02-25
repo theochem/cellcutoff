@@ -7,3 +7,4 @@ relwithdebinfo
 tmp
 python-celllists/celllists/celllists.cpp
 python-celllists/build
+python-celllists/MANIFEST
