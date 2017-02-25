@@ -24,7 +24,7 @@ project(CellLists CXX)
 # Version information
 set(CELLLISTS_MAJOR 0)
 set(CELLLISTS_MINOR 0)
-set(CELLLISTS_PATCH 0)
+set(CELLLISTS_PATCH 0b1)
 
 set(CELLLISTS_VERSION ${CELLLISTS_MAJOR}.${CELLLISTS_MINOR}.${CELLLISTS_PATCH})
 set(CELLLISTS_SOVERSION ${CELLLISTS_MAJOR}.${CELLLISTS_MINOR})
@@ -32,7 +32,7 @@ set(PROJECT_BRIEF "A 3D domain decomposition library")
 
 # The googletest snippets were taken from:
 #    http://crascit.com/2015/07/25/cmake-gtest/
-# and modified to work with googletest-1.7.0 instead of the latest git revision.
+# and modified to work with googletest-1.8.0 instead of the latest git revision.
 
 # Download and unpack googletest at configure time
 configure_file(CMakeListsGTest.txt.in
