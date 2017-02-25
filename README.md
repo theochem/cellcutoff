@@ -29,7 +29,6 @@ Build (for installation in home directory):
     cd build
     cmake .. -DCMAKE_BUILD_TYPE=release -DCMAKE_INSTALL_PREFIX=${HOME}/.local
     make
-    make install
 
 Testing (in the build directory):
 
