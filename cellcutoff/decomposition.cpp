@@ -1,14 +1,14 @@
-// CellList is a 3D domain decomposition library.
-// Copyright (C) 2011-2015 The CellList Development Team
+// CellCutoff is a library for periodic boundary conditions and real-space cutoff calculations.
+// Copyright (C) 2017 The CellCutoff Development Team
 //
-// This file is part of CellList.
+// This file is part of CellCutoff.
 //
-// CellList is free software; you can redistribute it and/or
+// CellCutoff is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 3
 // of the License, or (at your option) any later version.
 //
-// CellList is distributed in the hope that it will be useful,
+// CellCutoff is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
@@ -16,21 +16,21 @@
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, see <http://www.gnu.org/licenses/>
 //
-//--
+// --
 
 
-#include "celllists/decomposition.h"
+#include "cellcutoff/decomposition.h"
 
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <vector>
 
-#include "celllists/cell.h"
-#include "celllists/vec3.h"
+#include "cellcutoff/cell.h"
+#include "cellcutoff/vec3.h"
 
 
-namespace celllists {
+namespace cellcutoff {
 
 
 Point::Point(const double* cart) {
@@ -153,6 +153,6 @@ CellMap* create_cell_map(const void* points, size_t npoint, size_t point_size) {
 }
 
 
-}  // namespace celllists
+}  // namespace cellcutoff
 
 // vim: textwidth=90 et ts=2 sw=2

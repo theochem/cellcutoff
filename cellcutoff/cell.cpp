@@ -1,14 +1,14 @@
-// CellList is a 3D domain decomposition library.
-// Copyright (C) 2011-2015 The CellList Development Team
+// CellCutoff is a library for periodic boundary conditions and real-space cutoff calculations.
+// Copyright (C) 2017 The CellCutoff Development Team
 //
-// This file is part of CellList.
+// This file is part of CellCutoff.
 //
-// CellList is free software; you can redistribute it and/or
+// CellCutoff is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 3
 // of the License, or (at your option) any later version.
 //
-// CellList is distributed in the hope that it will be useful,
+// CellCutoff is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
@@ -16,20 +16,20 @@
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, see <http://www.gnu.org/licenses/>
 //
-//--
+// --
 
 
-#include "celllists/cell.h"
+#include "cellcutoff/cell.h"
 
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
 #include <vector>
 
-#include "celllists/vec3.h"
+#include "cellcutoff/vec3.h"
 
 
-namespace celllists {
+namespace cellcutoff {
 
 
 Cell::Cell(const double* vecs, const int nvec): nvec_(nvec) {
@@ -102,7 +102,7 @@ Cell::Cell(const double* vecs, const int nvec): nvec_(nvec) {
       double norm = vec3::norm(vecs_ + 3);
       vec3::iscale(vecs_ + 3, 1.0/norm);
       // the rest is done in case 2, so no break here!
-    }
+    }  //-fallthrough
     case 2: {
       // Add one vec that is normalized and orthogonal to the two given
       // vecs. The three vectors will be right-handed.
@@ -344,6 +344,6 @@ void Cell::bars_cutoff_low(SphereSlice* slice, int ivec, std::vector<int>* bars)
 }
 
 
-}  // namespace celllists
+}  // namespace cellcutoff
 
 // vim: textwidth=90 et ts=2 sw=2

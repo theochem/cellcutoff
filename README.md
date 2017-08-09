@@ -1,4 +1,4 @@
-CellList is a 3D domain decomposition library.
+CellCutoff is a library for periodic boundary conditions and real-space cutoff calculations.
 
 Dependencies
 ============
@@ -20,7 +20,7 @@ environment variables must be set, e.g. in your ``~/.bashrc``.
     export LD_LIBRARY_PATH=${HOME}/.local/lib:${HOME}/.local/lib64:${LD_LIBRARY_PATH}
 
 
-Installation of ``celllists``
+Installation of ``cellcutoff``
 =============================
 
 Build (for installation in home directory):
@@ -39,12 +39,12 @@ Install:
     make install
 
 
-Installation of ``python-celllists``
+Installation of ``python-cellcutoff``
 ====================================
 
 In-place build and test
 
-    cd python-celllists
+    cd python-cellcutoff
     ./setup.py build_ext -i -L${LD_LIBRARY_PATH}
     nosetests -v
 

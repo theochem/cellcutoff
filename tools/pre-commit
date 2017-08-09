@@ -11,8 +11,8 @@ if [[ `git diff --cached --check` ]]; then
 fi
 
 # Check for untracked files (not in .gitignore)
-if [[ `git status -u celllists COPYING HEADER python-celllists tools *.* -s | grep "^??"` ]]; then
+if [[ `git status -u cellcutoff COPYING HEADER python-cellcutoff tools *.* -s | grep "^??"` ]]; then
     echo -e "${red}Commit failed: untracked files (not in .gitignore).${color_end}"
-    git status -u celllists COPYING HEADER python-celllists tools -s | grep "^??"
+    git status -u cellcutoff COPYING HEADER python-cellcutoff tools -s | grep "^??"
     exit 1
 fi

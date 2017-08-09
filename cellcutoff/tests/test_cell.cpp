@@ -1,14 +1,14 @@
-// CellList is a 3D domain decomposition library.
-// Copyright (C) 2011-2015 The CellList Development Team
+// CellCutoff is a library for periodic boundary conditions and real-space cutoff calculations.
+// Copyright (C) 2017 The CellCutoff Development Team
 //
-// This file is part of CellList.
+// This file is part of CellCutoff.
 //
-// CellList is free software; you can redistribute it and/or
+// CellCutoff is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 3
 // of the License, or (at your option) any later version.
 //
-// CellList is distributed in the hope that it will be useful,
+// CellCutoff is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, see <http://www.gnu.org/licenses/>
 //
-//--
+// --
 
 
 #include <cmath>
@@ -26,15 +26,15 @@
 
 #include <gtest/gtest.h>
 
-#include <celllists/cell.h>
-#include <celllists/iterators.h>
-#include <celllists/vec3.h>
+#include <cellcutoff/cell.h>
+#include <cellcutoff/iterators.h>
+#include <cellcutoff/vec3.h>
 
 #include "common.h"
 
 
-namespace cl = celllists;
-namespace vec3 = celllists::vec3;
+namespace cl = cellcutoff;
+namespace vec3 = cellcutoff::vec3;
 
 
 // Fixtures
@@ -765,7 +765,7 @@ TEST_P(CellTestP, signed_volume) {
     std::unique_ptr<cl::Cell> cell(create_random_cell(irep));
     double sv = vec3::triple(cell->vec(0), cell->vec(1), cell->vec(2));
     EXPECT_NEAR(cell->volume(), fabs(sv), EPS);
-    if (nvec < 3) EXPECT_LT(0.0, sv);
+    if (nvec < 3) { EXPECT_LT(0.0, sv); }
   }
 }
 

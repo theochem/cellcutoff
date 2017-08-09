@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# CellList is a 3D domain decomposition library.
-# Copyright (C) 2011-2015 The CellList Development Team
+# CellCutoff is a library for periodic boundary conditions and real-space cutoff calculations.
+# Copyright (C) 2017 The CellCutoff Development Team
 #
-# This file is part of CellList.
+# This file is part of CellCutoff.
 #
-# CellList is free software; you can redistribute it and/or
+# CellCutoff is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 3
 # of the License, or (at your option) any later version.
 #
-# CellList is distributed in the hope that it will be useful,
+# CellCutoff is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
-#--
+# --
 
 import numpy as np
 from distutils.core import setup
@@ -32,21 +32,21 @@ def parse_cpath():
 
 
 setup(
-    name='python-celllists',
-    version='0.0.0b1',
-    description='CellList is a 3D domain decomposition library.',
+    name='python-cellcutoff',
+    version='0.0.0',
+    description='CellCutoff is a ibrary for periodic boundary conditions and real-space cutoff calculations.',
     author='Toon Verstraelen',
     author_email='Toon.Verstraelen@UGent.be',
     cmdclass = {'build_ext': build_ext},
-    packages = ['celllists'],
+    packages = ['cellcutoff'],
     package_data = {
-        'celllists': ['celllists.pxd', 'cell.pxd'],
+        'cellcutoff': ['cellcutoff.pxd', 'cell.pxd'],
     },
     ext_modules=[
-        Extension("celllists.celllists",
-            sources=['celllists/celllists.pyx'],
-            depends=['celllists/celllists.pxd', 'celllists/cell.pxd'],
-            libraries=['celllists'],
+        Extension("cellcutoff.cellcutoff",
+            sources=['cellcutoff/cellcutoff.pyx'],
+            depends=['cellcutoff/cellcutoff.pxd', 'cellcutoff/cell.pxd'],
+            libraries=['cellcutoff'],
             include_dirs=[np.get_include()] + parse_cpath(),
             extra_compile_args=['-std=c++11', '-Wall', '-pedantic'],
             language="c++")],

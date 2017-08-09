@@ -1,14 +1,15 @@
-# CellList is a 3D domain decomposition library.
-# Copyright (C) 2011-2015 The CellList Development Team
+# -*- coding: utf-8 -*-
+# CellCutoff is a library for periodic boundary conditions and real-space cutoff calculations.
+# Copyright (C) 2017 The CellCutoff Development Team
 #
-# This file is part of CellList.
+# This file is part of CellCutoff.
 #
-# CellList is free software; you can redistribute it and/or
+# CellCutoff is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 3
 # of the License, or (at your option) any later version.
 #
-# CellList is distributed in the hope that it will be useful,
+# CellCutoff is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
@@ -16,19 +17,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
-#--
+# --
 
 cmake_minimum_required(VERSION 3.1)
-project(CellLists CXX)
+project(CellCutoff CXX)
 
 # Version information
-set(CELLLISTS_MAJOR 0)
-set(CELLLISTS_MINOR 0)
-set(CELLLISTS_PATCH 0b1)
+set(CELLCUTOFF_MAJOR 0)
+set(CELLCUTOFF_MINOR 0)
+set(CELLCUTOFF_PATCH 0)
 
-set(CELLLISTS_VERSION ${CELLLISTS_MAJOR}.${CELLLISTS_MINOR}.${CELLLISTS_PATCH})
-set(CELLLISTS_SOVERSION ${CELLLISTS_MAJOR}.${CELLLISTS_MINOR})
-set(PROJECT_BRIEF "A 3D domain decomposition library")
+set(CELLCUTOFF_VERSION ${CELLCUTOFF_MAJOR}.${CELLCUTOFF_MINOR}.${CELLCUTOFF_PATCH})
+set(CELLCUTOFF_SOVERSION ${CELLCUTOFF_MAJOR}.${CELLCUTOFF_MINOR})
+set(PROJECT_BRIEF "Library for periodic boundary conditions and real-space cutoff calculations")
 
 # The googletest snippets were taken from:
 #    http://crascit.com/2015/07/25/cmake-gtest/
@@ -73,14 +74,14 @@ if(CMAKE_BUILD_TYPE STREQUAL "DEBUG")
         # When coding (debug mode), we want to know when there might be trouble ...
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -coverage")
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_CXX_FLAGS} -coverage")
-        set(CELLLISTS_DO_COVERAGE "ON")
+        set(CELLCUTOFF_DO_COVERAGE "ON")
         # Google test uses comparisons between signed and unsigned ...
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-sign-compare")
     endif()
 endif()
 
-# Compilation of celllists according to celllists/CMakeLists.txt
-add_subdirectory(celllists)
+# Compilation of cellcutoff according to cellcutoff/CMakeLists.txt
+add_subdirectory(cellcutoff)
 
 # Documentation with doxygen
 find_package(Doxygen)
