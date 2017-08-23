@@ -4,8 +4,10 @@ env:
   #- MYCONDAPY=3.5
   #- MYCONDAPY=3.6
   global:
-    - CPPPKG=cellcutoff
-    - PYPKG=python-cellcutoff
+    - PROJECTNAME=cellcutoff
+    - PYDIR=python-${PROJECTNAME}
+    - CCP_CONDA_PKG=${PROJECTNAME}
+    - PY_CONDA_PKG=python-${PROJECTNAME}
     - GITHUB_REPO_NAME=theochem/cellcutoff
 
 # Do not use Travis Python to save some time.
@@ -56,29 +58,47 @@ install:
 - conda info -a
 
 script:
+# --- CPP ---
 # Make a debug build in-place, for testing with coverage
 - (mkdir debug;
   cd debug;
   cmake cmake -DCMAKE_BUILD_TYPE=debug ..;
   make;
-  ./cellcutoff/tests/test_cellcutoff)
+  ./${PROJECTNAME}/tests/test_${PROJECTNAME})
 
 # Build the conda package
 - git fetch origin --tags
 - conda build -q tools/conda.recipe
 
-## Build source package, should work too and needed for deployment to Github and
-## PyPI.
-#- python setup.py sdist
-
 # Install Conda package
-- conda install --use-local $CPPPKG
+- conda install --use-local ${CCP_CONDA_PKG}
 
 # Run the tests
-- ${CONDA_PREFIX}/libexec/${CPPPKG}/test_${CPPPKG}
+- ${CONDA_PREFIX}/libexec/${PROJECTNAME}/test_${PROJECTNAME}
 
-## Run tests out of source tree, to make sure that installed version is tested.
-#- (cd; nosetests $PYPKG -v --detailed-errors --with-coverage --cover-package=$PYPKG --#cover-tests --cover-erase --cover-inclusive --cover-branches --cover-xml)
+# TODO: make source package for github
+
+# --- PYTHON ---
+
+# Build source package, should work too and needed for deployment to Github and
+# PyPI.
+- (cd ${PYDIR}; python setup.py sdist)
+
+# Build extension in-place, needed to enable coverage debug options that we do not want in
+# the installed version
+- (cd ${PYDIR}; python setup.py build_ext -i --define CYTHON_TRACE_NOGIL)
+
+# Run the unit tests with coverage, from the in-place build
+- (cd ${PYDIR}; nosetests ${PROJECTNAME} -v --detailed-errors --with-coverage --cover-package=${PROJECTNAME} --cover-ests --cover-erase --cover-inclusive --cover-branches --cover-xml)
+
+# Build the conda package
+- (cd ${PYDIR}; conda build -q tools/conda.recipe)
+
+# Install Conda package
+- conda install --use-local ${PY_CONDA_PKG}
+
+# Run tests out of source tree, to make sure that installed version is tested.
+- (cd; nosetests nosetests ${PROJECTNAME} -v --detailed-errors)
 
 #after_success:
 # Upload the coverage analysis
