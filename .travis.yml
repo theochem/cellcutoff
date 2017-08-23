@@ -4,10 +4,14 @@ env:
   #- MYCONDAPY=3.5
   #- MYCONDAPY=3.6
   global:
+    # ANACONDA_TOKEN
+    - secure: "Az9gLS8W9mdmM0Cg6WOybBW+cRL6Led04D32h+h223OMjgqC5erzkBRilrkmhuIZnK/n1FdnhNsWq2kRxdKqBtTEcx6u4M0PaVjnHdoD88ByB2a1CdWifir0Y2WvDim2e/WOsvQseIuzIpvOAYeKjRfw+yYxLPh0Yw8vCtAVtL949nBk8EBeB94Ih8LVXBA7eMyeyHGBMgHhKsnSGGlDwHlGQvCPoLdg/zlq/x3tcaYR4FrhNMex9DWpFws6dXAxSw54AvR0sxGmx+DdswEm+A6nJwSeL5T4XeHILKN4G+Lz0Mqi2A0FwtL98Z41UgwSlm+P88Y5qXmX9Ia65T/bKa+LNaCRlruS80WBkIU4XsBDb5nKy9eSP2MMTBF33jHnYCnSthIQyIYZIBSvxMLWS+TPiNNWAGZCX0rXL8wno2Udz6FEgZXvUmy2QnpopHaZezTNuqA+8gL3WCuidw4WPWFsS/exCa7FMZAX13xT1lhpyXibOVi7lDGfvSJZlo+2Csd7imdVY+GPlA0hLGJHeewhZtbYIZXkYRPe1PEFj/l0rdSMj7YNSeCw/IFfTpaeyxPV/EQ84B6cnJin9Y1hcycueM5EGt8A/4XhTq7IfzjYRw8t52UyETetQEQeIp1dvqVR+bf0mGK+dxiUqQk4ZJuCQdjStXtFx0fm1TPmXbs="
+    # GITHUB_TOKEN
+    - secure: "uykwiXzyEllyZ8RdzPd9RXmP6YbqKRwzdVwhWiCssPjb8XQnTLYfIwNmvRjEInRV4BHxTFlGTuH+1dkxw5LXIe4Pl3ulc52ax4ztQNToKr2abZGiHTYIdZnuiunw0bRJo1LDckqdb5rhy1cgXtzfol7NIF3hkPwOHiwS31hfHszV7Wa3J8K7G+gnUTSGHMbiPN55L+uqLPAgrah0fumlwcjEGsxB1BwEP42ZEHdIlb+mtcv0C6rJpfopeN0xVuaqk4AMtpgZ8YiwSiCxbMiRYxoNOPjRL5+8HmnLGyzzMLT0T9dVqos9oDuUsVhYrzBA8unK6br8QVPJTZ62izjeHMTiSYIs8SJsuT4GVT4PxzXDoS746f4ljwDdG0f/KxlkEo2OUV4yWzcRJZvfdEnaPcuKslD/MMKtAMQqjsZwOsiU/GdStDh1YvPOfFPsKthY9o8Zkdu526d6tpUivR+kBSMuiXeVdwltZinEyhOwpSoWalodZybCPvAwSGesx68MQRVmfFHoi52f4AQbuTLbr0IxN87RRrMFvLvI+3pFTmLXSwi1iXdfwuPMlPRSEwGdbwMn+QhKqFadBqYzXdY901nfT4jmOO2SfHGNyjVT4yKj1QZI6Hgu0uk3eOROhxsGvJF8u5A1sA8g6Ee3dbGE4UZ0AmSnWZrG50m3uMsMNwE="
     - PROJECTNAME=cellcutoff
     - PYDIR=python-${PROJECTNAME}
-    - CCP_CONDA_PKG=${PROJECTNAME}
-    - PY_CONDA_PKG=python-${PROJECTNAME}
+    - CPPNAME=${PROJECTNAME}
+    - PYNAME=python-${PROJECTNAME}
     - GITHUB_REPO_NAME=theochem/cellcutoff
 
 # Do not use Travis Python to save some time.
@@ -74,7 +78,7 @@ script:
 - conda build -q tools/conda.recipe
 
 # Install Conda package
-- conda install --use-local ${CCP_CONDA_PKG}
+- conda install --use-local ${CPPNAME}
 
 # Run the tests
 - ${CONDA_PREFIX}/libexec/${PROJECTNAME}/test_${PROJECTNAME}
@@ -82,8 +86,7 @@ script:
 
 # --- PYTHON ---
 
-# Build source package, should work too and needed for deployment to Github and
-# PyPI.
+# Build source package, should work too and needed for deployment to Github.
 - (cd ${PYDIR}; python setup.py sdist)
 
 # Build extension in-place, needed to enable coverage debug options that we do not want in
@@ -97,11 +100,61 @@ script:
 - (cd ${PYDIR}; conda build -q tools/conda.recipe)
 
 # Install Conda package
-- conda install --use-local ${PY_CONDA_PKG}
+- conda install --use-local ${PYNAME}
 
 # Run tests out of source tree, to make sure that installed version is tested.
 - (cd; nosetests ${PROJECTNAME} -v --detailed-errors)
 
-#after_success:
+after_success:
 # Upload the coverage analysis
 - codecov
+
+# In deployment, the env var TRAVIS_TAG contains the name of the current tag, if any.
+deploy:
+- provider: releases
+  skip_cleanup: true
+  api_key: ${GITHUB_TOKEN}
+  file:
+  - build/${CPPNAME}-${TRAVIS_TAG}.tar.gz
+  - ${PYDIR}/dist/${PYNAME}-${TRAVIS_TAG}.tar.gz
+  on:
+    repo: ${GITHUB_REPO_NAME}
+    tags: true
+    condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7 && $TRAVIS_OS_NAME == linux"
+  prerelease: false
+
+- provider: releases
+  skip_cleanup: true
+  api_key: ${GITHUB_TOKEN}
+  file:
+  - build/${CPPNAME}-${TRAVIS_TAG}.tar.gz
+  - ${PYDIR}/dist/${PYNAME}-${TRAVIS_TAG}.tar.gz
+  on:
+    repo: ${GITHUB_REPO_NAME}
+    tags: true
+    condition: "$TRAVIS_TAG == *[ab]* && $MYCONDAPY == 2.7 && $TRAVIS_OS_NAME == linux"
+  prerelease: true
+
+- provider: script
+  skip_cleanup: true
+  script: anaconda -t $ANACONDA_TOKEN upload --force -l alpha ${HOME}/miniconda/conda-bld/*/${CPPNAME}-*.tar.bz2 ${HOME}/miniconda/conda-bld/*/${PYNAME}-*.tar.bz2
+  on:
+    repo: ${GITHUB_REPO_NAME}
+    tags: true
+    condition: "$TRAVIS_TAG == *a*"
+
+- provider: script
+  skip_cleanup: true
+  script: anaconda -t $ANACONDA_TOKEN upload --force -l beta ${HOME}/miniconda/conda-bld/*/${CPPNAME}-*.tar.bz2 ${HOME}/miniconda/conda-bld/*/${PYNAME}-*.tar.bz2
+  on:
+    repo: ${GITHUB_REPO_NAME}
+    tags: true
+    condition: "$TRAVIS_TAG == *b*"
+
+- provider: script
+  skip_cleanup: true
+  script: anaconda -t $ANACONDA_TOKEN upload --force -l main ${HOME}/miniconda/conda-bld/*/${CPPNAME}-*.tar.bz2 ${HOME}/miniconda/conda-bld/*/${PYNAME}-*.tar.bz2
+  on:
+    repo: ${GITHUB_REPO_NAME}
+    tags: true
+    condition: "$TRAVIS_TAG != *[ab]*"
