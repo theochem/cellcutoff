@@ -68,8 +68,6 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wconversion -Wextra")
 # Additional compiler settings when doing a debug build
 string(TOUPPER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE)
 if(CMAKE_BUILD_TYPE STREQUAL "DEBUG")
-    # These settings are only useful in dev mode.
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -pedantic")
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         # When coding (debug mode), we want to know when there might be trouble ...
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -coverage")

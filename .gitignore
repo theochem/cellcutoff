@@ -1,6 +1,7 @@
 *.o
 *.so*
 *.pyc
+*.gcov
 debug
 release
 relwithdebinfo
