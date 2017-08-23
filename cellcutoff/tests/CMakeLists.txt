@@ -33,11 +33,14 @@ set(TEST_SOURCE_FILES
 )
 
 # The testing executable
-add_executable(test_cellcutoff EXCLUDE_FROM_ALL ${TEST_SOURCE_FILES})
+add_executable(test_cellcutoff ${TEST_SOURCE_FILES})
 set_property(TARGET test_cellcutoff PROPERTY CXX_STANDARD 11)
 
 # How the testing executable has to be linked...
 target_link_libraries(test_cellcutoff cellcutoff gtest gtest_main gcov pthread)
+
+# Install the test in libexec
+install (TARGETS test_cellcutoff DESTINATION libexec/cellcutoff)
 
 # Use our own test target because ctest hides relevant output.
 if(CELLCUTOFF_DO_COVERAGE)
