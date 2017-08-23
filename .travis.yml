@@ -98,7 +98,7 @@ script:
 - conda install --use-local ${PY_CONDA_PKG}
 
 # Run tests out of source tree, to make sure that installed version is tested.
-- (cd; nosetests nosetests ${PROJECTNAME} -v --detailed-errors)
+- (cd; nosetests ${PROJECTNAME} -v --detailed-errors)
 
 #after_success:
 # Upload the coverage analysis
