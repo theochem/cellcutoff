@@ -51,7 +51,7 @@ install:
 # Install extra package needed to make things work. Most things can be listed as
 # dependencies on metal.yaml and setup.py, unless setup.py already imports them.
 # Install conda tools for packaging and uploading
-- conda install python=${MYCONDAPY} numpy cython conda-build anaconda-client
+- conda install python=${MYCONDAPY} numpy cython conda-build anaconda-client nose
 # Install more recent stuff with pip
 - pip install codecov coverage
 # Show conda info for debugging
@@ -86,6 +86,8 @@ script:
 
 # Build extension in-place, needed to enable coverage debug options that we do not want in
 # the installed version
+- 'echo | gcc -E -Wp,-v -'
+- 'echo | cpp -xc++ -Wp,-v'
 - (cd ${PYDIR}; python setup.py build_ext -i --define CYTHON_TRACE_NOGIL)
 
 # Run the unit tests with coverage, from the in-place build
