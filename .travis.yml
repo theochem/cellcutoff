@@ -66,6 +66,9 @@ script:
   make;
   ./${PROJECTNAME}/tests/test_${PROJECTNAME})
 
+# Make source package for github
+- (cd debug; make sdist)
+
 # Build the conda package
 - git fetch origin --tags
 - conda build -q tools/conda.recipe
@@ -76,7 +79,6 @@ script:
 # Run the tests
 - ${CONDA_PREFIX}/libexec/${PROJECTNAME}/test_${PROJECTNAME}
 
-# TODO: make source package for github
 
 # --- PYTHON ---
 
