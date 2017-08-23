@@ -86,12 +86,10 @@ script:
 
 # Build extension in-place, needed to enable coverage debug options that we do not want in
 # the installed version
-- 'echo | gcc -E -Wp,-v -'
-- 'echo | cpp -xc++ -Wp,-v'
 - (cd ${PYDIR}; python setup.py build_ext -i --define CYTHON_TRACE_NOGIL)
 
 # Run the unit tests with coverage, from the in-place build
-- (cd ${PYDIR}; nosetests ${PROJECTNAME} -v --detailed-errors --with-coverage --cover-package=${PROJECTNAME} --cover-ests --cover-erase --cover-inclusive --cover-branches --cover-xml)
+- (cd ${PYDIR}; nosetests ${PROJECTNAME} -v --detailed-errors --with-coverage --cover-package=${PROJECTNAME} --cover-tests --cover-erase --cover-inclusive --cover-branches --cover-xml)
 
 # Build the conda package
 - (cd ${PYDIR}; conda build -q tools/conda.recipe)
