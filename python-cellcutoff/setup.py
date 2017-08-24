@@ -20,15 +20,10 @@
 #
 # --
 
+
 import numpy as np
-from distutils.core import setup
-from distutils.extension import Extension
-from Cython.Distutils import build_ext
-
-
-def parse_cpath():
-    import os
-    return [s for s in os.getenv('CPATH').split(':') if len(s) > 0]
+from setuptools import setup, Extension
+import Cython.Build
 
 
 setup(
@@ -37,17 +32,20 @@ setup(
     description='CellCutoff is a ibrary for periodic boundary conditions and real-space cutoff calculations.',
     author='Toon Verstraelen',
     author_email='Toon.Verstraelen@UGent.be',
-    cmdclass = {'build_ext': build_ext},
+    cmdclass = {'build_ext': Cython.Build.build_ext},
     packages = ['cellcutoff'],
     package_data = {
         'cellcutoff': ['cellcutoff.pxd', 'cell.pxd'],
     },
+    zip_safe=False,
     ext_modules=[
-        Extension("cellcutoff.cellcutoff",
+        Extension(
+            "cellcutoff.cellcutoff",
             sources=['cellcutoff/cellcutoff.pyx'],
             depends=['cellcutoff/cellcutoff.pxd', 'cellcutoff/cell.pxd'],
             libraries=['cellcutoff'],
-            include_dirs=[np.get_include()] + parse_cpath(),
+            include_dirs=[np.get_include()],
             extra_compile_args=['-std=c++11', '-Wall', '-pedantic'],
-            language="c++")],
+            language="c++"),
+    ],
 )

@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/theochem/cellcutoff.svg?branch=master)](https://travis-ci.org/theochem/cellcutoff)
+[![codecov](https://codecov.io/gh/theochem/cellcutoff/branch/master/graph/badge.svg)](https://codecov.io/gh/theochem/cellcutoff)
+
 CellCutoff is a library for periodic boundary conditions and real-space cutoff calculations.
 
 Dependencies
