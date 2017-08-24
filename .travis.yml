@@ -96,6 +96,9 @@ script:
 # Run the unit tests with coverage, from the in-place build
 - (cd ${PYDIR}; nosetests ${PROJECTNAME} -v --detailed-errors --with-coverage --cover-package=${PROJECTNAME} --cover-tests --cover-erase --cover-inclusive --cover-branches --cover-xml)
 
+# Try to understand what happes
+- (cd ${PYDIR}; coverage report)
+
 # Build the conda package
 - (cd ${PYDIR}; conda build -q tools/conda.recipe)
 
