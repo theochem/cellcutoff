@@ -122,9 +122,9 @@ script:
 - (cd ${PYDIR}; python setup.py sdist)
 
 after_success:
-# Upload the coverage analysis, manually specifying paths because codecov does not find
-# some files with by itself.
-- codecov --file ${PYDIR}/.coverage $(find | grep '\.gcov$')
+# Upload the coverage analysis
+- codecov --file ${PYDIR}/.coverage
+- codecov
 
 # In deployment, the env var TRAVIS_TAG contains the name of the current tag, if any.
 deploy:
