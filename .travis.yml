@@ -105,9 +105,9 @@ script:
 # Uninstall conda package, to be sure. The conda cpp package is still used.
 - conda uninstall ${PYNAME}
 - (cd ${PYDIR}; python setup.py build_ext -i --define CYTHON_TRACE_NOGIL)
-- '(cd ${PYDIR}; nosetests ${PROJECTNAME} -v --detailed-errors --with-coverage
-                 --cover-package=${PROJECTNAME} --cover-tests --cover-erase
-                 --cover-inclusive --cover-branches --cover-xml)'
+# Run nosetests without coverage.xml output. That file is broken by nosetests (pyx files
+# not include) and gets priority over .coverage, which contains everything.
+- (cd ${PYDIR}; nosetests ${PROJECTNAME} -v --detailed-errors --with-coverage --cover-package=${PROJECTNAME} --cover-tests --cover-erase --cover-inclusive --cover-branches)
 
 # TODO: dynamic python+cython linting
 
