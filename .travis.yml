@@ -70,29 +70,24 @@ script:
 # Conda-based tests
 # ~~~~~~~~~~~~~~~~~
 
-# This is needed to simulate the end-user situation.
+# This is needed to simulate the end-user situation, and it also creates packages for a
+# conda release.
 
-# * CPP project
-# Build the conda package
+# Build the conda packages
 - git fetch origin --tags
 - conda build -q tools/conda.recipe
-# Install Conda package
-- conda install --use-local ${CPPNAME}
+- (cd ${PYDIR}; conda build -q tools/conda.recipe)
+# Install Conda packages
+- conda install --use-local ${CPPNAME} ${PYNAME}
 # Run the unittests, using the installed package
 - ${CONDA_PREFIX}/libexec/${PROJECTNAME}/test_${PROJECTNAME}
-
-# * PY project
-# Build the conda package
-- (cd ${PYDIR}; conda build -q tools/conda.recipe)
-# Install Conda package
-- conda install --use-local ${PYNAME}
-# Run tests out of source tree, to make sure that installed version is tested.
 - (cd; nosetests ${PROJECTNAME} -v --detailed-errors)
 
 # In-place building and testing
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# This is allows for coverage analysis and dynamic linting.
+# This is allows for coverage analysis and dynamic linting. The compiler settings used
+# here are not suitable for releases, so we need to recompile and rerun the tests.
 
 # Install compilers for in-place builds
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
