@@ -17,7 +17,7 @@ env:
 # Do not use Travis Python to save some time.
 language: generic
 os:
-  - linux
+#  - linux
   - osx
 osx_image: xcode6.4
 dist: trusty
@@ -107,7 +107,14 @@ script:
 # Uninstall conda package, to be sure.
 - conda uninstall ${CPPNAME}
 - (mkdir debug; cd debug; cmake cmake -DCMAKE_BUILD_TYPE=debug ..; make)
-- (cd debug; ./${PROJECTNAME}/tests/test_${PROJECTNAME})
+# Try to understand dynamic linking on OSX with conda
+- otool -l -v debug/${PROJECTNAME}/tests/test_${PROJECTNAME}
+- echo ${DYLD_LIBRARY_PATH}
+- echo ${DYLD_FALLBACK_LIBRARY_PATH}
+- echo ${DYLD_VERSIONED_LIBRARY_PATH}
+- ls ${CONDA_PREFIX}/lib/
+
+- (cd debug; DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${CONDA_PREFIX}/lib/ ./${PROJECTNAME}/tests/test_${PROJECTNAME})
 
 # TODO: dynamic cpp linting
 
