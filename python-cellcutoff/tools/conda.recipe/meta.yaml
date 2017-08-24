@@ -17,14 +17,13 @@ requirements:
     - cellcutoff
     - setuptools
     - nose
-    - gcc     # [linux]
-    - clang   # [osx]
+    - gcc
   run:
     - cellcutoff
     - python
     - numpy
     - nose
-    - libgcc  # [linux]
+    - libgcc
 
 about:
   description: Reall-space cutoff library (python wrapper)
