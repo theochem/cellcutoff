@@ -17,8 +17,8 @@ env:
 # Do not use Travis Python to save some time.
 language: generic
 os:
-#  - linux
-  - osx
+- linux
+- osx
 osx_image: xcode6.4
 dist: trusty
 sudo: false
@@ -107,13 +107,8 @@ script:
 # Uninstall conda package, to be sure.
 - conda uninstall ${CPPNAME}
 - (mkdir debug; cd debug; cmake cmake -DCMAKE_BUILD_TYPE=debug ..; make)
-# Try to understand dynamic linking on OSX with conda
-- otool -l -v debug/${PROJECTNAME}/tests/test_${PROJECTNAME}
-- echo ${DYLD_LIBRARY_PATH}
-- echo ${DYLD_FALLBACK_LIBRARY_PATH}
-- echo ${DYLD_VERSIONED_LIBRARY_PATH}
-- ls ${CONDA_PREFIX}/lib/
-
+# DYLD_LIBRARY_PATH is needed on OSX to let it find the shared libraries in
+# ${CONDA_PREFIX}/lib. It should not have any effect on Linux.
 - (cd debug; DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${CONDA_PREFIX}/lib/ ./${PROJECTNAME}/tests/test_${PROJECTNAME})
 
 # TODO: dynamic cpp linting
@@ -128,7 +123,7 @@ script:
 
 after_success:
 # Upload the coverage analysis
-- codecov
+- codecov -f ${PYDIR}/.coverage
 
 # In deployment, the env var TRAVIS_TAG contains the name of the current tag, if any.
 deploy:
