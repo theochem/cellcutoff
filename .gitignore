@@ -7,8 +7,5 @@ debug
 release
 relwithdebinfo
 tmp
-python-cellcutoff/cellcutoff/cellcutoff.cpp
-python-cellcutoff/build
-python-cellcutoff/MANIFEST
 *.egg-info
 dist
