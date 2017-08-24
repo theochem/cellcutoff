@@ -99,7 +99,7 @@ script:
 - (cd ${PYDIR}; python setup.py build_ext -i --define CYTHON_TRACE_NOGIL)
 # Run nosetests without coverage.xml output. That file is broken by nosetests (pyx files
 # not include) and gets priority over .coverage, which contains everything.
-- (cd ${PYDIR}; nosetests ${PROJECTNAME} -v --detailed-errors --with-coverage --cover-package=${PROJECTNAME} --cover-tests --cover-erase --cover-inclusive --cover-branches)
+- (cd ${PYDIR}; nosetests ${PROJECTNAME} -v --detailed-errors --with-coverage --cover-package=${PROJECTNAME} --cover-tests --cover-erase --cover-inclusive --cover-branches; coverage xml -i)
 
 # TODO: dynamic python+cython linting
 
@@ -123,7 +123,7 @@ script:
 
 after_success:
 # Upload the coverage analysis
-- codecov --file ${PYDIR}/.coverage
+- codecov --file ${PYDIR}/coverage.xml
 - codecov
 
 # In deployment, the env var TRAVIS_TAG contains the name of the current tag, if any.
