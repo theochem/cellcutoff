@@ -1,4 +1,5 @@
 linters:
+- header:
 - import:
     packages: ['cellcutoff']
 - namespace:
@@ -6,3 +7,4 @@ linters:
 - pylint:
 - pycodestyle:
 - pydocstyle:
+- whitespace:
