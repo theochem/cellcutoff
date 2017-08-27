@@ -101,9 +101,11 @@ script:
 # This is allows for coverage analysis and dynamic linting. The compiler settings used
 # here are not suitable for releases, so we need to recompile and rerun the tests.
 
-# Install compilers for in-place builds. Also using gcc on OSX because it seems that
-# Conda packages are also built with GCC on OSX. This may change at some point.
-- conda install nose gcc libgcc
+# Install compilers for in-place builds, only essential for Linux. On OSX, we assume that
+# clang is present.
+- if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+    conda install nose gcc libgcc;
+  fi
 
 # PY project
 # Uninstall conda package, to be sure. The conda cpp package is still used.
