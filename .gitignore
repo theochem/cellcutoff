@@ -9,3 +9,4 @@ relwithdebinfo
 tmp
 *.egg-info
 dist
+cpplint.py

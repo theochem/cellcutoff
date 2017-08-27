@@ -50,22 +50,34 @@ install:
 
 # Configure conda and get a few essentials
 - conda config --set always_yes yes
+- conda config --add channels theochem
 - conda update -q conda
 # Get the right python version for building. This only does something for 3.5.
 # Install extra package needed to make things work. Most things can be listed as
 # dependencies on metal.yaml and setup.py, unless setup.py already imports them.
 # Install conda tools for packaging and uploading
-- conda install python=${MYCONDAPY} numpy cython conda-build anaconda-client
+- conda install python=${MYCONDAPY} numpy cython cppcheck doxygen conda-build anaconda-client
 # Install more recent stuff with pip
-- pip install codecov coverage
+- pip install pylint codecov coverage pycodestyle pydocstyle flake8
+# Get the latest cpplint
+- wget https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py
+- chmod +x cpplint.py
 # Show conda info for debugging
 - conda info -a
+
+# Install the latest cardboardlinter
+- if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+    pip install --upgrade git+https://github.com/theochem/cardboardlint.git@master#egg=cardboardlint;
+  fi
 
 script:
 # Static linting
 # ~~~~~~~~~~~~~~
 
-# TODO
+- if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+    cardboardlinter --refspec $TRAVIS_BRANCH -f static;
+    (cd python-cellcutoff; cardboardlinter --refspec $TRAVIS_BRANCH -f static);
+  fi
 
 # Conda-based tests
 # ~~~~~~~~~~~~~~~~~
@@ -101,7 +113,9 @@ script:
 # not include) and gets priority over .coverage, which contains everything.
 - (cd ${PYDIR}; nosetests ${PROJECTNAME} -v --detailed-errors --with-coverage --cover-package=${PROJECTNAME} --cover-tests --cover-erase --cover-inclusive --cover-branches; coverage xml -i)
 
-# TODO: dynamic python+cython linting
+- if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+    (cd python-cellcutoff; cardboardlinter --refspec $TRAVIS_BRANCH -f 'python and dynamic');
+  fi
 
 # CPP project
 # Uninstall conda package, to be sure.
@@ -111,7 +125,9 @@ script:
 # ${CONDA_PREFIX}/lib. It should not have any effect on Linux.
 - (cd debug; DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${CONDA_PREFIX}/lib/ ./${PROJECTNAME}/tests/test_${PROJECTNAME})
 
-# TODO: dynamic cpp linting
+- if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+    cardboardlinter --refspec $TRAVIS_BRANCH -f 'cpp and dynamic';
+  fi
 
 # Some other stuff
 # ----------------

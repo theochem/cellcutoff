@@ -1,0 +1,10 @@
+pre_filefilter: ['- python-cellcutoff', '+ *']
+
+linters:
+- cppcheck:
+- cpplint:
+    script: ./cpplint.py
+- doxygen:
+    root: cellcutoff
+- header:
+- whitespace:
