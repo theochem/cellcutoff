@@ -162,7 +162,7 @@ deploy:
   skip_cleanup: true
   api_key: ${GITHUB_TOKEN}
   file:
-  - build/${CPPNAME}-${TRAVIS_TAG}.tar.gz
+  - debug/${CPPNAME}-${TRAVIS_TAG}.tar.gz
   - ${PYDIR}/dist/${PYNAME}-${TRAVIS_TAG}.tar.gz
   on:
     repo: ${GITHUB_REPO_NAME}
