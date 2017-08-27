@@ -28,7 +28,7 @@ import Cython.Build
 
 setup(
     name='python-cellcutoff',
-    version='0.0.0',
+    version=get_gitversion('python-cellcutoff', verbose=(__name__=='__main__')),
     description='CellCutoff is a ibrary for periodic boundary conditions and real-space cutoff calculations.',
     author='Toon Verstraelen',
     author_email='Toon.Verstraelen@UGent.be',
