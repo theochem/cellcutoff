@@ -114,7 +114,7 @@ script:
 - (cd ${PYDIR}; nosetests ${PROJECTNAME} -v --detailed-errors --with-coverage --cover-package=${PROJECTNAME} --cover-tests --cover-erase --cover-inclusive --cover-branches; coverage xml -i)
 
 - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-    (cd python-cellcutoff; cardboardlinter --refspec $TRAVIS_BRANCH -f 'python and dynamic');
+    (cd python-cellcutoff; cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic');
   fi
 
 # CPP project
@@ -126,7 +126,7 @@ script:
 - (cd debug; DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${CONDA_PREFIX}/lib/ ./${PROJECTNAME}/tests/test_${PROJECTNAME})
 
 - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-    cardboardlinter --refspec $TRAVIS_BRANCH -f 'cpp and dynamic';
+    cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic';
   fi
 
 # Some other stuff
