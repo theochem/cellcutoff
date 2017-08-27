@@ -56,7 +56,7 @@ install:
 # Install extra package needed to make things work. Most things can be listed as
 # dependencies on metal.yaml and setup.py, unless setup.py already imports them.
 # Install conda tools for packaging and uploading
-- conda install python=${MYCONDAPY} numpy cython cppcheck doxygen conda-build anaconda-client
+- conda install python=${MYCONDAPY} numpy cython cppcheck doxygen nose conda-build anaconda-client
 # Install more recent stuff with pip
 - pip install pylint codecov coverage pycodestyle pydocstyle flake8
 # Get the latest cpplint
@@ -75,7 +75,7 @@ script:
 # ~~~~~~~~~~~~~~
 
 - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-    cardboardlinter --refspec $TRAVIS_BRANCH -f static;
+    cardboardlinter --refspec $TRAVIS_BRANCH -f static &&
     (cd python-cellcutoff; cardboardlinter --refspec $TRAVIS_BRANCH -f static);
   fi
 
@@ -88,7 +88,7 @@ script:
 # Build the conda packages
 - git fetch origin --tags
 - conda build -q tools/conda.recipe
-- (cd ${PYDIR}; conda build -q tools/conda.recipe)
+- (cd ${PYDIR}; ./setup.py; conda build -q tools/conda.recipe)
 # Install Conda packages
 - conda install --use-local ${CPPNAME} ${PYNAME}
 # Run the unittests, using the installed package
@@ -101,9 +101,9 @@ script:
 # This is allows for coverage analysis and dynamic linting. The compiler settings used
 # here are not suitable for releases, so we need to recompile and rerun the tests.
 
-# Install compilers for in-place builds. Also using gcc on OSX because it seems that
-# Conda packages are also built with GCC on OSX. This may change at some point.
-- conda install nose gcc libgcc
+# Install GCC compilers for in-place builds, even on OSX because clang does not manage to
+# compiler our C++ code.
+- conda install gcc libgcc;
 
 # PY project
 # Uninstall conda package, to be sure. The conda cpp package is still used.
@@ -114,7 +114,7 @@ script:
 - (cd ${PYDIR}; nosetests ${PROJECTNAME} -v --detailed-errors --with-coverage --cover-package=${PROJECTNAME} --cover-tests --cover-erase --cover-inclusive --cover-branches; coverage xml -i)
 
 - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-    (cd python-cellcutoff; cardboardlinter --refspec $TRAVIS_BRANCH -f 'python and dynamic');
+    (cd python-cellcutoff; cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic');
   fi
 
 # CPP project
@@ -126,7 +126,7 @@ script:
 - (cd debug; DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${CONDA_PREFIX}/lib/ ./${PROJECTNAME}/tests/test_${PROJECTNAME})
 
 - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-    cardboardlinter --refspec $TRAVIS_BRANCH -f 'cpp and dynamic';
+    cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic';
   fi
 
 # Some other stuff
