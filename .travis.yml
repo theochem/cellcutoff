@@ -88,7 +88,7 @@ script:
 # Build the conda packages
 - git fetch origin --tags
 - conda build -q tools/conda.recipe
-- (cd ${PYDIR}; conda build -q tools/conda.recipe)
+- (cd ${PYDIR}; ./setup.py; conda build -q tools/conda.recipe)
 # Install Conda packages
 - conda install --use-local ${CPPNAME} ${PYNAME}
 # Run the unittests, using the installed package
