@@ -12,9 +12,9 @@ build:
 requirements:
   build:
     - cmake
-    - gcc     # [linux]
+    - gcc
   run:
-    - libgcc  # [linux]
+    - libgcc
 
 about:
   description: Reall-space cutoff library (python wrapper)
