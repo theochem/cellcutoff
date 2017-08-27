@@ -22,13 +22,25 @@
 cmake_minimum_required(VERSION 3.1)
 project(CellCutoff CXX)
 
-# Version information
-set(CELLCUTOFF_MAJOR 0)
-set(CELLCUTOFF_MINOR 0)
-set(CELLCUTOFF_PATCH 0)
+# Get the version from the machinery in the python package
+execute_process(COMMAND python gitversion.py cellcutoff --part major
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/python-cellcutoff/tools
+    OUTPUT_VARIABLE CELLCUTOFF_MAJOR)
+string(STRIP "${CELLCUTOFF_MAJOR}" CELLCUTOFF_MAJOR)
+
+execute_process(COMMAND python gitversion.py cellcutoff --part minor
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/python-cellcutoff/tools
+    OUTPUT_VARIABLE CELLCUTOFF_MINOR)
+string(STRIP "${CELLCUTOFF_MINOR}" CELLCUTOFF_MINOR)
+
+execute_process(COMMAND python gitversion.py cellcutoff --part patch
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/python-cellcutoff/tools
+    OUTPUT_VARIABLE CELLCUTOFF_PATCH)
+string(STRIP "${CELLCUTOFF_PATCH}" CELLCUTOFF_PATCH)
 
 set(CELLCUTOFF_VERSION ${CELLCUTOFF_MAJOR}.${CELLCUTOFF_MINOR}.${CELLCUTOFF_PATCH})
 set(CELLCUTOFF_SOVERSION ${CELLCUTOFF_MAJOR}.${CELLCUTOFF_MINOR})
+
 set(PROJECT_BRIEF "Library for periodic boundary conditions and real-space cutoff calculations")
 
 # The googletest snippets were taken from:
@@ -94,7 +106,7 @@ endif(DOXYGEN_FOUND)
 # Source package with CPack
 set(CPACK_SOURCE_GENERATOR "TGZ")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME
-  "cellcutoff-${CELLCUTOFF_MAJOR}.${CELLCUTOFF_MINOR}.${CELLCUTOFF_PATCH}")
+  "cellcutoff-${CELLCUTOFF_VERSION}")
 set(CPACK_SOURCE_IGNORE_FILES
   "/build/;/release/;/debug/;/.git/;/python-cellcutoff/;/HEADER/;${CPACK_SOURCE_IGNORE_FILES}")
 include(CPack)
