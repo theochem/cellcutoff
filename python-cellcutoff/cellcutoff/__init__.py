@@ -21,4 +21,4 @@
 
 
 from .version import __version__
-from .cellcutoff import *
+from .cellcutoff import Cell

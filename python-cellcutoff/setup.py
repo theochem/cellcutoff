@@ -30,7 +30,7 @@ from tools.gitversion import get_gitversion
 
 setup(
     name='python-cellcutoff',
-    version=get_gitversion('cellcutoff', verbose=(__name__=='__main__')),
+    version=get_gitversion('cellcutoff', verbose=(__name__ == '__main__')),
     description='CellCutoff is a ibrary for periodic boundary conditions and real-space cutoff calculations.',
     author='Toon Verstraelen',
     author_email='Toon.Verstraelen@UGent.be',

@@ -70,7 +70,7 @@ def get_gitversion(pypkg, verbose):
     fn_version = os.path.join(os.path.dirname(__file__), '..', pypkg, 'version.py')
     if version is None:
         if verbose:
-            print('Trying to get the version from {}',format(fn_version))
+            print('Trying to get the version from {}'.format(fn_version))
         # Try to load the git version tag from version.py
         try:
             with open(fn_version, 'r') as f:
@@ -102,9 +102,9 @@ def parse_args():
 
 
 def main():
-    """Main program."""
+    """Print the version string derived from ``git describe --tags``."""
     pypkg, part = parse_args()
-    version = get_gitversion(sys.argv[1], False)
+    version = get_gitversion(pypkg, False)
     if part != 'all':
         part = {'major': 0, 'minor': 1, 'patch': 2}[part]
         version = version.split('.', 2)[part]
