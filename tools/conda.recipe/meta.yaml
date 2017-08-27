@@ -1,13 +1,15 @@
 package:
   name: cellcutoff
-  version: 0.0.0
+  version: {{ CELLCUTOFF_VERSION }}
 
 source:
   path: ../../
 
 build:
+  script_env:
+   - CELLCUTOFF_VERSION
   number: 0
-  string: 0
+  string: py{{ CONDA_PY }}_0
 
 requirements:
   build:

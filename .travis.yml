@@ -85,8 +85,10 @@ script:
 # This is needed to simulate the end-user situation, and it also creates packages for a
 # conda release.
 
-# Build the conda packages
+# Get the version
 - git fetch origin --tags
+- export CELLCUTOFF_VERSION=$(cd python-cellcutoff/tools; python gitversion.py)
+# Build the conda packages
 - conda build -q tools/conda.recipe
 - (cd ${PYDIR}; ./setup.py; conda build -q tools/conda.recipe)
 # Install Conda packages
