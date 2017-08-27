@@ -19,21 +19,21 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
-'''Unit tests'''
+"""Unit tests."""
 
 
-from cellcutoff import *
+from cellcutoff import Cell
 
 import numpy as np
 
 
 def test_subcell():
-    c = Cell(np.random.uniform(-10, 10, (3, 3)))
-    sc, shape = c.subcell(0.1)
-    assert sc.spacings.max() < 0.1
+    subcell, shape = Cell(np.random.uniform(-10, 10, (3, 3))).subcell(0.1)
+    assert subcell.spacings.max() < 0.1
+    assert min(shape) >= 1
 
 
 def test_reciprocal():
-    c = Cell(np.random.uniform(-10, 10, (3, 3)))
-    gc = c.reciprocal()
-    assert abs(np.dot(c.vecs, gc.vecs.T) - np.identity(3)).max() < 1e-3
+    cell = Cell(np.random.uniform(-10, 10, (3, 3)))
+    gcell = cell.reciprocal()
+    assert abs(np.dot(cell.vecs, gcell.vecs.T) - np.identity(3)).max() < 1e-3

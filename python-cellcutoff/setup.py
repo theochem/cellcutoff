@@ -19,6 +19,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Package build and install script."""
 
 
 import numpy as np
@@ -31,19 +32,20 @@ from tools.gitversion import get_gitversion
 setup(
     name='python-cellcutoff',
     version=get_gitversion('cellcutoff', verbose=(__name__ == '__main__')),
-    description='CellCutoff is a ibrary for periodic boundary conditions and real-space cutoff calculations.',
+    description='CellCutoff is a ibrary for periodic boundary conditions '
+                'and real-space cutoff calculations.',
     author='Toon Verstraelen',
     author_email='Toon.Verstraelen@UGent.be',
-    cmdclass = {'build_ext': Cython.Build.build_ext},
-    packages = ['cellcutoff'],
-    package_data = {
+    cmdclass={'build_ext': Cython.Build.build_ext},
+    packages=['cellcutoff'],
+    package_data={
         'cellcutoff': ['cellcutoff.pxd', 'cell.pxd'],
     },
     zip_safe=False,
     ext_modules=[
         Extension(
-            "cellcutoff.cellcutoff",
-            sources=['cellcutoff/cellcutoff.pyx'],
+            "cellcutoff.ext",
+            sources=['cellcutoff/ext.pyx'],
             depends=['cellcutoff/cellcutoff.pxd', 'cellcutoff/cell.pxd'],
             libraries=['cellcutoff'],
             include_dirs=[np.get_include()],

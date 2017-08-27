@@ -18,7 +18,8 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Python wrapper for cellcutoff C++ library."""
 
 
-from .version import __version__
-from .cellcutoff import Cell
+from cellcutoff.version import __version__
+from cellcutoff.ext import Cell
