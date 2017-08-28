@@ -70,10 +70,15 @@ install:
     pip install --upgrade git+https://github.com/theochem/cardboardlint.git@master#egg=cardboardlint;
   fi
 
+# Set the version info from the git tag
+- git fetch origin --tags
+- export CELLCUTOFF_VERSION=$(python tools/gitversion.py)
+- python tools/gitversion.py python > ${PYDIR}/${PROJECTNAME}/version.py
+- python tools/gitversion.py cmake > CMakeListsVersion.txt.in
+
 script:
 # Static linting
 # ~~~~~~~~~~~~~~
-
 - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     cardboardlinter --refspec $TRAVIS_BRANCH -f static &&
     (cd python-cellcutoff; cardboardlinter --refspec $TRAVIS_BRANCH -f static);
@@ -85,9 +90,6 @@ script:
 # This is needed to simulate the end-user situation, and it also creates packages for a
 # conda release.
 
-# Get the version
-- git fetch origin --tags
-- export CELLCUTOFF_VERSION=$(cd ${PYDIR}/tools; python gitversion.py ${PROJECTNAME})
 # Build the conda packages
 - conda build -q tools/conda.recipe
 - (cd ${PYDIR}; ./setup.py; conda build -q tools/conda.recipe)

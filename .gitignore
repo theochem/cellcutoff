@@ -10,3 +10,4 @@ tmp
 *.egg-info
 dist
 cpplint.py
+CMakeListsVersion.txt.in
