@@ -22,25 +22,10 @@
 cmake_minimum_required(VERSION 3.1)
 project(CellCutoff CXX)
 
-# Get the version from the machinery in the python package
-execute_process(COMMAND python gitversion.py cellcutoff --part major
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/python-cellcutoff/tools
-    OUTPUT_VARIABLE CELLCUTOFF_MAJOR)
-string(STRIP "${CELLCUTOFF_MAJOR}" CELLCUTOFF_MAJOR)
-
-execute_process(COMMAND python gitversion.py cellcutoff --part minor
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/python-cellcutoff/tools
-    OUTPUT_VARIABLE CELLCUTOFF_MINOR)
-string(STRIP "${CELLCUTOFF_MINOR}" CELLCUTOFF_MINOR)
-
-execute_process(COMMAND python gitversion.py cellcutoff --part patch
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/python-cellcutoff/tools
-    OUTPUT_VARIABLE CELLCUTOFF_PATCH)
-string(STRIP "${CELLCUTOFF_PATCH}" CELLCUTOFF_PATCH)
-
-set(CELLCUTOFF_VERSION ${CELLCUTOFF_MAJOR}.${CELLCUTOFF_MINOR}.${CELLCUTOFF_PATCH})
-set(CELLCUTOFF_SOVERSION ${CELLCUTOFF_MAJOR}.${CELLCUTOFF_MINOR})
-
+# Get the version from an include file:
+include(CMakeListsVersion.txt.in)
+set(CELLCUTOFF_VERSION ${GIT_TAG_VERSION})
+set(CELLCUTOFF_SOVERSION ${GIT_TAG_SOVERSION})
 set(PROJECT_BRIEF "Library for periodic boundary conditions and real-space cutoff calculations")
 
 # The googletest snippets were taken from:

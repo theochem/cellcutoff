@@ -1,6 +1,6 @@
 package:
   name: python-cellcutoff
-  version: "{{ load_setup_py_data().version }}"
+  version: {{ CELLCUTOFF_VERSION }}
 
 source:
   path: ../../
