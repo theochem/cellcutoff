@@ -27,15 +27,20 @@ from setuptools import setup, Extension
 import Cython.Build
 
 
-# Load the version from version.py, without importing it. This assumes that the last
-# line in the file contains a variable defining the version string with single quotes.
-with open('cellcutoff/version.py', 'r') as f:
-    version = f.read().split('=')[-1].replace('\'', '').strip()
+def get_version():
+    """Load the version from version.py, without importing it.
+
+    This function assumes that the last line in the file contains a variable defining the
+    version string with single quotes.
+
+    """
+    with open('cellcutoff/version.py', 'r') as f:
+        return f.read().split('=')[-1].replace('\'', '').strip()
 
 
 setup(
     name='python-cellcutoff',
-    version=version,
+    version=get_version(),
     description='CellCutoff is a ibrary for periodic boundary conditions '
                 'and real-space cutoff calculations.',
     author='Toon Verstraelen',
