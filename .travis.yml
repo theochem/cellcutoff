@@ -8,10 +8,10 @@ env:
     - secure: "Az9gLS8W9mdmM0Cg6WOybBW+cRL6Led04D32h+h223OMjgqC5erzkBRilrkmhuIZnK/n1FdnhNsWq2kRxdKqBtTEcx6u4M0PaVjnHdoD88ByB2a1CdWifir0Y2WvDim2e/WOsvQseIuzIpvOAYeKjRfw+yYxLPh0Yw8vCtAVtL949nBk8EBeB94Ih8LVXBA7eMyeyHGBMgHhKsnSGGlDwHlGQvCPoLdg/zlq/x3tcaYR4FrhNMex9DWpFws6dXAxSw54AvR0sxGmx+DdswEm+A6nJwSeL5T4XeHILKN4G+Lz0Mqi2A0FwtL98Z41UgwSlm+P88Y5qXmX9Ia65T/bKa+LNaCRlruS80WBkIU4XsBDb5nKy9eSP2MMTBF33jHnYCnSthIQyIYZIBSvxMLWS+TPiNNWAGZCX0rXL8wno2Udz6FEgZXvUmy2QnpopHaZezTNuqA+8gL3WCuidw4WPWFsS/exCa7FMZAX13xT1lhpyXibOVi7lDGfvSJZlo+2Csd7imdVY+GPlA0hLGJHeewhZtbYIZXkYRPe1PEFj/l0rdSMj7YNSeCw/IFfTpaeyxPV/EQ84B6cnJin9Y1hcycueM5EGt8A/4XhTq7IfzjYRw8t52UyETetQEQeIp1dvqVR+bf0mGK+dxiUqQk4ZJuCQdjStXtFx0fm1TPmXbs="
     # GITHUB_TOKEN
     - secure: "uykwiXzyEllyZ8RdzPd9RXmP6YbqKRwzdVwhWiCssPjb8XQnTLYfIwNmvRjEInRV4BHxTFlGTuH+1dkxw5LXIe4Pl3ulc52ax4ztQNToKr2abZGiHTYIdZnuiunw0bRJo1LDckqdb5rhy1cgXtzfol7NIF3hkPwOHiwS31hfHszV7Wa3J8K7G+gnUTSGHMbiPN55L+uqLPAgrah0fumlwcjEGsxB1BwEP42ZEHdIlb+mtcv0C6rJpfopeN0xVuaqk4AMtpgZ8YiwSiCxbMiRYxoNOPjRL5+8HmnLGyzzMLT0T9dVqos9oDuUsVhYrzBA8unK6br8QVPJTZ62izjeHMTiSYIs8SJsuT4GVT4PxzXDoS746f4ljwDdG0f/KxlkEo2OUV4yWzcRJZvfdEnaPcuKslD/MMKtAMQqjsZwOsiU/GdStDh1YvPOfFPsKthY9o8Zkdu526d6tpUivR+kBSMuiXeVdwltZinEyhOwpSoWalodZybCPvAwSGesx68MQRVmfFHoi52f4AQbuTLbr0IxN87RRrMFvLvI+3pFTmLXSwi1iXdfwuPMlPRSEwGdbwMn+QhKqFadBqYzXdY901nfT4jmOO2SfHGNyjVT4yKj1QZI6Hgu0uk3eOROhxsGvJF8u5A1sA8g6Ee3dbGE4UZ0AmSnWZrG50m3uMsMNwE="
-    - PROJECTNAME=cellcutoff
-    - PYDIR=python-${PROJECTNAME}
-    - CPPNAME=${PROJECTNAME}
-    - PYNAME=python-${PROJECTNAME}
+    - PROJECT_NAME=cellcutoff
+    - PYDIR=python-${PROJECT_NAME}
+    - CONDA_PKG_NAME_CPP=${PROJECT_NAME}
+    - CONDA_PKG_NAME_PY=python-${PROJECT_NAME}
     - GITHUB_REPO_NAME=theochem/cellcutoff
 
 # Do not use Travis Python to save some time.
@@ -72,8 +72,8 @@ install:
 
 # Set the version info from the git tag
 - git fetch origin --tags
-- export CELLCUTOFF_VERSION=$(python tools/gitversion.py)
-- python tools/gitversion.py python > ${PYDIR}/${PROJECTNAME}/version.py
+- export PROJECT_VERSION=$(python tools/gitversion.py)
+- python tools/gitversion.py python > ${PYDIR}/${PROJECT_NAME}/version.py
 - python tools/gitversion.py cmake > CMakeListsVersion.txt.in
 
 script:
@@ -94,10 +94,10 @@ script:
 - conda build -q tools/conda.recipe
 - (cd ${PYDIR}; ./setup.py; conda build -q tools/conda.recipe)
 # Install Conda packages
-- conda install --use-local ${CPPNAME} ${PYNAME}
+- conda install --use-local ${CONDA_PKG_NAME_CPP} ${CONDA_PKG_NAME_PY}
 # Run the unittests, using the installed package
-- ${CONDA_PREFIX}/libexec/${PROJECTNAME}/test_${PROJECTNAME}
-- (cd; nosetests ${PROJECTNAME} -v --detailed-errors)
+- ${CONDA_PREFIX}/libexec/${PROJECT_NAME}/test_${PROJECT_NAME}
+- (cd; nosetests ${PROJECT_NAME} -v --detailed-errors)
 
 # In-place building and testing
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -111,11 +111,11 @@ script:
 
 # PY project
 # Uninstall conda package, to be sure. The conda cpp package is still used.
-- conda uninstall ${PYNAME}
+- conda uninstall ${CONDA_PKG_NAME_PY}
 - (cd ${PYDIR}; python setup.py build_ext -i --define CYTHON_TRACE_NOGIL)
 # Run nosetests without coverage.xml output. That file is broken by nosetests (pyx files
 # not include) and gets priority over .coverage, which contains everything.
-- (cd ${PYDIR}; nosetests ${PROJECTNAME} -v --detailed-errors --with-coverage --cover-package=${PROJECTNAME} --cover-tests --cover-erase --cover-inclusive --cover-branches; coverage xml -i)
+- (cd ${PYDIR}; nosetests ${PROJECT_NAME} -v --detailed-errors --with-coverage --cover-package=${PROJECT_NAME} --cover-tests --cover-erase --cover-inclusive --cover-branches; coverage xml -i)
 
 - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     (cd python-cellcutoff; cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic');
@@ -123,11 +123,11 @@ script:
 
 # CPP project
 # Uninstall conda package, to be sure.
-- conda uninstall ${CPPNAME}
+- conda uninstall ${CONDA_PKG_NAME_CPP}
 - (mkdir debug; cd debug; cmake cmake -DCMAKE_BUILD_TYPE=debug ..; make)
 # DYLD_LIBRARY_PATH is needed on OSX to let it find the shared libraries in
 # ${CONDA_PREFIX}/lib. It should not have any effect on Linux.
-- (cd debug; DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${CONDA_PREFIX}/lib/ ./${PROJECTNAME}/tests/test_${PROJECTNAME})
+- (cd debug; DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${CONDA_PREFIX}/lib/ ./${PROJECT_NAME}/tests/test_${PROJECT_NAME})
 
 - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic';
@@ -152,8 +152,8 @@ deploy:
   skip_cleanup: true
   api_key: ${GITHUB_TOKEN}
   file:
-  - debug/${CPPNAME}-${TRAVIS_TAG}.tar.gz
-  - ${PYDIR}/dist/${PYNAME}-${TRAVIS_TAG}.tar.gz
+  - debug/${CONDA_PKG_NAME_CPP}-${TRAVIS_TAG}.tar.gz
+  - ${PYDIR}/dist/${CONDA_PKG_NAME_PY}-${TRAVIS_TAG}.tar.gz
   on:
     repo: ${GITHUB_REPO_NAME}
     tags: true
@@ -164,8 +164,8 @@ deploy:
   skip_cleanup: true
   api_key: ${GITHUB_TOKEN}
   file:
-  - debug/${CPPNAME}-${TRAVIS_TAG}.tar.gz
-  - ${PYDIR}/dist/${PYNAME}-${TRAVIS_TAG}.tar.gz
+  - debug/${CONDA_PKG_NAME_CPP}-${TRAVIS_TAG}.tar.gz
+  - ${PYDIR}/dist/${CONDA_PKG_NAME_PY}-${TRAVIS_TAG}.tar.gz
   on:
     repo: ${GITHUB_REPO_NAME}
     tags: true
@@ -174,7 +174,7 @@ deploy:
 
 - provider: script
   skip_cleanup: true
-  script: anaconda -t $ANACONDA_TOKEN upload --force -l alpha ${HOME}/miniconda/conda-bld/*/${CPPNAME}-*.tar.bz2 ${HOME}/miniconda/conda-bld/*/${PYNAME}-*.tar.bz2
+  script: anaconda -t $ANACONDA_TOKEN upload --force -l alpha ${HOME}/miniconda/conda-bld/*/${CONDA_PKG_NAME_CPP}-*.tar.bz2 ${HOME}/miniconda/conda-bld/*/${CONDA_PKG_NAME_PY}-*.tar.bz2
   on:
     repo: ${GITHUB_REPO_NAME}
     tags: true
@@ -182,7 +182,7 @@ deploy:
 
 - provider: script
   skip_cleanup: true
-  script: anaconda -t $ANACONDA_TOKEN upload --force -l beta ${HOME}/miniconda/conda-bld/*/${CPPNAME}-*.tar.bz2 ${HOME}/miniconda/conda-bld/*/${PYNAME}-*.tar.bz2
+  script: anaconda -t $ANACONDA_TOKEN upload --force -l beta ${HOME}/miniconda/conda-bld/*/${CONDA_PKG_NAME_CPP}-*.tar.bz2 ${HOME}/miniconda/conda-bld/*/${CONDA_PKG_NAME_PY}-*.tar.bz2
   on:
     repo: ${GITHUB_REPO_NAME}
     tags: true
@@ -190,7 +190,7 @@ deploy:
 
 - provider: script
   skip_cleanup: true
-  script: anaconda -t $ANACONDA_TOKEN upload --force -l main ${HOME}/miniconda/conda-bld/*/${CPPNAME}-*.tar.bz2 ${HOME}/miniconda/conda-bld/*/${PYNAME}-*.tar.bz2
+  script: anaconda -t $ANACONDA_TOKEN upload --force -l main ${HOME}/miniconda/conda-bld/*/${CONDA_PKG_NAME_CPP}-*.tar.bz2 ${HOME}/miniconda/conda-bld/*/${CONDA_PKG_NAME_PY}-*.tar.bz2
   on:
     repo: ${GITHUB_REPO_NAME}
     tags: true
