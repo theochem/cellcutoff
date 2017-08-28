@@ -72,9 +72,9 @@ install:
 
 # Set the version info from the git tag
 - git fetch origin --tags
-- export CELLCUTOFF_VERSION=$(python toools/gitversion.py)
-- python toools/gitversion.py python > ${PYDIR}/${PROJECTNAME}/version.py
-- python toools/gitversion.py cmake > CMakeListsVersion.txt.in
+- export CELLCUTOFF_VERSION=$(python tools/gitversion.py)
+- python tools/gitversion.py python > ${PYDIR}/${PROJECTNAME}/version.py
+- python tools/gitversion.py cmake > CMakeListsVersion.txt.in
 
 script:
 # Static linting
