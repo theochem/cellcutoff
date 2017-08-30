@@ -19,7 +19,7 @@ requirements:
     - libgcc
 
 about:
-  description: Reall-space cutoff library (python wrapper)
+  description: Real-space cutoff library (python wrapper)
   home: https://github.com/theochem/cellcutoff
   license: GPL3
   license_file: LICENSE.txt
