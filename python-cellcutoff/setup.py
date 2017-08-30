@@ -41,7 +41,7 @@ def get_version():
 setup(
     name='python-cellcutoff',
     version=get_version(),
-    description='CellCutoff is a ibrary for periodic boundary conditions '
+    description='CellCutoff is a library for periodic boundary conditions '
                 'and real-space cutoff calculations.',
     author='Toon Verstraelen',
     url='https://github.com/theochem/cellcutoff',
