@@ -9,7 +9,7 @@ build:
   script_env:
    - PROJECT_VERSION
   number: 0
-  string: py{{ CONDA_PY }}_0
+  string: py{{ CONDA_PY }}_1
   script: python setup.py install
 
 requirements:

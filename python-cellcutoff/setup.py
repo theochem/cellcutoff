@@ -49,13 +49,13 @@ setup(
     cmdclass={'build_ext': Cython.Build.build_ext},
     packages=['cellcutoff'],
     package_data={
-        'cellcutoff': ['cellcutoff.pxd', 'cell.pxd'],
+        'cellcutoff': ['ext.pxd', 'cell.pxd'],
     },
     zip_safe=False,
     ext_modules=[Extension(
         "cellcutoff.ext",
         sources=['cellcutoff/ext.pyx'],
-        depends=['cellcutoff/cellcutoff.pxd', 'cellcutoff/cell.pxd'],
+        depends=['cellcutoff/ext.pxd', 'cellcutoff/cell.pxd'],
         libraries=['cellcutoff'],
         include_dirs=[np.get_include()],
         extra_compile_args=['-std=c++11', '-Wall', '-pedantic'],
