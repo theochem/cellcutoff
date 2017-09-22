@@ -1,4 +1,8 @@
-|Build Status| |codecov|
+|Travis|
+|Conda|
+|PythonConda|
+|Codecov|
+|CondaVersion|
 
 CellCutoff is a library for periodic boundary conditions and real-space
 cutoff calculations.
@@ -66,7 +70,13 @@ Build and install (into home directory):
     ./setup.py build_ext -L${LD_LIBRARY_PATH}
     ./setup.py install --user
 
-.. |Build Status| image:: https://travis-ci.org/theochem/cellcutoff.svg?branch=master
-   :target: https://travis-ci.org/theochem/cellcutoff
-.. |codecov| image:: https://codecov.io/gh/theochem/cellcutoff/branch/master/graph/badge.svg
-   :target: https://codecov.io/gh/theochem/cellcutoff
+.. |Travis| image:: https://travis-ci.org/theochem/cellcutoff.svg?branch=master
+    :target: https://travis-ci.org/theochem/cellcutoff
+.. |Codecov| image:: https://img.shields.io/codecov/c/github/theochem/cellcutoff/master.svg
+    :target: https://codecov.io/gh/theochem/cellcutoff
+.. |Conda| image:: https://img.shields.io/conda/v/theochem/cellcutoff.svg
+    :target: https://anaconda.org/theochem/cellcutoff
+.. |PythonConda| image:: https://img.shields.io/conda/vn/theochem/python-cellcutoff.svg
+    :target: https://anaconda.org/theochem/python-cellcutoff
+.. |CondaVersion| image:: https://img.shields.io/conda/pn/theochem/cellcutoff.svg
+    :target: https://anaconda.org/theochem/cellcutoff
