@@ -21,7 +21,7 @@
 # --
 """Package build and install script."""
 
-
+import os
 import numpy as np
 from setuptools import setup, Extension
 import Cython.Build
@@ -36,6 +36,11 @@ def get_version():
     """
     with open('cellcutoff/version.py', 'r') as f:
         return f.read().split('=')[-1].replace('\'', '').strip()
+
+
+def get_cxxflags():
+    """If the CXXFLAGS variable is defined (clang/osx) then get it."""
+    return os.environ.get("CXXFLAGS", "").split()
 
 
 setup(
@@ -58,7 +63,7 @@ setup(
         depends=['cellcutoff/ext.pxd', 'cellcutoff/cell.pxd'],
         libraries=['cellcutoff'],
         include_dirs=[np.get_include()],
-        extra_compile_args=['-std=c++11', '-Wall', '-pedantic'],
+        extra_compile_args=get_cxxflags() or ['-std=c++11', '-Wall', '-pedantic'],
         language="c++",
     )],
     classifiers=[
