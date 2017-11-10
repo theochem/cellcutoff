@@ -21,9 +21,9 @@
 # --
 """Package build and install script."""
 
+import os
 import Cython.Build
 import numpy as np
-import os
 from setuptools import setup, Extension
 
 
