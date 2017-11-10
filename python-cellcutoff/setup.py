@@ -21,9 +21,9 @@
 # --
 """Package build and install script."""
 
+import os
 import Cython.Build
 import numpy as np
-import os
 from setuptools import setup, Extension
 
 
@@ -44,7 +44,9 @@ def get_cxxflags():
 
 
 def get_include_path():
-    """If the PREFIX variable is defined (conda) then get the conda include prefix."""
+    """If the PREFIX variable is defined (conda)
+    then get the conda include prefix.
+    """
     prefix = os.environ.get("PREFIX", "")
     if prefix:
         return [os.path.join(prefix, "include")]
