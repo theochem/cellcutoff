@@ -21,10 +21,10 @@
 # --
 """Package build and install script."""
 
-import os
-import numpy as np
-from setuptools import setup, Extension
 import Cython.Build
+import numpy as np
+import os
+from setuptools import setup, Extension
 
 
 def get_version():
@@ -63,7 +63,9 @@ setup(
         depends=['cellcutoff/ext.pxd', 'cellcutoff/cell.pxd'],
         libraries=['cellcutoff'],
         include_dirs=[np.get_include()],
-        extra_compile_args=get_cxxflags() or ['-std=c++11', '-Wall', '-pedantic'],
+        extra_compile_args=get_cxxflags() or ['-std=c++11',
+                                              '-Wall',
+                                              '-pedantic'],
         language="c++",
     )],
     classifiers=[
@@ -75,4 +77,4 @@ setup(
         'Topic :: Scientific/Engineering :: Physics',
         'Topic :: Scientific/Engineering :: Chemistry',
         'Intended Audience :: Science/Research',
-    ],)
+    ], )
