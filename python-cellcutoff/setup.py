@@ -44,9 +44,7 @@ def get_cxxflags():
 
 
 def get_include_path():
-    """If the PREFIX variable is defined (conda)
-    then get the conda include prefix.
-    """
+    """Get the conda include path from the prefix."""
     prefix = os.environ.get("PREFIX", "")
     if prefix:
         return [os.path.join(prefix, "include")]
