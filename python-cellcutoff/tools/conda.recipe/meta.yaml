@@ -20,13 +20,13 @@ requirements:
     - cellcutoff
     - setuptools
     - nose
-    - gcc
+    - {{ compiler("c") }}
+    - {{ compiler("cxx") }}
   run:
     - cellcutoff
     - python
     - numpy
     - nose
-    - libgcc
 
 about:
   description: Real-space cutoff library (python wrapper)

@@ -14,9 +14,7 @@ build:
 requirements:
   build:
     - cmake
-    - gcc
-  run:
-    - libgcc
+    - {{ compiler("cxx") }}
 
 about:
   description: Real-space cutoff library (python wrapper)

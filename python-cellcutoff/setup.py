@@ -21,10 +21,10 @@
 # --
 """Package build and install script."""
 
-
+import os
+import Cython.Build
 import numpy as np
 from setuptools import setup, Extension
-import Cython.Build
 
 
 def get_version():
@@ -36,6 +36,20 @@ def get_version():
     """
     with open('cellcutoff/version.py', 'r') as f:
         return f.read().split('=')[-1].replace('\'', '').strip()
+
+
+def get_cxxflags():
+    """If the CXXFLAGS variable is defined (clang/osx) then get it."""
+    return os.environ.get("CXXFLAGS", "").split()
+
+
+def get_include_path():
+    """Get the conda include path from the prefix."""
+    prefix = os.environ.get("PREFIX", "")
+    if prefix:
+        return [os.path.join(prefix, "include")]
+    else:
+        return []
 
 
 setup(
@@ -57,8 +71,10 @@ setup(
         sources=['cellcutoff/ext.pyx'],
         depends=['cellcutoff/ext.pxd', 'cellcutoff/cell.pxd'],
         libraries=['cellcutoff'],
-        include_dirs=[np.get_include()],
-        extra_compile_args=['-std=c++11', '-Wall', '-pedantic'],
+        include_dirs=[np.get_include()] + get_include_path(),
+        extra_compile_args=get_cxxflags() or ['-std=c++11',
+                                              '-Wall',
+                                              '-pedantic'],
         language="c++",
     )],
     classifiers=[
@@ -70,4 +86,4 @@ setup(
         'Topic :: Scientific/Engineering :: Physics',
         'Topic :: Scientific/Engineering :: Chemistry',
         'Intended Audience :: Science/Research',
-    ],)
+    ], )

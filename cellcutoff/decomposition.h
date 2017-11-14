@@ -24,6 +24,7 @@
 #ifndef CELLCUTOFF_DECOMPOSITION_H_
 #define CELLCUTOFF_DECOMPOSITION_H_
 
+#include <array>
 #include <vector>
 #include <unordered_map>
 #include <string>
