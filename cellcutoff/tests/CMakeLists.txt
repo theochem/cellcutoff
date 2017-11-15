@@ -37,7 +37,7 @@ add_executable(test_cellcutoff ${TEST_SOURCE_FILES})
 set_property(TARGET test_cellcutoff PROPERTY CXX_STANDARD 11)
 
 # How the testing executable has to be linked...
-target_link_libraries(test_cellcutoff cellcutoff gtest gtest_main gcov pthread)
+target_link_libraries(test_cellcutoff cellcutoff gtest gtest_main pthread)
 
 # Install the test in libexec
 install (TARGETS test_cellcutoff DESTINATION libexec/cellcutoff)
