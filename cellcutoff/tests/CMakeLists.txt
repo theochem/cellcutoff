@@ -19,8 +19,6 @@
 #
 # --
 
-# Make sure the header files are found
-include_directories(${GTEST_INCLUDE_DIRS})
 
 # Define test source files
 set(TEST_SOURCE_FILES
