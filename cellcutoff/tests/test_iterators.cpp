@@ -351,7 +351,8 @@ TEST(DeltaIteratorTest, examples) {
   int shape[3]{10, 20, 20};
   // 3) cell_map (no need to sort, as they already are sorted)
   cl::assign_icell(subcell, shape, points.data(), points.size(), sizeof(cl::Point));
-  std::unique_ptr<cl::CellMap> cell_map(cl::create_cell_map(points.data(), points.size(), sizeof(cl::Point)));
+  std::unique_ptr<cl::CellMap> cell_map(
+    cl::create_cell_map(points.data(), points.size(), sizeof(cl::Point)));
   // 4) center and cutoff
   double center[3]{1.0, 1.0, 1.0};
   double cutoff = 10.0;
@@ -426,7 +427,6 @@ TEST(DeltaIteratorTest, examples) {
   EXPECT_EQ(3, dit2.ipoint());
   ++dit2;
   EXPECT_FALSE(dit2.busy());
-
 }
 
 

@@ -21,6 +21,7 @@
 
 #include "cellcutoff/sphere_slice.h"
 
+#include <algorithm>
 #include <cmath>
 #include <memory>
 

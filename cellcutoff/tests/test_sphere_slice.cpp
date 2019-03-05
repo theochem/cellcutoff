@@ -718,7 +718,8 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
     double radius = (irep + 1)*0.1;
     double center[3];
     double normals[9];
-    std::unique_ptr<cl::SphereSlice> slice(create_random_problem(irep, radius, center, normals));
+    std::unique_ptr<cl::SphereSlice> slice(
+      create_random_problem(irep, radius, center, normals));
 
     // Name some normals for convenience
     double* cut0_normal = normals;
@@ -752,7 +753,8 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
     // * case A: cut0_begin  cut1_begin
     double axis_begin_a, axis_end_a;
     double point_begin_a[3], point_end_a[3];
-    slice->solve_line_low(2, 0, 1, cut0_begin, cut1_begin, &axis_begin_a, &axis_end_a, point_begin_a, point_end_a);
+    slice->solve_line_low(2, 0, 1, cut0_begin, cut1_begin, &axis_begin_a, &axis_end_a,
+                          point_begin_a, point_end_a);
     exists = std::isfinite(axis_begin_a) && std::isfinite(axis_end_a);
     if (exists) {
       EXPECT_LE(axis_begin_a, axis_end_a + EPS);
@@ -763,7 +765,8 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
     // * case B: cut0_begin  cut1_end
     double axis_begin_b, axis_end_b;
     double point_begin_b[3], point_end_b[3];
-    slice->solve_line_low(2, 0, 1, cut0_begin, cut1_end, &axis_begin_b, &axis_end_b, point_begin_b, point_end_b);
+    slice->solve_line_low(2, 0, 1, cut0_begin, cut1_end, &axis_begin_b, &axis_end_b,
+                          point_begin_b, point_end_b);
     exists = std::isfinite(axis_begin_b) && std::isfinite(axis_end_b);
     if (exists) {
       EXPECT_LE(axis_begin_b, axis_end_b + EPS);
@@ -774,7 +777,8 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
     // * case C: cut0_end    cut1_begin
     double axis_begin_c, axis_end_c;
     double point_begin_c[3], point_end_c[3];
-    slice->solve_line_low(2, 0, 1, cut0_end, cut1_begin, &axis_begin_c, &axis_end_c, point_begin_c, point_end_c);
+    slice->solve_line_low(2, 0, 1, cut0_end, cut1_begin, &axis_begin_c, &axis_end_c,
+                          point_begin_c, point_end_c);
     exists = std::isfinite(axis_begin_c) && std::isfinite(axis_end_c);
     if (exists) {
       EXPECT_LE(axis_begin_c, axis_end_c + EPS);
@@ -785,7 +789,8 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
     // * case D: cut0_end    cut1_end
     double axis_begin_d, axis_end_d;
     double point_begin_d[3], point_end_d[3];
-    slice->solve_line_low(2, 0, 1, cut0_end, cut1_end, &axis_begin_d, &axis_end_d, point_begin_d, point_end_d);
+    slice->solve_line_low(2, 0, 1, cut0_end, cut1_end, &axis_begin_d, &axis_end_d,
+                          point_begin_d, point_end_d);
     exists = std::isfinite(axis_begin_d) && std::isfinite(axis_end_d);
     if (exists) {
       EXPECT_LE(axis_begin_d, axis_end_d + EPS);
@@ -797,7 +802,8 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
     double axis_begin_e, axis_end_e;
     double frac1_begin_e, frac1_end_e;
     double point_begin_e[3], point_end_e[3];
-    slice->solve_plane_low(2, 0, cut0_begin, &axis_begin_e, &axis_end_e, point_begin_e, point_end_e);
+    slice->solve_plane_low(2, 0, cut0_begin, &axis_begin_e, &axis_end_e,
+                           point_begin_e, point_end_e);
     exists = std::isfinite(axis_begin_e) && std::isfinite(axis_end_e);
     if (exists) {
       EXPECT_LE(axis_begin_e, axis_end_e);
@@ -829,7 +835,8 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
     double axis_begin_g, axis_end_g;
     double frac0_begin_g, frac0_end_g;
     double point_begin_g[3], point_end_g[3];
-    slice->solve_plane_low(2, 1, cut1_begin, &axis_begin_g, &axis_end_g, point_begin_g, point_end_g);
+    slice->solve_plane_low(2, 1, cut1_begin, &axis_begin_g, &axis_end_g,
+                           point_begin_g, point_end_g);
     exists = std::isfinite(axis_begin_g) && std::isfinite(axis_end_g);
     if (exists) {
       EXPECT_LE(axis_begin_g, axis_end_g);
