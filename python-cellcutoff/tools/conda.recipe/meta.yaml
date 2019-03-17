@@ -6,32 +6,35 @@ source:
   path: ../../
 
 build:
-  script_env:
-   - PROJECT_VERSION
   number: 0
   string: py{{ CONDA_PY }}_1
-  script: python setup.py install
+  script_env:
+    # Needed to let conda-build pick up the correct SDK on OSX.
+    - SDKROOT  # [osx]
+  script:
+    - python setup.py build_ext -I {{ PREFIX }}/include
+    - python setup.py install --single-version-externally-managed --record=record.txt
 
 requirements:
   build:
-    - python
-    - numpy
-    - cython >=0.24.1
-    - cellcutoff
-    - setuptools
-    - nose
     - {{ compiler("c") }}
     - {{ compiler("cxx") }}
+  host:
+    - python
+    - cython >=0.28.0
+    - setuptools
+    - numpy
+    - cellcutoff =={{ PROJECT_VERSION }}
   run:
     - cellcutoff
     - python
     - numpy
-    - nose
 
 about:
-  description: Real-space cutoff library (python wrapper)
+  description: Periodic boundary conditions and real-space cutoff calculations (Python wrapper)
   home: https://github.com/theochem/cellcutoff
-  license: GPL3
+  license: GPL-3.0
+  license_family: GPL
   license_file: LICENSE.txt
   summary: CellCutoff is a library for periodic boundary conditions and real-space cutoff calculations.
 

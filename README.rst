@@ -1,82 +1,43 @@
-|Travis|
-|Conda|
-|PythonConda|
-|Codecov|
-|CondaVersion|
+.. image:: https://travis-ci.org/theochem/cellcutoff.svg?branch=master
+    :target: https://travis-ci.org/theochem/cellcutoff
+.. image:: https://img.shields.io/codecov/c/github/theochem/cellcutoff/master.svg
+    :target: https://codecov.io/gh/theochem/cellcutoff
+.. image:: https://img.shields.io/conda/v/theochem/cellcutoff.svg
+    :target: https://anaconda.org/theochem/cellcutoff
+.. image:: https://img.shields.io/conda/vn/theochem/python-cellcutoff.svg
+    :target: https://anaconda.org/theochem/python-cellcutoff
+.. image:: https://img.shields.io/conda/pn/theochem/cellcutoff.svg
+    :target: https://anaconda.org/theochem/cellcutoff
 
 CellCutoff is a library for periodic boundary conditions and real-space
 cutoff calculations.
 
-Dependencies
+
+Installation
 ============
 
--  C++11 compiler (tested: GNU and Clang)
--  Python, >=2.7.x, <3.x
--  Numpy, >1.9
--  Cython, >= 0.24.1
+When you are interested in using cellcutoff (without needing to modify it), you
+can install cellcutoff with conda. After installing and activating a miniconda
+environment, run:
 
-Runtime environment configuration
-=================================
+.. code-block:: bash
 
-The instructions below explain how to install everything in
-``${HOME}/.local``, such that you do not need root permissions to
-install all the software. To make this work, some environment variables
-must be set, e.g. in your ``~/.bashrc``.
+  conda install -c theochem cellcutoff python-cellcutoff
 
-::
+If you are interesed in working on the development of cellcutoff, you first need
+to check out the latest version from the git repository
 
-    export PATH=${HOME}/.local/bin:${PATH}
-    export LD_LIBRARY_PATH=${HOME}/.local/lib:${HOME}/.local/lib64:${LD_LIBRARY_PATH}
+.. code-block:: bash
 
-Installation of ``cellcutoff``
-==============================
+  git clone git@github.com:theochem/cellcutoff.git
+  cd cellcutoff
 
-Build (for installation in home directory):
+Then install Roberto and run it in the root of the repository:
 
-::
+.. code-block:: bash
 
-    mkdir build
-    cd build
-    cmake .. -DCMAKE_BUILD_TYPE=release -DCMAKE_INSTALL_PREFIX=${HOME}/.local
-    make
+  pip install --user --upgrade 'roberto<2.0.0'
+  rob quality
 
-Testing (in the build directory):
-
-::
-
-    make check
-
-Install:
-
-::
-
-    make install
-
-Installation of ``python-cellcutoff``
-=====================================
-
-In-place build and test
-
-::
-
-    cd python-cellcutoff
-    ./setup.py build_ext -i -L${LD_LIBRARY_PATH}
-    nosetests -v
-
-Build and install (into home directory):
-
-::
-
-    ./setup.py build_ext -L${LD_LIBRARY_PATH}
-    ./setup.py install --user
-
-.. |Travis| image:: https://travis-ci.org/theochem/cellcutoff.svg?branch=master
-    :target: https://travis-ci.org/theochem/cellcutoff
-.. |Codecov| image:: https://img.shields.io/codecov/c/github/theochem/cellcutoff/master.svg
-    :target: https://codecov.io/gh/theochem/cellcutoff
-.. |Conda| image:: https://img.shields.io/conda/v/theochem/cellcutoff.svg
-    :target: https://anaconda.org/theochem/cellcutoff
-.. |PythonConda| image:: https://img.shields.io/conda/vn/theochem/python-cellcutoff.svg
-    :target: https://anaconda.org/theochem/python-cellcutoff
-.. |CondaVersion| image:: https://img.shields.io/conda/pn/theochem/cellcutoff.svg
-    :target: https://anaconda.org/theochem/cellcutoff
+This will build cellcutoff in-place and run all tests. More details for
+potential contributors are given in `CONTRIBUTING.rst <CONTRIBUTING.rst>`_.

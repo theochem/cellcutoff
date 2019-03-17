@@ -45,26 +45,8 @@ target_link_libraries(test_cellcutoff cellcutoff gtest gtest_main ${GCOV} pthrea
 install (TARGETS test_cellcutoff DESTINATION libexec/cellcutoff)
 
 # Use our own test target because ctest hides relevant output.
-if(CELLCUTOFF_DO_COVERAGE)
-    add_custom_target(clean_coverage
-                      COMMAND ${PROJECT_SOURCE_DIR}/tools/coverage_clean.sh
-                      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-                      COMMENT "Removing old coverage statistics")
-
-    add_custom_target(check
-                      COMMAND test_cellcutoff
-                      DEPENDS test_cellcutoff clean_coverage
-                      COMMENT "Running tests")
-
-    add_custom_target(coverage
-                      COMMAND ${PROJECT_SOURCE_DIR}/tools/coverage_analyze.py
-                      DEPENDS check
-                      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-                      COMMENT "Coverage analysis")
-else()
-    add_custom_target(check
-                      COMMAND test_cellcutoff
-                      DEPENDS test_cellcutoff
-                      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-                      COMMENT "Running tests")
-endif()
+add_custom_target(test
+                  COMMAND test_cellcutoff
+                  DEPENDS test_cellcutoff
+                  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                  COMMENT "Running tests")

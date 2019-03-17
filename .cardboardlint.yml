@@ -3,7 +3,7 @@ pre_filefilter: ['- python-cellcutoff', '+ *']
 linters:
   - cppcheck:
   - cpplint:
-      script: ./cpplint.py
+      script: cpplint
   - doxygen:
   - header:
   - header:

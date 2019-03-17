@@ -1,0 +1,26 @@
+project:
+  name: cellcutoff
+  packages:
+    - conda_name: cellcutoff
+      tools:
+        - write-cmake-version
+        - cardboardlint-static
+        - cardboardlint-dynamic
+        - build-cmake-inplace
+        - maketest
+        - build-cmake-source
+        - build-conda
+        - deploy-conda
+        - deploy-github
+    - conda_name: python-cellcutoff
+      path: python-cellcutoff
+      tools:
+        - write-py-version
+        - cardboardlint-static
+        - cardboardlint-dynamic
+        - build-py-inplace
+        - pytest
+        - build-py-source
+        - build-conda
+        - deploy-conda
+        - deploy-github
