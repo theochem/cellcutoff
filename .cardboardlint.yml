@@ -1,7 +1,9 @@
 pre_filefilter: ['- python-cellcutoff', '+ *']
 
 linters:
-  - cppcheck:
+# Disable cppcheck for now because it does not work on OSX
+# See https://github.com/conda-forge/cppcheck-feedstock/pull/8
+#  - cppcheck:
   - cpplint:
       script: cpplint
   - doxygen:
