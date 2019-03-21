@@ -30,6 +30,15 @@ requirements:
     - python
     - numpy
 
+test:
+  requires:
+    - python
+    - pytest
+    - pytest-xdist
+  commands:
+    - conda inspect linkages python-cellcutoff
+    - pytest --pyargs cellcutoff -n auto
+
 about:
   description: Periodic boundary conditions and real-space cutoff calculations (Python wrapper)
   home: https://github.com/theochem/cellcutoff

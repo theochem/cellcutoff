@@ -20,6 +20,11 @@ requirements:
     - {{ compiler("c") }}
     - {{ compiler("cxx") }}
 
+test:
+  commands:
+    - conda inspect linkages cellcutoff
+    - ${PREFIX}/libexec/cellcutoff/test_cellcutoff
+
 about:
   description: Periodic boundary conditions and real-space cutoff calculations
   home: https://github.com/theochem/cellcutoff
