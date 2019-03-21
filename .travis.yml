@@ -65,8 +65,12 @@ install:
 
 script:
   # Instead of simply calling `rob`, we do something that always works on osx too.
-  - env
-  - python3 -m roberto
+  - >-
+    if [[ "$TRAVIS_PULL_REQUEST" == "true" ]]; then
+      python3 -m roberto;
+    else
+      python3 -m roberto robot;
+    fi
 
 before_cache:
   - rm -rf ${ROBERTO_CONDA_BASE_PATH}/conda-bld

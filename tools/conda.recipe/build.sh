@@ -7,4 +7,4 @@ cmake \
   -DCMAKE_INSTALL_PREFIX=${PREFIX} \
   -DCMAKE_BUILD_TYPE=release \
   ..
-VERBOSE=1 make install
+VERBOSE=1 make install -j ${CPU_COUNT}
