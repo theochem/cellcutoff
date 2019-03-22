@@ -36,7 +36,7 @@ test:
     - pytest-xdist
   commands:
     - conda inspect linkages python-cellcutoff
-    - pytest --pyargs cellcutoff -n auto
+    - pytest --pyargs cellcutoff -v -n auto
 
 about:
   description: Periodic boundary conditions and real-space cutoff calculations (Python wrapper)
