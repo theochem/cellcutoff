@@ -89,7 +89,7 @@ setup(
         'Topic :: Scientific/Engineering :: Physics',
         'Topic :: Scientific/Engineering :: Chemistry',
         'Intended Audience :: Science/Research',
-    ]
+    ],
     setup_requires=['numpy>=1.0', 'cython>=0.28.0'],
     install_requires=['numpy>=1.0', 'cython>=0.28.0'],
 )
