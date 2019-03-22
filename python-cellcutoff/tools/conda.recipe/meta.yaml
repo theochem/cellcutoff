@@ -22,7 +22,7 @@ requirements:
     - python
     - cython >=0.28.0
     - setuptools
-    - numpy
+    - numpy >=1.0
     - cellcutoff =={{ PROJECT_VERSION }}
   run:
     - cellcutoff
@@ -32,7 +32,7 @@ requirements:
 test:
   requires:
     - python
-    - pytest
+    - pytest >=4.2.0
     - pytest-xdist
   commands:
     - conda inspect linkages python-cellcutoff
