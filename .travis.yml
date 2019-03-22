@@ -48,6 +48,8 @@ env:
     - secure: "rWLvl4K+U3sz7RaEIDlDU0bI5k9a/JWqqpkd3gNRpR4v9SvnO7xZS399ThqYDOGkJetXh080RyZKK7UtnhMkewKluwRzRS2XTnL44csafTvInf7nQ+Jal2BxjZc/dPVKITExrZf41s+RmUm7OGtozqQ47LtlEKGj0hsIFpPe00reEYQP9ycU9Sp4edD7a1Jdx5xjdleQ5c4ho/3t/LzapTZM39R0iWL4bwA3EFSJYuF7Mvgg79UB50ml9AmLQbqsEQeDEGUR5UUZUyCgCAjVT4c3O8P7c7qX+HskjF/i1pugHkduxO+qsmGTLMvTRWG82UnJrtwGQE1t9B6yLNZKISujk7j3TZPtemYIuw2f47XrAyPjARXEPbRaklFQFnANzWO1XWNmB4rG1HJf9SjtOVm8gUp2tLzyfg1gFVUk7gl7SDT1vqCEB8lSLlj8ibperSPhsfiGmSRU1Bnp0763RcO5VDXkLaMK7z9GeSJCvmLztUeT7TLc0ceqhTUZGcaZ8EY6tVDO2UzCbF+yHLbgigVw3O1NvOKX4foSceWRwuwyw5FhjrrvzX7ld7ASNxK0Zag00NyWKlG23HVESSODnUR1uCDTk+7LZZYzuyzr/iGy8DLQRUaX4K67YKYt0v98r+jLgkpuWSmcv8uTccPbIIcSolVhL2f3yVYMp4G8Drw="
 
 cache:
+  # More time is needed for caching due to the sheer size of the conda env.
+  timeout: 1000
   directories:
     - ${HOME}/cache
 
