@@ -8,9 +8,16 @@ source:
 build:
   number: 0
   string: 0
-  script_env:
-    # Needed to let conda-build pick up the correct SDK on OSX.
-    - SDKROOT  # [osx]
+  script:
+    - rm -rf build
+    - mkdir build
+    - cd build
+    - >-
+      cmake ..
+      -DCMAKE_INSTALL_PREFIX=${PREFIX}
+      -DCMAKE_BUILD_TYPE=release
+      -DCMAKE_OSX_SYSROOT=${CONDA_BUILD_SYSROOT}  # [osx]
+    - VERBOSE=1 make install -j ${CPU_COUNT}
 
 requirements:
   build:

@@ -8,10 +8,9 @@ source:
 build:
   number: 0
   string: py{{ CONDA_PY }}_1
-  script_env:
-    # Needed to let conda-build pick up the correct SDK on OSX.
-    - SDKROOT  # [osx]
   script:
+    - export CXXFLAGS="${CXXFLAGS} -isysroot ${CONDA_BUILD_SYSROOT}"  # [osx]
+    - export CFLAGS="${CFLAGS} -isysroot ${CONDA_BUILD_SYSROOT}"  # [osx]
     - python setup.py build_ext -I {{ PREFIX }}/include
     - python setup.py install --single-version-externally-managed --record=record.txt
 
