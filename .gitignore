@@ -1,3 +1,4 @@
+activate-*-dev-*.sh
 *.o
 *.so*
 *.pyc
@@ -12,3 +13,6 @@ dist
 cpplint.py
 CMakeListsVersion.txt.in
 .idea
+.pytest_cache
+coverage*.xml
+.coverage
