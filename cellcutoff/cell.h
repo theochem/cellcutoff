@@ -39,6 +39,7 @@ namespace cellcutoff {
  */
 class singular_cell_vectors : public std::domain_error {
  public:
+  //! Create exception, default constructor
   explicit singular_cell_vectors(const std::string& what_arg)
       : std::domain_error(what_arg) {}
 };

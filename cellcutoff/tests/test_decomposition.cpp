@@ -226,7 +226,8 @@ TEST(DecompositionTest, cell_map_example) {
     points.push_back(cl::Point(cart1));
     points.push_back(cl::Point(cart2));
     cl::assign_icell(cell, points.data(), points.size(), sizeof(cl::Point));
-    std::unique_ptr<cl::CellMap> cell_map(cl::create_cell_map(points.data(), points.size(), sizeof(cl::Point)));
+    std::unique_ptr<cl::CellMap> cell_map(
+      cl::create_cell_map(points.data(), points.size(), sizeof(cl::Point)));
     EXPECT_EQ(2, cell_map->size());
     // icell0
     std::array<int, 3> icell0{0, 0, 0};
@@ -256,7 +257,8 @@ TEST(DecompositionTest, cell_map_points_not_ordered) {
     points.push_back(cl::Point(cart1));
     points.push_back(cl::Point(cart2));
     cl::assign_icell(cell, points.data(), points.size(), sizeof(cl::Point));
-    EXPECT_THROW(cl::create_cell_map(points.data(), points.size(), sizeof(cl::Point)), cl::points_not_grouped);
+    EXPECT_THROW(cl::create_cell_map(
+      points.data(), points.size(), sizeof(cl::Point)), cl::points_not_grouped);
   }
 }
 
@@ -273,7 +275,8 @@ TEST(DecompositionTest, random_cell_map) {
     std::unique_ptr<cl::Cell> subcell(create_random_cell_nvec(irep*NPOINT, 3));
     cl::assign_icell(*subcell, points.data(), points.size(), sizeof(cl::Point));
     cl::sort_by_icell(points.data(), points.size(), sizeof(cl::Point));
-    std::unique_ptr<cl::CellMap> cell_map(cl::create_cell_map(points.data(), points.size(), sizeof(cl::Point)));
+    std::unique_ptr<cl::CellMap> cell_map(
+      cl::create_cell_map(points.data(), points.size(), sizeof(cl::Point)));
     // Check consistency of results: loop over map
     for (const auto& kv : *cell_map) {
       const size_t begin = kv.second[0];

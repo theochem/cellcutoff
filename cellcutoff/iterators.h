@@ -38,7 +38,7 @@ class BarIterator {
  public:
   BarIterator(const std::vector<int>& bars, const int nvec, const int* shape);
   BarIterator(const std::vector<int>& bars, const int nvec)
-      : BarIterator(bars, nvec, nullptr) {};
+      : BarIterator(bars, nvec, nullptr) {}
   ~BarIterator();
 
   bool busy() const { return busy_; }
