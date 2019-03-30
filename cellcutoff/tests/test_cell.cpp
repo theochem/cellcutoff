@@ -20,6 +20,7 @@
 
 
 #include <cmath>
+
 #include <memory>
 #include <stdexcept>
 #include <vector>
@@ -30,7 +31,7 @@
 #include <cellcutoff/iterators.h>
 #include <cellcutoff/vec3.h>
 
-#include "common.h"
+#include "cellcutoff/tests/common.h"
 
 
 namespace cl = cellcutoff;

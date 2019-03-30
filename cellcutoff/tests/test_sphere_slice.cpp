@@ -21,6 +21,7 @@
 
 #include <cmath>
 #include <cstdlib>
+
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -30,7 +31,7 @@
 #include <cellcutoff/sphere_slice.h>
 #include <cellcutoff/vec3.h>
 
-#include "common.h"
+#include "cellcutoff/tests/common.h"
 
 
 namespace cl = cellcutoff;
@@ -104,16 +105,26 @@ TEST_F(SphereSliceTest, domain) {
   EXPECT_THROW(slice.set_cut_begin_end(1, 2, 1), std::domain_error);
   EXPECT_THROW(slice.solve_full_low(-1, &begin, &end, nullptr, nullptr), std::domain_error);
   EXPECT_THROW(slice.solve_full_low(3, &begin, &end, nullptr, nullptr), std::domain_error);
-  EXPECT_THROW(slice.solve_plane_low(-1, 0, 0.0, &begin, &end, nullptr, nullptr), std::domain_error);
-  EXPECT_THROW(slice.solve_plane_low(3, 0, 0.0, &begin, &end, nullptr, nullptr), std::domain_error);
-  EXPECT_THROW(slice.solve_plane_low(0, -1, 0.0, &begin, &end, nullptr, nullptr), std::domain_error);
-  EXPECT_THROW(slice.solve_plane_low(0, 3, 0.0, &begin, &end, nullptr, nullptr), std::domain_error);
-  EXPECT_THROW(slice.solve_line_low(-1, 0, 1, 0.0, 0.0, &begin, &end, nullptr, nullptr), std::domain_error);
-  EXPECT_THROW(slice.solve_line_low(3, 0, 1, 0.0, 0.0, &begin, &end, nullptr, nullptr), std::domain_error);
-  EXPECT_THROW(slice.solve_line_low(0, -1, 1, 0.0, 0.0, &begin, &end, nullptr, nullptr), std::domain_error);
-  EXPECT_THROW(slice.solve_line_low(0, 3, 1, 0.0, 0.0, &begin, &end, nullptr, nullptr), std::domain_error);
-  EXPECT_THROW(slice.solve_line_low(0, 1, -1, 0.0, 0.0, &begin, &end, nullptr, nullptr), std::domain_error);
-  EXPECT_THROW(slice.solve_line_low(0, 1, 3, 0.0, 0.0, &begin, &end, nullptr, nullptr), std::domain_error);
+  EXPECT_THROW(slice.solve_plane_low(-1, 0, 0.0, &begin, &end, nullptr, nullptr),
+               std::domain_error);
+  EXPECT_THROW(slice.solve_plane_low(3, 0, 0.0, &begin, &end, nullptr, nullptr),
+               std::domain_error);
+  EXPECT_THROW(slice.solve_plane_low(0, -1, 0.0, &begin, &end, nullptr, nullptr),
+               std::domain_error);
+  EXPECT_THROW(slice.solve_plane_low(0, 3, 0.0, &begin, &end, nullptr, nullptr),
+               std::domain_error);
+  EXPECT_THROW(slice.solve_line_low(-1, 0, 1, 0.0, 0.0, &begin, &end, nullptr, nullptr),
+               std::domain_error);
+  EXPECT_THROW(slice.solve_line_low(3, 0, 1, 0.0, 0.0, &begin, &end, nullptr, nullptr),
+              std::domain_error);
+  EXPECT_THROW(slice.solve_line_low(0, -1, 1, 0.0, 0.0, &begin, &end, nullptr, nullptr),
+               std::domain_error);
+  EXPECT_THROW(slice.solve_line_low(0, 3, 1, 0.0, 0.0, &begin, &end, nullptr, nullptr),
+               std::domain_error);
+  EXPECT_THROW(slice.solve_line_low(0, 1, -1, 0.0, 0.0, &begin, &end, nullptr, nullptr),
+               std::domain_error);
+  EXPECT_THROW(slice.solve_line_low(0, 1, 3, 0.0, 0.0, &begin, &end, nullptr, nullptr),
+               std::domain_error);
   EXPECT_THROW(slice.compute_plane_intersection(-1, 0, 0.0, 0.0, nullptr), std::domain_error);
   EXPECT_THROW(slice.compute_plane_intersection(3, 0, 0.0, 0.0, nullptr), std::domain_error);
   EXPECT_THROW(slice.compute_plane_intersection(0, -1, 0.0, 0.0, nullptr), std::domain_error);

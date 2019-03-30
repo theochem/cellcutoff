@@ -25,8 +25,9 @@
    validation of the algorithm choices, rather than algorithm implementations. */
 
 
-#include <algorithm>
 #include <cmath>
+
+#include <algorithm>
 #include <vector>
 
 #include <gtest/gtest.h>
@@ -36,7 +37,7 @@
 #include <cellcutoff/iterators.h>
 #include <cellcutoff/vec3.h>
 
-#include "common.h"
+#include "cellcutoff/tests/common.h"
 
 
 namespace cl = cellcutoff;

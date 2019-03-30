@@ -24,6 +24,9 @@
 
 #include <cmath>
 
+#include <algorithm>
+
+
 namespace cellcutoff {
 namespace vec3 {
 

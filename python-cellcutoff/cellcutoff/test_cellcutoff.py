@@ -22,9 +22,9 @@
 """Unit tests."""
 
 
-from cellcutoff import Cell
-
 import numpy as np
+
+from cellcutoff import Cell
 
 
 def test_subcell():

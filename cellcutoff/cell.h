@@ -18,7 +18,12 @@
 //
 // --
 
-/** @file */
+/** @file
+
+    The main module of the cellcutoff library: a convenient implementation of a Cell
+    object describibg a triclinic box, e.g. to define periodic boundary conditions.
+
+  */
 
 
 #ifndef CELLCUTOFF_CELL_H_
@@ -97,8 +102,8 @@ class Cell {
   /** @brief
           Helper to construct a subcell of a given cell.
 
-          This partitions space into bins (with the size and shape of the subcell) that
-          can be used to do a domain decomposition.
+      This partitions space into bins (with the size and shape of the subcell) that can be
+      used to do a domain decomposition.
 
       @param spacing
           The spacing between the subcell crystal planes is guaranteed to be lower than
@@ -271,7 +276,7 @@ class Cell {
 
 
   /** @brief
-          Selects a cells inside or intersecting with a cutoff sphere.
+          Selects cells inside or at least partially overlapping with a cutoff sphere.
 
       This function assumes space is divided in a regular grid of subcells. The shape of
       one subcell is defined by `vecs` and `nvec` (>= 1). This function then finds all

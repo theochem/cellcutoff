@@ -102,7 +102,7 @@ Cell::Cell(const double* vecs, const int nvec): nvec_(nvec) {
       double norm = vec3::norm(vecs_ + 3);
       vec3::iscale(vecs_ + 3, 1.0/norm);
       // the rest is done in case 2, so no break here!
-    }  //-fallthrough
+    }  // fall through
     case 2: {
       // Add one vec that is normalized and orthogonal to the two given
       // vecs. The three vectors will be right-handed.
