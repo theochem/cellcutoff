@@ -26,7 +26,7 @@
 
 #include <cellcutoff/decomposition.h>
 
-#include "common.h"
+#include "cellcutoff/tests/common.h"
 
 
 namespace cl = cellcutoff;

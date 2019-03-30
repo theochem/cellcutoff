@@ -18,7 +18,11 @@
 //
 // --
 
-/** @file */
+/** @file
+
+    Provides tools to sort grid points into cells.
+
+  */
 
 
 #ifndef CELLCUTOFF_DECOMPOSITION_H_
@@ -40,24 +44,41 @@ namespace cellcutoff {
  */
 class points_not_grouped : public std::domain_error {
  public:
+  //! Create exception, default constructor
   explicit points_not_grouped(const std::string& what_arg)
       : std::domain_error(what_arg) {}
 };
 
 
+/** @brief
+        A Point: its Cartesian coordinates and the indices of the cell in which it sits.
+
+    A comparator is implemented to facilitate sorting of points.
+ */
 class Point {
  public:
+  //! Initialize with just the Cartesian coordinates of the point alone.
   explicit Point(const double* cart);
+  //! Initialize with Cartesian coordinates and cell indices.
   Point(const double* cart, const int* icell);
+  //! Compare two points, only cell indices matter.
   bool operator<(const Point& other) const;
 
-  double cart_[3];
-  int icell_[3];
+  double cart_[3];  //!< Cartesian coordinates of the point
+  int icell_[3];    //!< Cell indices of the containing grid cell
 };
 
 
-// A typedef for cell_map objects
+/** @brief
+        A hash for using an integer array of three elements as keys in a std::unordered_map.
+ */
 struct icell_hash {
+  /** @brief
+          Compute a unique (positive) integer from a vector of three integer.
+
+      This is the usual folding trick, such that cells closer to the origin are assigned
+      lower integer indices.
+    */
   size_t operator()(const std::array<int, 3>& icell) const {
     const int small = 4*(icell[0] < 0) + 2*(icell[1] < 0) + (icell[2] < 0);
     const size_t x = abs(icell[0]) + (icell[0] >= 0);
@@ -68,10 +89,15 @@ struct icell_hash {
     return (((d0-3)*(d0-2)*(d0-1))/6 + ((d1-2)*(d1-1))/2 + (x-1))*8 + small;
   }
 };
+
+//! Unordered map for sorting points into cells.
 typedef std::unordered_map<std::array<int, 3>, std::array<size_t, 2>, icell_hash> CellMap;
 
-//! Assigns all cell indexes
+/** @brief Assigns all cell indexes to an array of Points, not wrapping the cell indices.
+ */
 void assign_icell(const Cell &subcell, void* points, size_t npoint, size_t point_size);
+
+//! Assigns all cell indexes to an array of points, wrapp
 void assign_icell(const Cell &subcell, const int* shape, void* points, size_t npoint,
     size_t point_size);
 

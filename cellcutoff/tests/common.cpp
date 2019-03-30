@@ -19,16 +19,16 @@
 // --
 
 
-#include "common.h"
+#include "cellcutoff/tests/common.h"
+
+#include <cmath>
 
 #include <algorithm>
-#include <cmath>
 #include <limits>
 #include <random>
 #include <stdexcept>
 
 #include <gtest/gtest.h>
-
 #include <cellcutoff/vec3.h>
 
 

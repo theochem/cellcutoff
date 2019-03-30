@@ -81,7 +81,7 @@ SphereSlice::SphereSlice(const double* center, const double* normals, double rad
       /* Define a vector orthogonal to cut_normal, in the plane of axis
          and cut_normal. The length of the vector is such that, when added
          to the center of the circle, it just ends on the circle edge. The
-         direction is chosen to either minimize or maximise the projection
+         direction is chosen to either minimize or maximize the projection
          on axis. */
       const double* cut_normal = normals_ + 3*id_cut;
       double ortho[3] = {0.0, 0.0, 0.0};
@@ -256,7 +256,7 @@ void SphereSlice::solve_plane(const int id_axis, int const id_cut0,
 
 
 void SphereSlice::solve_plane_low(const int id_axis, const int id_cut,
-    const double frac_cut, double* begin, double* end,
+    const double frac_cut0, double* begin, double* end,
     double* point_begin, double* point_end) const {
   // Get the axis
   CHECK_ID(id_axis);
@@ -271,7 +271,7 @@ void SphereSlice::solve_plane_low(const int id_axis, const int id_cut,
    */
   // The difference in reduced coordinate between the center of the sphere
   // and the center of the circle.
-  double delta_cut = frac_cut - frac_center_[id_cut];
+  double delta_cut = frac_cut0 - frac_center_[id_cut];
   // The amount lost from the total radius squared.
   double lost_radius_sq = delta_cut*delta_cut/norms_sq_[id_cut];
   // The rest of the radius squared is for the size of the circle.

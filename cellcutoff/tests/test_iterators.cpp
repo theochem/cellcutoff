@@ -20,6 +20,7 @@
 
 
 #include <cmath>
+
 #include <vector>
 
 #include <gtest/gtest.h>
@@ -28,7 +29,7 @@
 #include <cellcutoff/decomposition.h>
 #include <cellcutoff/iterators.h>
 
-#include "common.h"
+#include "cellcutoff/tests/common.h"
 
 
 namespace cl = cellcutoff;
