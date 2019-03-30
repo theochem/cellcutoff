@@ -26,6 +26,7 @@ requirements:
   host:
     - make
     - cmake
+    - gtest
     - doxygen
     - graphviz
 

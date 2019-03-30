@@ -20,6 +20,8 @@
 # --
 
 
+find_package(GTest REQUIRED)
+
 # Define test source files
 set(TEST_SOURCE_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/test_cell.cpp
@@ -33,13 +35,9 @@ set(TEST_SOURCE_FILES
 # The testing executable
 add_executable(test_cellcutoff ${TEST_SOURCE_FILES})
 set_property(TARGET test_cellcutoff PROPERTY CXX_STANDARD 11)
+set_property(TARGET test_cellcutoff PROPERTY include_directories ${GTEST_INCLUDE_DIRS})
 
-# How the testing executable has to be linked...
-if(UNIX AND NOT APPLE)
-  set(GCOV gcov)
-endif()
-
-target_link_libraries(test_cellcutoff cellcutoff gtest gtest_main ${GCOV} pthread)
+target_link_libraries(test_cellcutoff cellcutoff GTest::GTest GTest::Main ${GCOV} pthread)
 
 # Install the test in libexec
 install (TARGETS test_cellcutoff DESTINATION libexec/cellcutoff)
