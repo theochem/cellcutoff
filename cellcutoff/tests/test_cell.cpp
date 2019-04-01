@@ -653,12 +653,13 @@ TEST_P(CellTestP, iadd_vec_consistency) {
 TEST_P(CellTestP, vec_vecs_gvecs) {
   double vecs[9];
   std::unique_ptr<cl::Cell> cell;
+  unsigned int seed(1487);
   while (true) {
-    try {
-      fill_random_double(1487, vecs, 9, -2.0, 2.0);
+    seed = fill_random_double(seed, vecs, 9, -2.0, 2.0);
+    if (vec3::triple(vecs, vecs + 3, vecs + 6) != 0.0) {
       cell.reset(new cl::Cell(vecs, nvec));
       break;
-    } catch (cl::singular_cell_vectors) {}
+    }
   }
   for (int ivec=0; ivec < nvec; ++ivec) {
     EXPECT_EQ(vecs[3*ivec + 0], cell->vec(ivec)[0]);
