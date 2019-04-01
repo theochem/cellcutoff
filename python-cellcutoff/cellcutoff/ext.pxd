@@ -21,8 +21,14 @@
 # --
 
 
+cimport numpy as np
+
 cimport cell
 
 
 cdef class Cell:
     cdef cell.Cell* _this
+    cdef _iwrap_mic_one(self, np.ndarray[double, ndim=1] delta)
+    cdef _iwrap_mic_many(self, np.ndarray[double, ndim=2] deltas)
+    cdef _iwrap_box_one(self, np.ndarray[double, ndim=1] delta)
+    cdef _iwrap_box_many(self, np.ndarray[double, ndim=2] deltas)

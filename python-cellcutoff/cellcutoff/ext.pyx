@@ -198,11 +198,11 @@ cdef class Cell(object):
         else:
             raise TypeError('The argument delta must be a numpy array.')
 
-    def _iwrap_mic_one(self, np.ndarray[double, ndim=1] delta not None):
+    cdef _iwrap_mic_one(self, np.ndarray[double, ndim=1] delta):
         check_array_arg('delta', delta, (3,))
         self._this.iwrap_mic(&delta[0])
 
-    def _iwrap_mic_many(self, np.ndarray[double, ndim=2] deltas not None):
+    cdef _iwrap_mic_many(self, np.ndarray[double, ndim=2] deltas):
         check_array_arg('deltas', deltas, (-1, 3))
         cdef int i
         cdef int n = deltas.shape[0]
@@ -221,11 +221,11 @@ cdef class Cell(object):
         else:
             raise TypeError('The argument delta must be a numpy array.')
 
-    def _iwrap_box_one(self, np.ndarray[double, ndim=1] delta not None):
+    cdef _iwrap_box_one(self, np.ndarray[double, ndim=1] delta):
         check_array_arg('delta', delta, (3,))
         self._this.iwrap_box(&delta[0])
 
-    def _iwrap_box_many(self, np.ndarray[double, ndim=2] deltas not None):
+    cdef _iwrap_box_many(self, np.ndarray[double, ndim=2] deltas):
         check_array_arg('deltas', deltas, (-1, 3))
         cdef int i
         cdef int n = deltas.shape[0]
@@ -234,6 +234,15 @@ cdef class Cell(object):
 
     def ranges_cutoff(self, np.ndarray[double, ndim=1] center not None, double cutoff):
         """Get the ranges of periodic images which contain a given cutoff sphere.
+
+        This function assumes the space is divided into boxes by crystal planes
+        at integer indexes. For example, these planes for the first cell vector
+        are parallel to the second and third cell vector and have one point in
+        (first vector)*index where index is the integer index for these planes.
+        Similar definitions are used for the other two cell vectors. The
+        returned ranges are arrays referring to the integer indexes that
+        demarcate the cutoff sphere. One could interpret the result as a
+        supercell that contains the entire cutoff sphere.
 
         Parameters
         ----------
@@ -246,10 +255,12 @@ cdef class Cell(object):
         -------
         ranges_begin
             The lower bounds of the intervals containing the cutoff sphere.
+            These integers are the highest indices of the crystal planes below
+            the cutoff sphere.
         ranges_end
             The (non-inclusive) upper bounds of the intervals containing the
-            cutoff sphere. (This determines the crystal planes just after the
-            cutoff sphere.)
+            cutoff sphere. These integers are the lowest indices of the crystal
+            planes above the cutoff sphere.
 
         """
         check_array_arg('center', center, (3,))
