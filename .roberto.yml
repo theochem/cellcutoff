@@ -8,6 +8,7 @@ project:
         - cardboardlint-dynamic
         - build-cmake-inplace
         - maketest
+        - upload-codecov
         - build-cmake-source
         - build-conda
         - deploy-conda
@@ -20,6 +21,7 @@ project:
         - cardboardlint-dynamic
         - build-py-inplace
         - pytest
+        - upload-codecov
         - build-py-source
         - build-conda
         - deploy-conda
