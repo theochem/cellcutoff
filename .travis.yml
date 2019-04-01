@@ -62,7 +62,9 @@ install:
   - python3 --version
   - wget --no-clobber -O ${HOME}/cache/get-pip.py https://bootstrap.pypa.io/get-pip.py || true
   - python3 ${HOME}/cache/get-pip.py --user
-  - python3 -m pip install 'roberto<2.0.0' --user
+  # - python3 -m pip install 'roberto<2.0.0' --user
+  # Use development version of Roberto to avoid having to make too many releases.
+  - python3 -m pip install git+https://github.com/theochem/roberto#egg=roberto --user
 
 script:
   # Instead of simply calling `rob`, we do something that always works on osx too.
