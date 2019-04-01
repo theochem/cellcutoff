@@ -221,13 +221,14 @@ TEST_P(CellTestP, create_reciprocal) {
   EXPECT_NE(gcell->glengths(), mycell->lengths());
   EXPECT_NE(gcell->spacings(), mycell->gspacings());
   EXPECT_NE(gcell->gspacings(), mycell->spacings());
-  // Make sure the contents of the data members are the same
-  EXPECT_TRUE(std::equal(gcell->vecs(), gcell->vecs() + 3*nvec, mycell->gvecs()));
-  EXPECT_TRUE(std::equal(gcell->gvecs(), gcell->gvecs() + 3*nvec, mycell->vecs()));
-  EXPECT_TRUE(std::equal(gcell->lengths(), gcell->lengths() + nvec, mycell->glengths()));
-  EXPECT_TRUE(std::equal(gcell->glengths(), gcell->glengths() + nvec, mycell->lengths()));
-  EXPECT_TRUE(std::equal(gcell->spacings(), gcell->spacings() + nvec, mycell->gspacings()));
-  EXPECT_TRUE(std::equal(gcell->gspacings(), gcell->gspacings() + nvec, mycell->spacings()));
+  // Make sure the contents of the data members are the same. All elements must match,
+  // even when nvec < 3.
+  EXPECT_TRUE(std::equal(gcell->vecs(), gcell->vecs() + 9, mycell->gvecs()));
+  EXPECT_TRUE(std::equal(gcell->gvecs(), gcell->gvecs() + 9, mycell->vecs()));
+  EXPECT_TRUE(std::equal(gcell->lengths(), gcell->lengths() + 3, mycell->glengths()));
+  EXPECT_TRUE(std::equal(gcell->glengths(), gcell->glengths() + 3, mycell->lengths()));
+  EXPECT_TRUE(std::equal(gcell->spacings(), gcell->spacings() + 3, mycell->gspacings()));
+  EXPECT_TRUE(std::equal(gcell->gspacings(), gcell->gspacings() + 3, mycell->spacings()));
 }
 
 

@@ -311,12 +311,12 @@ Cell::Cell(const double* vecs, const int nvec, const double* gvecs,
     const double* spacings, const double* gspacings)
     : nvec_(nvec), volume_(volume), gvolume_(gvolume) {
   // Just copy everything to data members;
-  std::copy(vecs, vecs + nvec_*3, vecs_);
-  std::copy(gvecs, gvecs + nvec_*3, gvecs_);
-  std::copy(lengths, lengths + nvec_, lengths_);
-  std::copy(glengths, glengths + nvec_, glengths_);
-  std::copy(spacings, spacings + nvec_, spacings_);
-  std::copy(gspacings, gspacings + nvec_, gspacings_);
+  std::copy(vecs, vecs + 9, vecs_);
+  std::copy(gvecs, gvecs + 9, gvecs_);
+  std::copy(lengths, lengths + 3, lengths_);
+  std::copy(glengths, glengths + 3, glengths_);
+  std::copy(spacings, spacings + 3, spacings_);
+  std::copy(gspacings, gspacings + 3, gspacings_);
 }
 
 
