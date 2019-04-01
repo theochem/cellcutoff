@@ -18,12 +18,8 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
-#
-# Needed for coverage analysis:
 # cython: linetrace=True
 '''Python wrapper for the CellCutoff library'''
-
-
 
 
 import numpy as np
@@ -49,31 +45,61 @@ def check_array_arg(name, arg, expected_shape):
 
 cdef class Cell(object):
     def __cinit__(self, np.ndarray[double, ndim=2] vecs=None, initvoid=False):
+        """C-level constructor, allocates low-level object unless initvoid==True."""
         if initvoid:
             self._this = NULL
-        elif vecs is None:
+        elif vecs is None or (vecs.shape[0] == 0 and vecs.shape[1] == 3):
             self._this = new cell.Cell()
         else:
             check_array_arg('vecs', vecs, (-1, 3))
-            assert vecs.shape[0] <= 3
+            if vecs.shape[0] > 3:
+                raise TypeError("At most three cell vectors allows.")
             nvec = vecs.shape[0]
             self._this = new cell.Cell(&vecs[0,0], nvec)
 
     def __init__(self, np.ndarray[double, ndim=2] vecs=None):
+        """Initialize a cell object.
+
+        Parameters
+        ----------
+        vecs
+            The cell vectors, each vector being one row. At most three rows
+            are allowed and exactly three columbs are expected. None is
+            equivalent np.zeros((0, 3)).
+
+        """
         pass
 
     def __dealloc__(self):
+        """Dealocate the cell object, also dealocates low-level object."""
         if self._this != NULL:
             del self._this
 
     def subcell(self, double threshold):
+        """Generate an integer division of the current cell.
+
+        Parameters
+        ----------
+        threshold
+            The maximum distance between the subcell faces.
+
+        Returns
+        -------
+        subcell
+            The subcell.
+        shape
+            The number of times the subcell can be repeated along each cell
+            vector to obtain the current cell.
+
+        """
         cdef np.ndarray[int, ndim=1] shape = np.zeros(3, np.intc)
         cdef cell.Cell* cpp_cell = self._this.create_subcell(threshold, &shape[0])
-        cdef Cell cell = Cell.__new__(Cell, None, initvoid=True)
-        cell._this = cpp_cell
-        return cell, shape
+        cdef Cell subcell = Cell.__new__(Cell, None, initvoid=True)
+        subcell._this = cpp_cell
+        return subcell, shape
 
     def reciprocal(self):
+        """Return the reciprocal cell."""
         cdef cell.Cell* cpp_cell = self._this.create_reciprocal()
         cdef Cell cell = Cell.__new__(Cell, None, initvoid=True)
         cell._this = cpp_cell
@@ -81,73 +107,87 @@ cdef class Cell(object):
 
     property nvec:
         def __get__(self):
+            """The dimensionality of the cell."""
             return self._this.nvec()
 
     property vecs:
         def __get__(self):
+            """The cell vectors."""
             cdef np.ndarray[double, ndim=2] vecs = np.zeros((3, 3), float)
             memcpy(&vecs[0, 0], self._this.vecs(), sizeof(double)*9);
             return vecs
 
     property gvecs:
         def __get__(self):
+            """The reciprocal cell vectors."""
             cdef np.ndarray[double, ndim=2] gvecs = np.zeros((3, 3), float)
             memcpy(&gvecs[0, 0], self._this.gvecs(), sizeof(double)*9);
             return gvecs
 
     property volume:
         def __get__(self):
+            """The cell volume."""
             return self._this.volume()
 
     property gvolume:
         def __get__(self):
+            """The reciprocal cell volume."""
             return self._this.gvolume()
 
     property lengths:
         def __get__(self):
+            """The lengths of the cell vectors."""
             cdef np.ndarray[double, ndim=1] lengths = np.zeros(3, float)
             memcpy(&lengths[0], self._this.lengths(), sizeof(double)*3);
             return lengths
 
     property glengths:
         def __get__(self):
+            """The lengths of the reciprocal cell vectors."""
             cdef np.ndarray[double, ndim=1] glengths = np.zeros(3, float)
             memcpy(&glengths[0], self._this.glengths(), sizeof(double)*3);
             return glengths
 
     property spacings:
         def __get__(self):
+            """The distances between the cell planes."""
             cdef np.ndarray[double, ndim=1] spacings = np.zeros(3, float)
             memcpy(&spacings[0], self._this.spacings(), sizeof(double)*3);
             return spacings
 
     property gspacings:
         def __get__(self):
+            """The distances between the reciprocal cell planes."""
             cdef np.ndarray[double, ndim=1] gspacings = np.zeros(3, float)
             memcpy(&gspacings[0], self._this.gspacings(), sizeof(double)*3);
             return gspacings
 
     property cubic:
         def __get__(self):
+            """Is the cell cubic?"""
             return self._this.cubic()
 
     property cuboid:
         def __get__(self):
+            """Is the cell cuboid?"""
             return self._this.cuboid()
 
     def to_frac(self, np.ndarray[double, ndim=1] cart not None):
+        """Convert Cartesian cell vectors to fractional ones."""
         check_array_arg('cart', cart, (3,))
         cdef np.ndarray[double, ndim=1] frac = np.zeros(3, float)
         self._this.to_frac(&cart[0], &frac[0])
         return frac
 
     def to_cart(self, np.ndarray[double, ndim=1] frac not None):
+        """Convert fractional cell vectors to Cartesian ones."""
         check_array_arg('frac', frac, (3,))
         cdef np.ndarray[double, ndim=1] cart = np.zeros(3, float)
         self._this.to_cart(&frac[0], &cart[0])
         return cart
 
     def iwrap_mic(self, delta):
+        """Wrap Cartesian vectors in-place to fractional range [-0.5, 0.5[."""
         if isinstance(delta, np.ndarray):
             if len(delta.shape) == 1:
                 self._iwrap_mic_one(delta)
@@ -170,6 +210,7 @@ cdef class Cell(object):
             self._this.iwrap_mic(&deltas[i, 0])
 
     def iwrap_box(self, delta):
+        """Wrap Cartesian vectors in-place to fractional range [-0, 1[."""
         if isinstance(delta, np.ndarray):
             if len(delta.shape) == 1:
                 self._iwrap_box_one(delta)
@@ -192,6 +233,25 @@ cdef class Cell(object):
             self._this.iwrap_box(&deltas[i, 0])
 
     def ranges_cutoff(self, np.ndarray[double, ndim=1] center not None, double cutoff):
+        """Get the ranges of periodic images which contain a given cutoff sphere.
+
+        Parameters
+        ----------
+        center
+            The center of the cutoff sphere.
+        cutoff
+            The radius of the cutoff sphere.
+
+        Returns
+        -------
+        ranges_begin
+            The lower bounds of the intervals containing the cutoff sphere.
+        ranges_end
+            The (non-inclusive) upper bounds of the intervals containing the
+            cutoff sphere. (This determines the crystal planes just after the
+            cutoff sphere.)
+
+        """
         check_array_arg('center', center, (3,))
         cdef np.ndarray[int, ndim=1] ranges_begin = np.zeros(3, np.intc)
         cdef np.ndarray[int, ndim=1] ranges_end = np.zeros(3, np.intc)
