@@ -221,13 +221,14 @@ TEST_P(CellTestP, create_reciprocal) {
   EXPECT_NE(gcell->glengths(), mycell->lengths());
   EXPECT_NE(gcell->spacings(), mycell->gspacings());
   EXPECT_NE(gcell->gspacings(), mycell->spacings());
-  // Make sure the contents of the data members are the same
-  EXPECT_TRUE(std::equal(gcell->vecs(), gcell->vecs() + 3*nvec, mycell->gvecs()));
-  EXPECT_TRUE(std::equal(gcell->gvecs(), gcell->gvecs() + 3*nvec, mycell->vecs()));
-  EXPECT_TRUE(std::equal(gcell->lengths(), gcell->lengths() + nvec, mycell->glengths()));
-  EXPECT_TRUE(std::equal(gcell->glengths(), gcell->glengths() + nvec, mycell->lengths()));
-  EXPECT_TRUE(std::equal(gcell->spacings(), gcell->spacings() + nvec, mycell->gspacings()));
-  EXPECT_TRUE(std::equal(gcell->gspacings(), gcell->gspacings() + nvec, mycell->spacings()));
+  // Make sure the contents of the data members are the same. All elements must match,
+  // even when nvec < 3.
+  EXPECT_TRUE(std::equal(gcell->vecs(), gcell->vecs() + 9, mycell->gvecs()));
+  EXPECT_TRUE(std::equal(gcell->gvecs(), gcell->gvecs() + 9, mycell->vecs()));
+  EXPECT_TRUE(std::equal(gcell->lengths(), gcell->lengths() + 3, mycell->glengths()));
+  EXPECT_TRUE(std::equal(gcell->glengths(), gcell->glengths() + 3, mycell->lengths()));
+  EXPECT_TRUE(std::equal(gcell->spacings(), gcell->spacings() + 3, mycell->gspacings()));
+  EXPECT_TRUE(std::equal(gcell->gspacings(), gcell->gspacings() + 3, mycell->spacings()));
 }
 
 
@@ -653,12 +654,13 @@ TEST_P(CellTestP, iadd_vec_consistency) {
 TEST_P(CellTestP, vec_vecs_gvecs) {
   double vecs[9];
   std::unique_ptr<cl::Cell> cell;
+  unsigned int seed(1487);
   while (true) {
-    try {
-      fill_random_double(1487, vecs, 9, -2.0, 2.0);
+    seed = fill_random_double(seed, vecs, 9, -2.0, 2.0);
+    if (vec3::triple(vecs, vecs + 3, vecs + 6) != 0.0) {
       cell.reset(new cl::Cell(vecs, nvec));
       break;
-    } catch (cl::singular_cell_vectors) {}
+    }
   }
   for (int ivec=0; ivec < nvec; ++ivec) {
     EXPECT_EQ(vecs[3*ivec + 0], cell->vec(ivec)[0]);

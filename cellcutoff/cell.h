@@ -248,8 +248,13 @@ class Cell {
   /** @brief
           Get the ranges of cells within a cutoff radius.
 
-      This function effectively defines a supercell that is guaranteed to enclose the
-      cutoff sphere.
+      This function assumes the space is divided into boxes by crystal planes at integer
+      indexes. For example, these planes for the first cell vector are parallel to the
+      second and third cell vector and have one point in (first vector)*index where index
+      is the integer index for these planes. Similar definitions are used for the other
+      two cell vectors. The returned ranges are arrays referring to the integer indexes
+      that demarcate the cutoff sphere. One could interpret the result as a supercell
+      that contains the entire cutoff sphere.
 
       @param center
           A pointer to 3 doubles that specify the center of the cutoff sphere in

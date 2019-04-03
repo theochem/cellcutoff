@@ -57,7 +57,27 @@ unsigned int fill_random_int(const unsigned int seed, int* array, const int size
 //! Fills and array of int with a random permutation
 unsigned int fill_random_permutation(const unsigned int seed, int* array, const int size);
 
-//! Random cell with a volume larger than (ratio*scale)**nvec
+/** @brief
+        Return a randomized but sensible unit cell.
+
+    @param seed
+        The random seed used to initialize the cell vectors.
+
+    @param nvec
+        The dimensionality of the cell.
+
+    @param scale
+        Determines the overall size of the random cell. The components of the cell vectors
+        are sampled from a uniform random distribution over the interval [-scale, scale].
+
+    @param ratio
+        Controls the minimal volume of the cell. Random cell vectors are tried until the
+        volume is above (ratio*scale)**nvec. When a suitable volume is found, these
+        cell vectors are used.
+
+    @param cuboid
+        When true, an orthorhombic cell is constructed.
+  */
 std::unique_ptr<cl::Cell> create_random_cell_nvec(const unsigned int seed, const int nvec,
     const double scale = 1.0, const double ratio = 0.1, const bool cuboid = false);
 

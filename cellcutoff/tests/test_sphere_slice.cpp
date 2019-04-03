@@ -819,11 +819,13 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
     if (exists) {
       EXPECT_LE(axis_begin_e, axis_end_e);
       frac1_begin_e = vec3::dot(cut1_normal, point_begin_e);
-      if ((frac1_begin_e > cut1_begin) && (frac1_begin_e < cut1_end))
+      if ((frac1_begin_e > cut1_begin) && (frac1_begin_e < cut1_end)) {
         EXPECT_LE(axis_begin, axis_begin_e);
+      }
       frac1_end_e = vec3::dot(cut1_normal, point_end_e);
-      if ((frac1_end_e > cut1_begin) && (frac1_end_e < cut1_end))
+      if ((frac1_end_e > cut1_begin) && (frac1_end_e < cut1_end)) {
         EXPECT_GE(axis_end, axis_end_e);
+      }
     }
 
     // * case F: cut0_end
@@ -835,11 +837,13 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
     if (exists) {
       EXPECT_LE(axis_begin_f, axis_end_f);
       frac1_begin_f = vec3::dot(cut1_normal, point_begin_f);
-      if ((frac1_begin_f > cut1_begin) && (frac1_begin_f < cut1_end))
+      if ((frac1_begin_f > cut1_begin) && (frac1_begin_f < cut1_end)) {
         EXPECT_LE(axis_begin, axis_begin_f);
+      }
       frac1_end_f = vec3::dot(cut1_normal, point_end_f);
-      if ((frac1_end_f > cut1_begin) && (frac1_end_f < cut1_end))
+      if ((frac1_end_f > cut1_begin) && (frac1_end_f < cut1_end)) {
         EXPECT_GE(axis_end, axis_end_f);
+      }
     }
 
     // * case G: cut1_begin
@@ -852,11 +856,13 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
     if (exists) {
       EXPECT_LE(axis_begin_g, axis_end_g);
       frac0_begin_g = vec3::dot(cut0_normal, point_begin_g);
-      if ((frac0_begin_g > cut0_begin) && (frac0_begin_g < cut0_end))
+      if ((frac0_begin_g > cut0_begin) && (frac0_begin_g < cut0_end)) {
         EXPECT_LE(axis_begin, axis_begin_g);
+      }
       frac0_end_g = vec3::dot(cut0_normal, point_end_g);
-      if ((frac0_end_g > cut0_begin) && (frac0_end_g < cut0_end))
+      if ((frac0_end_g > cut0_begin) && (frac0_end_g < cut0_end)) {
         EXPECT_GE(axis_end, axis_end_g);
+      }
     }
 
     // * case H: cut1_end
@@ -868,11 +874,13 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
     if (exists) {
       EXPECT_LE(axis_begin_h, axis_end_h);
       frac0_begin_h = vec3::dot(cut0_normal, point_begin_h);
-      if ((frac0_begin_h > cut0_begin) && (frac0_begin_h < cut0_end))
+      if ((frac0_begin_h > cut0_begin) && (frac0_begin_h < cut0_end)) {
         EXPECT_LE(axis_begin, axis_begin_h);
+      }
       frac0_end_h = vec3::dot(cut0_normal, point_end_h);
-      if ((frac0_end_h > cut0_begin) && (frac0_end_h < cut0_end))
+      if ((frac0_end_h > cut0_begin) && (frac0_end_h < cut0_end)) {
         EXPECT_GE(axis_end, axis_end_h);
+      }
     }
 
     // * case I: (none)
@@ -889,13 +897,15 @@ TEST_F(SphereSliceTest, solve_range_2_random) {
     frac0_begin_i = vec3::dot(cut0_normal, point_begin_i);
     frac1_begin_i = vec3::dot(cut1_normal, point_begin_i);
     if ((frac0_begin_i > cut0_begin) && (frac0_begin_i < cut0_end) &&
-      (frac1_begin_i > cut1_begin) && (frac1_begin_i < cut1_end))
+      (frac1_begin_i > cut1_begin) && (frac1_begin_i < cut1_end)) {
       EXPECT_EQ(axis_begin, axis_begin_i);
+    }
     frac0_end_i = vec3::dot(cut0_normal, point_end_i);
     frac1_end_i = vec3::dot(cut1_normal, point_end_i);
     if ((frac0_end_i > cut0_begin) && (frac0_end_i < cut0_end) &&
-      (frac1_end_i > cut1_begin) && (frac1_end_i < cut1_end))
+      (frac1_end_i > cut1_begin) && (frac1_end_i < cut1_end)) {
       EXPECT_EQ(axis_end, axis_end_i);
+    }
 
     // Test by generating lots of random points. If a point is in the bar,
     // its fractional coordinate should be between begin and end.

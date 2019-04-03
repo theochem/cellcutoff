@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # CellCutoff is a library for periodic boundary conditions and real-space cutoff calculations.
 # Copyright (C) 2017 The CellCutoff Development Team
@@ -23,17 +22,173 @@
 
 
 import numpy as np
+from numpy.testing import assert_equal, assert_allclose
+
+from pytest import raises
 
 from cellcutoff import Cell
 
 
+def get_random_cell(nvec: int, scale: float = 10.0, ratio: float = 0.1) -> Cell:
+    """Return a sensible random cell.
+
+    Parameters
+    ----------
+    nvec
+        The dimensionality of the cell.
+    scale
+        The overall size of the cell.
+    ratio
+        Determines the lowerbound on the overall volume of the cell. The closer
+        to 1, the more cubic.
+
+    Returns
+    -------
+    cell
+        The random cell object.
+
+    """
+    if nvec < 0 or nvec > 3:
+        raise ValueError("Expecting 0, 1, 2 or 3 for nvec.")
+    if nvec == 0:
+        return Cell()
+    while True:
+        vecs = np.random.uniform(-scale, scale, (3, 3))
+        if abs(np.linalg.det(vecs)) > (ratio*scale):
+            return Cell(vecs[:nvec])
+
+
 def test_subcell():
-    subcell, shape = Cell(np.random.uniform(-10, 10, (3, 3))).subcell(0.1)
-    assert subcell.spacings.max() < 0.1
-    assert min(shape) >= 1
+    for nvec in 1, 2, 3:
+        cell = get_random_cell(nvec)
+        subcell, shape = cell.subcell(0.1)
+        assert subcell.spacings[:nvec].max() < 0.1
+        assert min(shape[:nvec]) >= 1
+        assert_equal(shape[nvec:], [0] * (3 - nvec))
 
 
 def test_reciprocal():
-    cell = Cell(np.random.uniform(-10, 10, (3, 3)))
-    gcell = cell.reciprocal()
-    assert abs(np.dot(cell.vecs, gcell.vecs.T) - np.identity(3)).max() < 1e-3
+    for nvec in 1, 2, 3:
+        cell = get_random_cell(nvec)
+        gcell = cell.reciprocal()
+        assert_allclose(np.dot(cell.vecs, gcell.vecs.T), np.identity(3), atol=1e-8)
+
+
+def test_errors():
+    vecs = np.zeros((2, 3)).T
+    with raises(TypeError):
+        Cell(vecs)
+    vecs = np.zeros(5)
+    with raises(ValueError):
+        Cell(vecs)
+    vecs = np.zeros((5, 3))
+    with raises(TypeError):
+        Cell(vecs)
+    vecs = np.zeros((3, 3))
+    with raises(ValueError):
+        Cell(vecs)
+    vecs = np.zeros((3, 5))
+    with raises(TypeError):
+        Cell(vecs)
+
+
+def test_nvec():
+    vecs = np.identity(3)
+    assert Cell(vecs).nvec == 3
+    assert Cell(vecs[:2]).nvec == 2
+    assert Cell(vecs[:1]).nvec == 1
+    assert Cell(vecs[:0]).nvec == 0
+    assert Cell(None).nvec == 0
+
+
+def test_properties():
+    for nvec in 1, 2, 3:
+        cell = get_random_cell(nvec)
+        assert_allclose(np.dot(cell.vecs, cell.gvecs.T), np.identity(3), atol=1e-8)
+        assert_allclose(cell.volume, abs(np.linalg.det(cell.vecs)))
+        assert_allclose(cell.gvolume, abs(np.linalg.det(cell.gvecs)))
+        assert_allclose(cell.volume * cell.gvolume, 1.0)
+        assert_allclose((cell.vecs**2).sum(axis=1)**0.5, cell.lengths)
+        assert_allclose((cell.gvecs**2).sum(axis=1)**0.5, cell.glengths)
+        assert_allclose(cell.spacings, 1.0/cell.glengths)
+        assert_allclose(cell.gspacings, 1.0/cell.lengths)
+        assert not cell.cuboid
+        assert not cell.cubic
+
+
+def test_cart_frac():
+    for nvec in 1, 2, 3:
+        cell = get_random_cell(nvec)
+        cart1 = np.random.uniform(-20.0, 20.0, 3)
+        frac1 = cell.to_frac(cart1)
+        cart2 = cell.to_cart(frac1)
+        frac2 = cell.to_frac(cart2)
+        assert_allclose(cart1, cart2)
+        assert_allclose(frac1, frac2)
+        assert_allclose(cart1, np.dot(frac1, cell.vecs))
+
+
+def test_iwrap_mic():
+    for nvec in 1, 2, 3:
+        for _ in range(50):
+            cell = get_random_cell(nvec, 1.0)
+            cart1 = np.random.uniform(-20.0, 20.0, 3)
+            cart2 = cart1.copy()
+            cell.iwrap_mic(cart2)
+            frac1 = cell.to_frac(cart1)
+            frac2 = cell.to_frac(cart2)
+            assert (abs(frac2[:nvec]) < 0.5 + 1e-8).all()
+            delta = (frac1 - frac2)[:nvec]
+            assert_allclose(delta, np.round(delta), atol=1e-8)
+
+
+def test_iwrap_mic_many():
+    for nvec in 1, 2, 3:
+        cell = get_random_cell(nvec, 1.0)
+        cart1 = np.random.uniform(-20.0, 20.0, (10, 3))
+        cart2 = cart1.copy()
+        cell.iwrap_mic(cart2)
+        frac1 = np.array([cell.to_frac(c1) for c1 in cart1])
+        frac2 = np.array([cell.to_frac(c2) for c2 in cart2])
+        assert (abs(frac2[:, :nvec]) < 0.5 + 1e-8).all()
+        delta = (frac1 - frac2)[:, :nvec]
+        assert_allclose(delta, np.round(delta), atol=1e-8)
+
+
+def test_iwrap_box():
+    for nvec in 1, 2, 3:
+        for _ in range(50):
+            cell = get_random_cell(nvec, 1.0)
+            cart1 = np.random.uniform(-20.0, 20.0, 3)
+            cart2 = cart1.copy()
+            cell.iwrap_box(cart2)
+            frac1 = cell.to_frac(cart1)
+            frac2 = cell.to_frac(cart2)
+            assert (frac2[:nvec] < 1.0 + 1e-8).all()
+            assert (frac2[:nvec] >= 0.0 - 1e-8).all()
+            delta = (frac1 - frac2)[:nvec]
+            assert_allclose(delta, np.round(delta), atol=1e-8)
+
+
+def test_iwrap_box_many():
+    for nvec in 1, 2, 3:
+        cell = get_random_cell(nvec, 1.0)
+        cart1 = np.random.uniform(-20.0, 20.0, (10, 3))
+        cart2 = cart1.copy()
+        cell.iwrap_box(cart2)
+        frac1 = np.array([cell.to_frac(c1) for c1 in cart1])
+        frac2 = np.array([cell.to_frac(c2) for c2 in cart2])
+        assert (frac2[:, :nvec] < 1.0 + 1e-8).all()
+        assert (frac2[:, :nvec] >= 0.0 - 1e-8).all()
+        delta = (frac1 - frac2)[:, :nvec]
+        assert_allclose(delta, np.round(delta), atol=1e-8)
+
+
+def test_ranges_cutoff_simple():
+    cell = Cell(np.identity(3) * 5.0)
+    ranges_begin, ranges_end = cell.ranges_cutoff(np.array([0.0, 0.0, 0.0]), 4.0)
+    assert_equal(ranges_begin, [-1, -1, -1])
+    assert_equal(ranges_end, [1, 1, 1])
+    ranges_begin, ranges_end = cell.ranges_cutoff(np.array([2.5, 2.5, 2.5]), 5.0)
+    assert_equal(ranges_begin, [-1, -1, -1])
+    assert_equal(ranges_end, [2, 2, 2])

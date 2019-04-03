@@ -122,11 +122,9 @@ std::unique_ptr<cl::Cell> create_random_cell_nvec(unsigned int seed, const int n
         vecs[7] = 0.0;
       }
     }
-    try {
-      std::unique_ptr<cl::Cell> cell(new cl::Cell(vecs, nvec));
-      if (cell->volume() > pow(ratio*scale, nvec))
-        return cell;
-    } catch (cl::singular_cell_vectors) { }
+    if (fabs(vec3::triple(vecs, vecs + 3, vecs + 6)) > pow(ratio*scale, 3)) {
+      return std::unique_ptr<cl::Cell>(new cl::Cell(vecs, nvec));
+    }
   }
 }
 
