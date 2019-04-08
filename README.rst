@@ -8,6 +8,8 @@
     :target: https://anaconda.org/theochem/python-cellcutoff
 .. image:: https://img.shields.io/conda/pn/theochem/cellcutoff.svg
     :target: https://anaconda.org/theochem/cellcutoff
+.. image:: https://img.shields.io/github/release/theochem/cellcutoff.svg
+    :target: https://github.com/theochem/cellcutoff/releases
 
 CellCutoff is a library for periodic boundary conditions and real-space
 cutoff calculations.

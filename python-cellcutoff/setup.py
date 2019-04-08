@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 # CellCutoff is a library for periodic boundary conditions and real-space cutoff calculations.
 # Copyright (C) 2017 The CellCutoff Development Team
 #

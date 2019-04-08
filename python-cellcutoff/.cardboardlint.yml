@@ -1,11 +1,16 @@
 linters:
-- header:
-- import:
-    packages: ['cellcutoff']
-- namespace:
-    filefilter: ['- */__init__.py', '- */test_*.py', '- *setup.py', '+ *.py', '+ *.pyx']
-- pylint:
-- pycodestyle:
-    config: .pycodestylerc
-- pydocstyle:
-- whitespace:
+  - header:
+      filefilter: ['+ *.py', '+ *.pyx', '+ *.pxd']
+      shebang: '#!/usr/bin/env python3'
+      extra: []
+  - import:
+      packages: ['cellcutoff']
+  - namespace:
+      filefilter: ['- */__init__.py', '- */test_*.py', '- *setup.py', '+ *.py', '+ *.pyx']
+  - pylint:
+  - pycodestyle:
+      config: .pycodestylerc
+  - pydocstyle:
+  - whitespace:
+  - yamllint:
+      filefilter: ['- *conda.recipe/meta.yaml', '+ *.yml', '+ *.yaml']

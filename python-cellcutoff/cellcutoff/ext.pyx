@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # CellCutoff is a library for periodic boundary conditions and real-space cutoff calculations.
 # Copyright (C) 2017 The CellCutoff Development Team
 #
@@ -18,7 +17,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
-# cython: linetrace=True
+# cython: linetrace=True, embedsignature=True
 '''Python wrapper for the CellCutoff library'''
 
 
