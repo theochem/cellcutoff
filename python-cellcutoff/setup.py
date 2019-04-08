@@ -43,13 +43,16 @@ def get_version():
         return "0.0.0.post0"
 
 
-class DebugBuildExt(build_ext):
-    """Fix rpath bug in distutils for OSX."""
+# Because we follow distutils' naming conventions...
+# pylint: disable=invalid-name
+class my_build_ext(build_ext):
+    """Workaround for rpath bug in distutils for OSX."""
 
     def finalize_options(self):
         super().finalize_options()
         # Special treatment of rpath in case of OSX, to work around python
-        # distutils bug. This constructs proper rpath arguments for clang.
+        # distutils bug 36353. This constructs proper rpath arguments for clang.
+        # See https://bugs.python.org/issue36353
         if sys.platform[:6] == "darwin":
             for path in self.rpath:
                 for ext in self.extensions:
@@ -66,7 +69,7 @@ setup(
                 'and real-space cutoff calculations.',
     author='The CellCutoff development team',
     url='https://github.com/theochem/cellcutoff',
-    cmdclass={'build_ext': DebugBuildExt},
+    cmdclass={'build_ext': my_build_ext},
     package_data={
         'cellcutoff': ['ext.pxd', 'cell.pxd'],
     },
