@@ -1,4 +1,4 @@
-pre_filefilter: ['- python-cellcutoff', '+ *']
+pre_filefilter: ['- python-cellcutoff*', '+ *']
 
 linters:
   - cppcheck:
@@ -6,9 +6,14 @@ linters:
       filter: '-build/include_order,-runtime/int'
   - doxygen:
   - header:
+      filefilter: ['+ *.py', '+ *.pyx', '+ *.pxd', '+ CMakeLists*.txt']
+      shebang: '#!/usr/bin/env python3'
+      extra: []
   - header:
       filefilter: ['+ *.cpp', '+ *.h', '+ *.h.in']
       comment: '// '
       shebang:
       extra: []
   - whitespace:
+  - yamllint:
+      filefilter: ['- *conda.recipe/meta.yaml', '+ *.yml', '+ *.yaml']

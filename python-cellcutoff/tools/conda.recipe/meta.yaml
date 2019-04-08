@@ -39,12 +39,16 @@ test:
     - pytest --pyargs cellcutoff -v -n auto
 
 about:
-  description: Periodic boundary conditions and real-space cutoff calculations (Python wrapper)
+  description:
+    Periodic boundary conditions and real-space cutoff calculations (Python
+    wrapper)
   home: https://github.com/theochem/cellcutoff
   license: GPL-3.0
   license_family: GPL
   license_file: LICENSE.txt
-  summary: CellCutoff is a library for periodic boundary conditions and real-space cutoff calculations.
+  summary:
+    CellCutoff is a library for periodic boundary conditions and real-space
+    cutoff calculations.
 
 extra:
   recipe-maintainers: Toon Verstraelen <toon.verstraelen@gmail.com>
