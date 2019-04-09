@@ -17,7 +17,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
-# cython: linetrace=True, embedsignature=True
+# cython: linetrace=True, embedsignature=True, language_level=3
 '''Python wrapper for the CellCutoff library'''
 
 
@@ -27,7 +27,7 @@ np.import_array()
 
 from libc.string cimport memcpy
 
-cimport cell
+cimport cellcutoff.cell
 
 
 __all__ = ['Cell']
