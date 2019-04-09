@@ -20,5 +20,5 @@
 """Python wrapper for cellcutoff C++ library."""
 
 
-from cellcutoff.version import __version__
-from cellcutoff.ext import Cell
+from .version import __version__
+from .ext import Cell
