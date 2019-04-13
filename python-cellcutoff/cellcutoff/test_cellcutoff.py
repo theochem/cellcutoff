@@ -25,41 +25,12 @@ from numpy.testing import assert_equal, assert_allclose
 
 from pytest import raises
 
-from cellcutoff import Cell
-
-
-def get_random_cell(nvec: int, scale: float = 10.0, ratio: float = 0.1) -> Cell:
-    """Return a sensible random cell.
-
-    Parameters
-    ----------
-    nvec
-        The dimensionality of the cell.
-    scale
-        The overall size of the cell.
-    ratio
-        Determines the lowerbound on the overall volume of the cell. The closer
-        to 1, the more cubic.
-
-    Returns
-    -------
-    cell
-        The random cell object.
-
-    """
-    if nvec < 0 or nvec > 3:
-        raise ValueError("Expecting 0, 1, 2 or 3 for nvec.")
-    if nvec == 0:
-        return Cell()
-    while True:
-        vecs = np.random.uniform(-scale, scale, (3, 3))
-        if abs(np.linalg.det(vecs)) > (ratio*scale):
-            return Cell(vecs[:nvec])
+from cellcutoff import Cell, create_random_cell
 
 
 def test_subcell():
     for nvec in 1, 2, 3:
-        cell = get_random_cell(nvec)
+        cell = create_random_cell(1, nvec)
         subcell, shape = cell.subcell(0.1)
         assert subcell.spacings[:nvec].max() < 0.1
         assert min(shape[:nvec]) >= 1
@@ -68,7 +39,7 @@ def test_subcell():
 
 def test_reciprocal():
     for nvec in 1, 2, 3:
-        cell = get_random_cell(nvec)
+        cell = create_random_cell(2, nvec)
         gcell = cell.reciprocal()
         assert_allclose(np.dot(cell.vecs, gcell.vecs.T), np.identity(3), atol=1e-8)
 
@@ -102,7 +73,7 @@ def test_nvec():
 
 def test_properties():
     for nvec in 1, 2, 3:
-        cell = get_random_cell(nvec)
+        cell = create_random_cell(3, nvec)
         assert_allclose(np.dot(cell.vecs, cell.gvecs.T), np.identity(3), atol=1e-8)
         assert_allclose(cell.volume, abs(np.linalg.det(cell.vecs)))
         assert_allclose(cell.gvolume, abs(np.linalg.det(cell.gvecs)))
@@ -117,7 +88,7 @@ def test_properties():
 
 def test_cart_frac():
     for nvec in 1, 2, 3:
-        cell = get_random_cell(nvec)
+        cell = create_random_cell(4, nvec)
         cart1 = np.random.uniform(-20.0, 20.0, 3)
         frac1 = cell.to_frac(cart1)
         cart2 = cell.to_cart(frac1)
@@ -130,7 +101,7 @@ def test_cart_frac():
 def test_iwrap_mic():
     for nvec in 1, 2, 3:
         for _ in range(50):
-            cell = get_random_cell(nvec, 1.0)
+            cell = create_random_cell(5, nvec, 1.0)
             cart1 = np.random.uniform(-20.0, 20.0, 3)
             cart2 = cart1.copy()
             cell.iwrap_mic(cart2)
@@ -143,7 +114,7 @@ def test_iwrap_mic():
 
 def test_iwrap_mic_many():
     for nvec in 1, 2, 3:
-        cell = get_random_cell(nvec, 1.0)
+        cell = create_random_cell(6, nvec, 1.0)
         cart1 = np.random.uniform(-20.0, 20.0, (10, 3))
         cart2 = cart1.copy()
         cell.iwrap_mic(cart2)
@@ -157,7 +128,7 @@ def test_iwrap_mic_many():
 def test_iwrap_box():
     for nvec in 1, 2, 3:
         for _ in range(50):
-            cell = get_random_cell(nvec, 1.0)
+            cell = create_random_cell(7, nvec, 1.0)
             cart1 = np.random.uniform(-20.0, 20.0, 3)
             cart2 = cart1.copy()
             cell.iwrap_box(cart2)
@@ -171,7 +142,7 @@ def test_iwrap_box():
 
 def test_iwrap_box_many():
     for nvec in 1, 2, 3:
-        cell = get_random_cell(nvec, 1.0)
+        cell = create_random_cell(8, nvec, 1.0)
         cart1 = np.random.uniform(-20.0, 20.0, (10, 3))
         cart2 = cart1.copy()
         cell.iwrap_box(cart2)

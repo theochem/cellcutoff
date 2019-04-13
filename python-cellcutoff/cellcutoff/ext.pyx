@@ -26,11 +26,12 @@ cimport numpy as np
 np.import_array()
 
 from libc.string cimport memcpy
+from libcpp cimport bool
 
-cimport cellcutoff.cell
+cimport cellcutoff.cell as cell
 
 
-__all__ = ['Cell']
+__all__ = ['Cell', 'create_random_cell']
 
 
 def check_array_arg(name, arg, expected_shape):
@@ -267,3 +268,38 @@ cdef class Cell(object):
         cdef np.ndarray[int, ndim=1] ranges_end = np.zeros(3, np.intc)
         self._this.ranges_cutoff(&center[0], cutoff, &ranges_begin[0], &ranges_end[0])
         return ranges_begin, ranges_end
+
+
+def create_random_cell(int seed, int nvec, double scale=10.0,
+                       double ratio=0.1, bool cuboid=False) -> Cell:
+    """Return a sensible random cell.
+
+    Parameters
+    ----------
+    seed
+        A random seed, for reproducile testing.
+    nvec
+        The dimensionality of the cell.
+    scale
+        Determines the overall size of the random cell. The components of the
+        cell vectors are sampled from a uniform random distribution over the
+        interval [-scale, scale].
+    ratio
+        Controls the minimal volume of the cell. Random cell vectors are tried
+        until the volume is above (ratio*scale)**nvec. When a suitable volume is
+        found, these cell vectors are used. The closer to 2, the more cubic the
+        cell. High values of this parameter may make this function slow because
+        many trials will be needed.
+    cuboid
+        When True, a random orthorhombic cell is generated.
+
+    Returns
+    -------
+    cell
+        The random cell object.
+
+    """
+    cdef cell.Cell* cpp_cell = cell.create_random_cell(seed, nvec, scale, ratio, cuboid)
+    cdef Cell result = Cell.__new__(Cell, None, initvoid=True)
+    result._this = cpp_cell
+    return result

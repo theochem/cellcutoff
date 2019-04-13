@@ -52,7 +52,7 @@ class UsageTestP : public ::testing::TestWithParam<int> {
 
   std::unique_ptr<cl::Cell> create_random_cell(const unsigned int seed,
       const double scale = 1.0, const double ratio = 0.1, const bool cuboid = false) {
-    return create_random_cell_nvec(seed, nvec, scale, ratio, cuboid);
+    return std::unique_ptr<cl::Cell>(cl::create_random_cell(seed, nvec, scale, ratio, cuboid));
   }
 
   int nvec;

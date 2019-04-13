@@ -30,6 +30,7 @@
 #define CELLCUTOFF_CELL_H_
 
 #include <exception>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -351,6 +352,35 @@ class Cell {
   double spacings_[3];    //!< spacing between crystal planes
   double gspacings_[3];   //!< spacing between reciprocal crystal planes
 };
+
+
+// Free functions
+
+
+/** @brief
+        Return a randomized but sensible unit cell.
+
+    @param seed
+        The random seed used to initialize the cell vectors.
+
+    @param nvec
+        The dimensionality of the cell.
+
+    @param scale
+        Determines the overall size of the random cell. The components of the cell vectors
+        are sampled from a uniform random distribution over the interval [-scale, scale].
+
+    @param ratio
+        Controls the minimal volume of the cell. Random cell vectors are tried until the
+        volume is above (ratio*scale)**nvec. When a suitable volume is found, these
+        cell vectors are used. The closer to 2, the more cubic the cell. High values
+        of this parameter may make this function slow because many trials will be needed.
+
+    @param cuboid
+        When true, an orthorhombic cell is constructed.
+  */
+Cell* create_random_cell(const unsigned int seed, const int nvec, const double scale = 1.0,
+  const double ratio = 0.1, const bool cuboid = false);
 
 
 }  // namespace cellcutoff

@@ -72,7 +72,7 @@ class CellTest : public ::testing::Test {
 
   std::unique_ptr<cl::Cell> create_random_cell(const unsigned int seed,
       const double scale = 1.0, const double ratio = 0.1, const bool cuboid = false) {
-    return create_random_cell_nvec(seed, nvec, scale, ratio, cuboid);
+    return std::unique_ptr<cl::Cell>(cl::create_random_cell(seed, nvec, scale, ratio, cuboid));
   }
 
   int nvec;
@@ -1281,6 +1281,18 @@ TEST_F(CellTest3, bars_cutoff_corners) {
   // Sufficiency check
   EXPECT_LE(NREP*14, nbar_total);
 }
+
+
+// Free functions: create_random_cell
+// ----------------------------------
+
+
+
+TEST(RandomCell, domain) {
+  EXPECT_THROW(cl::create_random_cell(1277, -1, 1, false), std::domain_error);
+  EXPECT_THROW(cl::create_random_cell(1274, 4, 1, false), std::domain_error);
+}
+
 
 // Instantiation of parameterized tests
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

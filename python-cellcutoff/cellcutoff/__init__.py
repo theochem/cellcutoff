@@ -21,4 +21,4 @@
 
 
 from .version import __version__
-from .ext import Cell
+from .ext import Cell, create_random_cell

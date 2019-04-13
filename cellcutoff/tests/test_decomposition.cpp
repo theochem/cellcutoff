@@ -24,6 +24,7 @@
 
 #include <gtest/gtest.h>
 
+#include <cellcutoff/cell.h>
 #include <cellcutoff/decomposition.h>
 
 #include "cellcutoff/tests/common.h"
@@ -173,7 +174,7 @@ TEST(DecompositionTest, assign_icell_example_shape) {
 TEST(DecompositionTest, assign_icell_random_wrap) {
   for (int irep = 0; irep < NREP; ++irep) {
     // Get a random 3D cell
-    std::unique_ptr<cl::Cell> cell(create_random_cell_nvec(irep*NPOINT, 3, 2));
+    std::unique_ptr<cl::Cell> cell(cl::create_random_cell(irep*NPOINT, 3, 2));
     // Get a subcell
     double threshold = 0.2;
     int shape[3] = {-1, -1, -1};
@@ -272,7 +273,7 @@ TEST(DecompositionTest, random_cell_map) {
       fill_random_double(ipoint+3157, cart, 3, -5.0, 5.0);
       points.push_back(cl::Point(cart));
     }
-    std::unique_ptr<cl::Cell> subcell(create_random_cell_nvec(irep*NPOINT, 3));
+    std::unique_ptr<cl::Cell> subcell(cl::create_random_cell(irep*NPOINT, 3));
     cl::assign_icell(*subcell, points.data(), points.size(), sizeof(cl::Point));
     cl::sort_by_icell(points.data(), points.size(), sizeof(cl::Point));
     std::unique_ptr<cl::CellMap> cell_map(
