@@ -28,7 +28,7 @@ np.import_array()
 from libc.string cimport memcpy
 from libcpp cimport bool
 
-cimport cellcutoff.cell
+cimport cellcutoff.cell as cell
 
 
 __all__ = ['Cell', 'create_random_cell']
