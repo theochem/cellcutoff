@@ -23,6 +23,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <random>
 #include <stdexcept>
 #include <vector>
 
@@ -339,6 +340,43 @@ void Cell::bars_cutoff_low(SphereSlice* slice, int ivec, std::vector<int>* bars)
       slice->set_cut_begin_end(ivec, i, i + 1);
       // Recursive call in which the remaining details of the bar/bars is/are solved.
       bars_cutoff_low(slice, ivec + 1, bars);
+    }
+  }
+}
+
+
+// Free functions
+
+
+Cell* create_random_cell(unsigned int seed, const int nvec,
+    const double scale, const double ratio, const bool cuboid) {
+  // Range check
+  if ((nvec < 0) || (nvec > 3))
+    throw std::domain_error("A random cell must be 0D, 1D, 2D or 2D periodic.");
+  if (nvec == 0)
+    return new Cell();
+  // Randomly construct a cell till a decent one (sufficient volume) is found.
+  double vecs[9];
+  std::minstd_rand gen(seed);
+  while (true) {
+    // Fill the array with random data for given seed.
+    std::uniform_real_distribution<double> dis(-scale, scale);
+    for (int i=0; i < 9; ++i)
+      vecs[i] = dis(gen);
+    if (cuboid) {
+      vecs[1] = 0.0;
+      vecs[2] = 0.0;
+      if (nvec > 1) {
+        vecs[3] = 0.0;
+        vecs[5] = 0.0;
+      }
+      if (nvec > 2) {
+        vecs[6] = 0.0;
+        vecs[7] = 0.0;
+      }
+    }
+    if (fabs(vec3::triple(vecs, vecs + 3, vecs + 6)) > pow(ratio*scale, 3)) {
+      return new Cell(vecs, nvec);
     }
   }
 }
