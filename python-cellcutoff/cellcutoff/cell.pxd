@@ -17,6 +17,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+# cython: linetrace=True, embedsignature=True, language_level=3
 
 
 from libcpp cimport bool
