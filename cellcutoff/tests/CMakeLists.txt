@@ -35,8 +35,10 @@ set(TEST_SOURCE_FILES
 add_executable(test_cellcutoff ${TEST_SOURCE_FILES})
 set_property(TARGET test_cellcutoff PROPERTY CXX_STANDARD 11)
 set_property(TARGET test_cellcutoff PROPERTY include_directories ${GTEST_INCLUDE_DIRS})
+# Google test uses many tricks that generate warnings, which cannot be fixed easily.
+set_property(TARGET test_cellcutoff PROPERTY COMPILE_FLAGS -Wno-error)
 
-target_link_libraries(test_cellcutoff cellcutoff GTest::GTest GTest::Main ${GCOV} pthread)
+target_link_libraries(test_cellcutoff cellcutoff GTest::GTest GTest::Main pthread)
 
 # Install the test in libexec
 install (TARGETS test_cellcutoff DESTINATION libexec/cellcutoff)

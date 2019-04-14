@@ -70,7 +70,7 @@ class singular_cell_vectors : public std::domain_error {
 class Cell {
  public:
   /** @brief
-          Construct a Cell object.
+          Create a Cell object.
 
       @param vecs
           A pointer to `3*nvec` doubles that represent the Cartesian cell vectors in

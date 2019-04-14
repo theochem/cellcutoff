@@ -17,11 +17,12 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+# cython: linetrace=True, embedsignature=True, language_level=3
 
 
 cimport numpy as np
 
-cimport cell
+cimport cellcutoff.cell as cell
 
 
 cdef class Cell:
