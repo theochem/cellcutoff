@@ -28,13 +28,10 @@ import numpy as np
 from setuptools import setup, Extension
 
 
-NAME = 'cellcutoff'
-
-
 def get_version():
     """Read __version__ from version.py, with exec to avoid importing it."""
     try:
-        with open(os.path.join(NAME, 'version.py'), 'r') as f:
+        with open(os.path.join('cellcutoff', 'version.py'), 'r') as f:
             myglobals = {}
             exec(f.read(), myglobals)  # pylint: disable=exec-used
         return myglobals['__version__']
@@ -60,10 +57,10 @@ class my_build_ext(build_ext):
 
 
 setup(
-    name=NAME,
+    name='python-cellcutoff',
     version=get_version(),
-    package_dir={NAME: NAME},
-    packages=[NAME],
+    package_dir={'cellcutoff': 'cellcutoff'},
+    packages=['cellcutoff'],
     description='CellCutoff is a library for periodic boundary conditions '
                 'and real-space cutoff calculations.',
     author='The CellCutoff development team',

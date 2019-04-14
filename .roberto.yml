@@ -1,7 +1,7 @@
 project:
   name: cellcutoff
   packages:
-    - conda_name: cellcutoff
+    - dist_name: cellcutoff
       tools:
         - write-cmake-version
         - cardboardlint-static
@@ -13,7 +13,7 @@ project:
         - build-conda
         - deploy-conda
         - deploy-github
-    - conda_name: python-cellcutoff
+    - dist_name: python-cellcutoff
       path: python-cellcutoff
       tools:
         - write-py-version
