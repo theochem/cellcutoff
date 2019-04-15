@@ -19,12 +19,24 @@
 """Unit tests."""
 
 
+import contextlib
+
 import numpy as np
 from numpy.testing import assert_equal, assert_allclose
-
 from pytest import raises
 
 from cellcutoff import Cell, ranges_cutoff, create_random_cell
+
+
+@contextlib.contextmanager
+def seed(tmp):
+    """Temporarily set the numpy random seed to a fixed value."""
+    state = np.random.get_state()
+    np.random.seed(tmp)
+    try:
+        yield
+    finally:
+        np.random.set_state(state)
 
 
 def test_subcell():
@@ -88,7 +100,8 @@ def test_properties():
 def test_cart_frac():
     for nvec in 1, 2, 3:
         cell = create_random_cell(4, nvec)
-        cart1 = np.random.uniform(-20.0, 20.0, 3)
+        with seed(4):
+            cart1 = np.random.uniform(-20.0, 20.0, 3)
         frac1 = cell.to_frac(cart1)
         cart2 = cell.to_cart(frac1)
         frac2 = cell.to_frac(cart2)
@@ -101,7 +114,8 @@ def test_iwrap_mic():
     for nvec in 1, 2, 3:
         for _ in range(50):
             cell = create_random_cell(5, nvec, 1.0)
-            cart1 = np.random.uniform(-20.0, 20.0, 3)
+            with seed(5):
+                cart1 = np.random.uniform(-20.0, 20.0, 3)
             cart2 = cart1.copy()
             cell.iwrap_mic(cart2)
             frac1 = cell.to_frac(cart1)
@@ -114,7 +128,8 @@ def test_iwrap_mic():
 def test_iwrap_mic_many():
     for nvec in 1, 2, 3:
         cell = create_random_cell(6, nvec, 1.0)
-        cart1 = np.random.uniform(-20.0, 20.0, (10, 3))
+        with seed(6):
+            cart1 = np.random.uniform(-20.0, 20.0, (10, 3))
         cart2 = cart1.copy()
         cell.iwrap_mic(cart2)
         frac1 = np.array([cell.to_frac(c1) for c1 in cart1])
@@ -128,7 +143,8 @@ def test_iwrap_box():
     for nvec in 1, 2, 3:
         for _ in range(50):
             cell = create_random_cell(7, nvec, 1.0)
-            cart1 = np.random.uniform(-20.0, 20.0, 3)
+            with seed(7):
+                cart1 = np.random.uniform(-20.0, 20.0, 3)
             cart2 = cart1.copy()
             cell.iwrap_box(cart2)
             frac1 = cell.to_frac(cart1)
@@ -142,7 +158,8 @@ def test_iwrap_box():
 def test_iwrap_box_many():
     for nvec in 1, 2, 3:
         cell = create_random_cell(8, nvec, 1.0)
-        cart1 = np.random.uniform(-20.0, 20.0, (10, 3))
+        with seed(8):
+            cart1 = np.random.uniform(-20.0, 20.0, (10, 3))
         cart2 = cart1.copy()
         cell.iwrap_box(cart2)
         frac1 = np.array([cell.to_frac(c1) for c1 in cart1])
