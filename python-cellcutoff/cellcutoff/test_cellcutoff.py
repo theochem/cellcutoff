@@ -178,3 +178,61 @@ def test_ranges_cutoff_simple():
     ranges_begin, ranges_end = ranges_cutoff(cell, np.array([2.5, 2.5, 2.5]), 5.0)
     assert_equal(ranges_begin, [-1, -1, -1])
     assert_equal(ranges_end, [2, 2, 2])
+
+
+def test_sorted_points0():
+    with seed(9):
+        points = np.random.uniform(-10, 10, (500, 3))
+    sp = SortedPoints(points)
+    center = np.array([-1.0, 1.0, 1.0])
+    radius = 3.0
+    cut_pr, cut_indices = sp.cutoff(center, radius)
+    cut_p = points[cut_indexes] - center
+    assert_equal(cut_p, cut_pr[:, :3])
+    cut_r = np.linalg.norm(cut_p, axis=1)
+    assert_allclose(cut_r, cut_pr[:, 3])
+    all_r = np.linalg.norm(points - center, axis=1)
+    assert len(set(cut_indices)) == len(cut_indices)
+    assert set(cut_indices) == set((all_r < radius).nonzero()[0])
+
+
+def test_sorted_points3():
+    cell = create_random_cell(10.0, 3, 1.0)
+    with seed(10):
+        points = np.random.uniform(-30, 30, (500, 3))
+    sp = SortedPoints(points, cell)
+    center = np.array([2.0, 0.0, -1.0])
+    radius = 8.0
+    cut_pr, cut_indices = sp.cutoff(center, radius)
+
+    # Manually construct the output in an inefficient way
+    my_points = points.copy()
+    cell.iwrap_box(my_points)
+    my_cut_pr = []
+    my_cut_indices = []
+    ranges_begin, ranges_end = ranges_cutoff(cell, center, radius)
+    for i0 in zip(ranges_begin[0], ranges_end[0]):
+        for i1 in zip(ranges_begin[1], ranges_end[1]):
+            for i2 in zip(ranges_begin[2], ranges_end[2]):
+                deltas = points + np.dot([i0, i1, i2], cell.vecs) - center
+                dists = np.linalg.norm(deltas, axis=1)
+                mask = dists < cutoff
+                my_cut_pr.append(np.hstack([
+                    deltas[mask],
+                    dists[mask][:, np.newaxis]
+                ]))
+                my_cut_indices.append(masks.nonzero()[0])
+    my_cut_pr = np.concatenate(my_cut_pr)
+    my_cut_indices = np.concatenate(my_cut_indices)
+
+    # Compare
+    assert cut_pr.shape == my_cut_pr.shape
+    assert cut_indices.shape == my_cut_indices.shape
+    assert sorted(cut_indices) == sorted(my_cut_indices)
+    for i in np.unique(cut_indices):
+        mask = cut_indices == i
+        my_mask = my_cut_indices == i
+        mask_pr = sorted(cut_pr[mask])
+        my_mask_pr = sorted(my_cut_pr[mask])
+        for row, my_row in zip(mask_pr, my_mask_pr):
+            assert_allclose(row, my_row)
