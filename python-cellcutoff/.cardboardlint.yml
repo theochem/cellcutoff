@@ -10,6 +10,9 @@ linters:
   - pylint:
   - pycodestyle:
       config: .pycodestylerc
+  - autopep8:
+      config: .pycodestylerc
+      line-range: [79, 100]
   - pydocstyle:
   - whitespace:
   - yamllint:
