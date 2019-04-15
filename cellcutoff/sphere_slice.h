@@ -19,7 +19,7 @@
 
 /** @file
 
-    This module implements the algorithm used by Cell::bars_cutoff to find all subcells
+    This module implements the algorithm used by bars_cutoff to find all subcells
     that overlap with a given cutoff sphere. With hindsight, this might not be the
     simplest implementation, but it does the job relatively efficiently. Better algorithms
     should be possible in which even more gets precomputed in the Constructor of

@@ -267,44 +267,6 @@ bool Cell::cuboid() const {
 }
 
 
-size_t Cell::ranges_cutoff(const double* center, const double cutoff,
-    int* ranges_begin, int* ranges_end) const {
-  if (cutoff <= 0) {
-    throw std::domain_error("cutoff must be strictly positive.");
-  }
-  double frac[3];
-  size_t ncell = 1;
-  to_frac(center, frac);
-  for (int ivec = nvec_ - 1; ivec >= 0; --ivec) {
-    // Use spacings between planes to find first plane before cutoff sphere and last
-    // plane after cutoff sphere. To this end, we must divide cutoff by the spacing
-    // between planes.
-    double frac_cutoff = cutoff/spacings_[ivec];
-    ranges_begin[ivec] = static_cast<int>(floor(frac[ivec] - frac_cutoff));
-    ranges_end[ivec] = static_cast<int>(ceil(frac[ivec] + frac_cutoff));
-
-    ncell *= (ranges_end[ivec] - ranges_begin[ivec]);
-  }
-  return ncell;
-}
-
-
-void Cell::bars_cutoff(const double* center, const double cutoff,
-    std::vector<int>* bars) const {
-  // Check arguments
-  if (nvec_ == 0) {
-    throw std::domain_error("The cell must be at least 1D periodic.");
-  }
-  if (cutoff <= 0) {
-    throw std::domain_error("cutoff must be strictly positive.");
-  }
-  // For all the heavy work, a SphereSlice object is used that precomputes a lot.
-  SphereSlice sphere_slice(center, gvecs_, cutoff);
-  // Compute bars and return the number of bars
-  bars_cutoff_low(&sphere_slice, 0, bars);
-}
-
-
 Cell::Cell(const double* vecs, const int nvec, const double* gvecs,
     const double volume, const double gvolume,
     const double* lengths, const double* glengths,
@@ -320,31 +282,9 @@ Cell::Cell(const double* vecs, const int nvec, const double* gvecs,
 }
 
 
-void Cell::bars_cutoff_low(SphereSlice* slice, int ivec, std::vector<int>* bars) const {
-  // Use SphereSlice object to solve the hard of problem of finding begin and end.
-  double begin_exact = 0.0;
-  double end_exact = 0.0;
-  slice->solve_range(ivec, &begin_exact, &end_exact);
-  int begin = static_cast<int>(floor(begin_exact));
-  int end = static_cast<int>(ceil(end_exact));
-
-  // Store the current range.
-  bars->push_back(begin);
-  bars->push_back(end);
-  if (ivec < nvec_ - 1) {
-    // If this is not yet the last recursion, iterate over the range of integer
-    // fractional coordinates, and go one recursion deeper in each iteration.
-    for (int i = begin; i < end; ++i) {
-      // Define a slice (two cuts) in the sphere.
-      slice->set_cut_begin_end(ivec, i, i + 1);
-      // Recursive call in which the remaining details of the bar/bars is/are solved.
-      bars_cutoff_low(slice, ivec + 1, bars);
-    }
-  }
-}
-
-
+//
 // Free functions
+//
 
 
 Cell* create_random_cell(unsigned int seed, const int nvec,

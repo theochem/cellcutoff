@@ -107,10 +107,10 @@ TEST_P(UsageTestP, points_within_cutoff) {
     std::sort(ipoints_bars.begin(), ipoints_bars.end());
 
     // Compute the points within the cutoff in a less efficient way, i.e. using
-    // Cell::ranges_cutoff. Results should match.
+    // ranges_cutoff. Results should match.
     int ranges_begin[3];
     int ranges_end[3];
-    size_t ncell = subcell->ranges_cutoff(center, cutoff, ranges_begin, ranges_end);
+    size_t ncell = ranges_cutoff(subcell.get(), center, cutoff, ranges_begin, ranges_end);
     EXPECT_LT(0, ncell);
     std::vector<size_t> ipoints_ranges;
     for (int icell0 = ranges_begin[0]; icell0 < ranges_end[0]; ++icell0) {

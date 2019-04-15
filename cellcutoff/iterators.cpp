@@ -33,6 +33,73 @@ namespace cellcutoff {
 
 
 //
+// Cutoff functions
+//
+
+
+size_t ranges_cutoff(const Cell* cell, const double* center, const double cutoff,
+    int* ranges_begin, int* ranges_end) {
+  if (cutoff <= 0) {
+    throw std::domain_error("cutoff must be strictly positive.");
+  }
+  double frac[3];
+  size_t ncell = 1;
+  cell->to_frac(center, frac);
+  for (int ivec = cell->nvec() - 1; ivec >= 0; --ivec) {
+    // Use spacings between planes to find first plane before cutoff sphere and last
+    // plane after cutoff sphere. To this end, we must divide cutoff by the spacing
+    // between planes.
+    double frac_cutoff = cutoff/cell->spacings()[ivec];
+    ranges_begin[ivec] = static_cast<int>(floor(frac[ivec] - frac_cutoff));
+    ranges_end[ivec] = static_cast<int>(ceil(frac[ivec] + frac_cutoff));
+
+    ncell *= (ranges_end[ivec] - ranges_begin[ivec]);
+  }
+  return ncell;
+}
+
+
+void bars_cutoff(const Cell* cell, const double* center, const double cutoff,
+    std::vector<int>* bars) {
+  // Check arguments
+  if (cell->nvec() == 0) {
+    throw std::domain_error("The cell must be at least 1D periodic.");
+  }
+  if (cutoff <= 0) {
+    throw std::domain_error("cutoff must be strictly positive.");
+  }
+  // For all the heavy work, a SphereSlice object is used, which precomputes a lot.
+  SphereSlice sphere_slice(center, cell->gvecs(), cutoff);
+  // Compute bars and return the number of bars
+  bars_cutoff_low(cell, &sphere_slice, 0, bars);
+}
+
+
+void bars_cutoff_low(const Cell* cell, SphereSlice* slice, int ivec, std::vector<int>* bars) {
+  // Use SphereSlice object to solve the tedious of problem of finding begin and end.
+  double begin_exact = 0.0;
+  double end_exact = 0.0;
+  slice->solve_range(ivec, &begin_exact, &end_exact);
+  int begin = static_cast<int>(floor(begin_exact));
+  int end = static_cast<int>(ceil(end_exact));
+
+  // Store the current range.
+  bars->push_back(begin);
+  bars->push_back(end);
+  if (ivec < cell->nvec() - 1) {
+    // If this is not yet the last recursion, iterate over the range of integer
+    // fractional coordinates, and go one recursion deeper in each iteration.
+    for (int i = begin; i < end; ++i) {
+      // Define a slice (two cuts) in the sphere.
+      slice->set_cut_begin_end(ivec, i, i + 1);
+      // Recursive call in which the remaining details of the bar/bars is/are solved.
+      bars_cutoff_low(cell, slice, ivec + 1, bars);
+    }
+  }
+}
+
+
+//
 // BarIterator
 //
 
@@ -145,7 +212,7 @@ DeltaIterator::DeltaIterator(const Cell& subcell, const int* shape, const double
     std::copy(shape, shape + nvec, shape_);
   }
   // Set up the bar_iterator_
-  subcell_.bars_cutoff(center_, cutoff_, &bars_);
+  bars_cutoff(&subcell_, center_, cutoff_, &bars_);
   bar_iterator_ = new BarIterator(bars_, nvec, shape_);
   // Prepare first iteration
   increment(true);

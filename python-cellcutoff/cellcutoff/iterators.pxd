@@ -15,9 +15,13 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
+#
 # --
-"""Python wrapper for cellcutoff C++ library."""
+# cython: linetrace=True, embedsignature=True, language_level=3
 
 
-from .version import __version__
-from .ext import Cell, ranges_cutoff, create_random_cell
+cimport cellcutoff.cell
+
+cdef extern from "cellcutoff/iterators.h" namespace "cellcutoff":
+    size_t ranges_cutoff(const cellcutoff.cell.Cell* cell, const double* center,
+        double cutoff, int* ranges_begin, int* ranges_end);

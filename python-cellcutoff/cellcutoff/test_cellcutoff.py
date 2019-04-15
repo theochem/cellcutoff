@@ -24,7 +24,7 @@ from numpy.testing import assert_equal, assert_allclose
 
 from pytest import raises
 
-from cellcutoff import Cell, create_random_cell
+from cellcutoff import Cell, ranges_cutoff, create_random_cell
 
 
 def test_subcell():
@@ -155,9 +155,9 @@ def test_iwrap_box_many():
 
 def test_ranges_cutoff_simple():
     cell = Cell(np.identity(3) * 5.0)
-    ranges_begin, ranges_end = cell.ranges_cutoff(np.array([0.0, 0.0, 0.0]), 4.0)
+    ranges_begin, ranges_end = ranges_cutoff(cell, np.array([0.0, 0.0, 0.0]), 4.0)
     assert_equal(ranges_begin, [-1, -1, -1])
     assert_equal(ranges_end, [1, 1, 1])
-    ranges_begin, ranges_end = cell.ranges_cutoff(np.array([2.5, 2.5, 2.5]), 5.0)
+    ranges_begin, ranges_end = ranges_cutoff(cell, np.array([2.5, 2.5, 2.5]), 5.0)
     assert_equal(ranges_begin, [-1, -1, -1])
     assert_equal(ranges_end, [2, 2, 2])

@@ -28,9 +28,10 @@ from libc.string cimport memcpy
 from libcpp cimport bool
 
 cimport cellcutoff.cell as cell
+cimport cellcutoff.iterators
 
 
-__all__ = ['Cell', 'create_random_cell']
+__all__ = ['Cell', 'ranges_cutoff', 'create_random_cell']
 
 
 def check_array_arg(name, arg, expected_shape):
@@ -231,42 +232,44 @@ cdef class Cell(object):
         for i in range(n):
             self._this.iwrap_box(&deltas[i, 0])
 
-    def ranges_cutoff(self, np.ndarray[double, ndim=1] center not None, double cutoff):
-        """Get the ranges of periodic images which contain a given cutoff sphere.
 
-        This function assumes the space is divided into boxes by crystal planes
-        at integer indexes. For example, these planes for the first cell vector
-        are parallel to the second and third cell vector and have one point in
-        (first vector)*index where index is the integer index for these planes.
-        Similar definitions are used for the other two cell vectors. The
-        returned ranges are arrays referring to the integer indexes that
-        demarcate the cutoff sphere. One could interpret the result as a
-        supercell that contains the entire cutoff sphere.
+def ranges_cutoff(Cell cell, np.ndarray[double, ndim=1] center not None, double cutoff):
+    """Get the ranges of periodic images which contain a given cutoff sphere.
 
-        Parameters
-        ----------
-        center
-            The center of the cutoff sphere.
-        cutoff
-            The radius of the cutoff sphere.
+    This function assumes the space is divided into boxes by crystal planes
+    at integer indexes. For example, these planes for the first cell vector
+    are parallel to the second and third cell vector and have one point in
+    (first vector)*index where index is the integer index for these planes.
+    Similar definitions are used for the other two cell vectors. The
+    returned ranges are arrays referring to the integer indexes that
+    demarcate the cutoff sphere. One could interpret the result as a
+    supercell that contains the entire cutoff sphere.
 
-        Returns
-        -------
-        ranges_begin
-            The lower bounds of the intervals containing the cutoff sphere.
-            These integers are the highest indices of the crystal planes below
-            the cutoff sphere.
-        ranges_end
-            The (non-inclusive) upper bounds of the intervals containing the
-            cutoff sphere. These integers are the lowest indices of the crystal
-            planes above the cutoff sphere.
+    Parameters
+    ----------
+    center
+        The center of the cutoff sphere.
+    cutoff
+        The radius of the cutoff sphere.
 
-        """
-        check_array_arg('center', center, (3,))
-        cdef np.ndarray[int, ndim=1] ranges_begin = np.zeros(3, np.intc)
-        cdef np.ndarray[int, ndim=1] ranges_end = np.zeros(3, np.intc)
-        self._this.ranges_cutoff(&center[0], cutoff, &ranges_begin[0], &ranges_end[0])
-        return ranges_begin, ranges_end
+    Returns
+    -------
+    ranges_begin
+        The lower bounds of the intervals containing the cutoff sphere.
+        These integers are the highest indices of the crystal planes below
+        the cutoff sphere.
+    ranges_end
+        The (non-inclusive) upper bounds of the intervals containing the
+        cutoff sphere. These integers are the lowest indices of the crystal
+        planes above the cutoff sphere.
+
+    """
+    check_array_arg('center', center, (3,))
+    cdef np.ndarray[int, ndim=1] ranges_begin = np.zeros(3, np.intc)
+    cdef np.ndarray[int, ndim=1] ranges_end = np.zeros(3, np.intc)
+    cellcutoff.iterators.ranges_cutoff(cell._this, &center[0], cutoff,
+                                       &ranges_begin[0], &ranges_end[0])
+    return ranges_begin, ranges_end
 
 
 def create_random_cell(int seed, int nvec, double scale=10.0,

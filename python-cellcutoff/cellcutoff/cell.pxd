@@ -47,8 +47,5 @@ cdef extern from "cellcutoff/cell.h" namespace "cellcutoff":
         void iwrap_mic(double* delta);
         void iwrap_box(double* delta);
 
-        size_t ranges_cutoff(const double* center, double cutoff, int* ranges_begin,
-            int* ranges_end) const;
-
     Cell* create_random_cell(const unsigned int seed, const int nvec,
         const double scale, const double ratio, const bool cuboid)

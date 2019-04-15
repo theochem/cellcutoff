@@ -21,6 +21,10 @@
 #ifndef CELLCUTOFF_TESTS_COMMON_H_
 #define CELLCUTOFF_TESTS_COMMON_H_
 
+#include <memory>
+
+#include <gtest/gtest.h>
+
 #include "cellcutoff/cell.h"
 
 
@@ -57,6 +61,86 @@ unsigned int fill_random_permutation(const unsigned int seed, int* array, const 
 //! Compute a random point in a cubic box centered around center. Also computes distance.
 unsigned int random_point(const unsigned int seed,  const double* center,
     const double cutoff, double* point, double* norm);
+
+
+// Fixtures
+// ========
+
+//! Abstract base class for CellTest fixtures.
+class CellTest : public ::testing::Test {
+ public:
+  //! Fix number of cell vectors, should be defined in subclass.
+  virtual void SetUp() = 0;
+  //! Define some example arrays to work with in the tests.
+  void set_up_data();
+  //! Create a random cell with the right number of cell vectors.
+  std::unique_ptr<cl::Cell> create_random_cell(const unsigned int seed,
+      const double scale = 1.0, const double ratio = 0.1, const bool cuboid = false);
+
+  //! Number of cell vectors (fixed by setup).
+  int nvec;
+  //! Cell vectors for a trivial cuboid cell.
+  double myvecs[9];
+  //! The cell object derived from myvecs.
+  std::unique_ptr<cl::Cell> mycell;
+  //! A singular set of cell vectors.
+  double singvecs[9];
+};
+
+
+//! Parameterized CellTest fixtures. (Tests get repeated for nvec = 0, 1, 2 and 3.)
+class CellTestP : public CellTest, public ::testing::WithParamInterface<int> {
+ public:
+  //! Fix the number of cell vectors (paramerized).
+  virtual void SetUp() {
+    nvec = GetParam();
+    set_up_data();
+  }
+};
+
+
+//! CellTest fixture with nvec = 0.
+class CellTest0 : public CellTest {
+ public:
+  //! Set the number of cell vectors to zero.
+  virtual void SetUp() {
+    nvec = 0;
+    set_up_data();
+  }
+};
+
+
+//! CellTest fixture with nvec = 1.
+class CellTest1 : public CellTest {
+ public:
+  //! Set the number of cell vectors to one.
+  virtual void SetUp() {
+    nvec = 1;
+    set_up_data();
+  }
+};
+
+
+//! CellTest fixture with nvec = 2.
+class CellTest2 : public CellTest {
+ public:
+  //! Set the number of cell vectors to two.
+  virtual void SetUp() {
+    nvec = 2;
+    set_up_data();
+  }
+};
+
+
+//! CellTest fixture with nvec = 3.
+class CellTest3 : public CellTest {
+ public:
+  //! Set the number of cell vectors to three.
+  virtual void SetUp() {
+    nvec = 3;
+    set_up_data();
+  }
+};
 
 
 #endif  // CELLCUTOFF_TESTS_COMMON_H_
