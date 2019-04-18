@@ -116,6 +116,18 @@ TEST_P(CellTestP, constructor_simple) {
 }
 
 
+TEST_P(CellTestP, coyp_constructor) {
+  for (int irep = 0; irep < NREP; ++irep) {
+    std::unique_ptr<cl::Cell> cell1(create_random_cell(irep));
+    cl::Cell cell2(*cell1);
+    EXPECT_EQ(cell1->nvec(), cell2.nvec());
+    for (int i=0; i < nvec*3; ++i) {
+      EXPECT_EQ(cell1->vecs()[i], cell2.vecs()[i]);
+    }
+  }
+}
+
+
 // create_reciprocal
 // ~~~~~~~~~~~~~~~~~
 

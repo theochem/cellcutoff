@@ -24,6 +24,7 @@ from libcpp cimport bool
 cdef extern from "cellcutoff/cell.h" namespace "cellcutoff":
     cdef cppclass Cell:
         Cell(double* vecs, int nvec) except +
+        Cell(const Cell& cell) except +
         Cell()
 
         Cell* create_subcell(const double threshold, int* shape) except +

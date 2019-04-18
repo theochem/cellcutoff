@@ -35,8 +35,9 @@
 #ifndef CELLCUTOFF_ITERATORS_H_
 #define CELLCUTOFF_ITERATORS_H_
 
-#include <vector>
 #include <array>
+#include <unordered_map>
+#include <vector>
 
 #include "cellcutoff/cell.h"
 #include "cellcutoff/decomposition.h"
@@ -203,6 +204,10 @@ class BarIterator {
 
 /** @brief
         Loop over points within a cutoff sphere around some center.
+
+    The usage of this class is deprecated since version 0.3. It will be removed in version
+    0.1. Consider using BoxSortedPoints and BoxCutoffIterator instead. These should be
+    easier to work with.
   */
 class DeltaIterator {
  public:
@@ -294,6 +299,160 @@ class DeltaIterator {
   size_t ipoint_;              //!< Index of current point
   size_t ibegin_;              //!< First index of points in current subcell
   size_t iend_;                //!< Non-inclusive last index of points in current subcell
+};
+
+
+//! Map type to locate sorted points easily in BoxSortedPoints.
+typedef std::unordered_map<size_t, std::array<size_t, 2>> RangesMap;
+
+
+/** @brief
+        Return a positive serial for given (sub)cell indices.
+
+    @param icell
+        Array with cell indexes.
+
+    @return serial
+        The positive integer identifying the cell.
+ */
+size_t serialize_icell(const int* icell);
+
+
+/** @brief
+        Return a positive serial for given (sub)cell indices.
+
+    @param i0
+        cell index 0.
+
+    @param i1
+        cell index 1.
+
+    @param i2
+        cell index 2.
+
+    @return serial
+        The positive integer identifying the cell.
+ */
+size_t serialize_icell(const int i0, const int i1, const int i2);
+
+/** @brief
+        Sort points and construct iterators over points within cutoff. Added in version 0.3.
+  */
+class BoxSortedPoints {
+ public:
+  /** @brief
+          Create a BoxSortedPoints object.
+
+      This would group all the points into subcells of the given cell. The size of the
+      subcells is controlled by the threshold parameter.
+
+      @param points
+          C-contigiuous array of 3D Cartesian coordinates.
+
+      @param npoint
+          Number of points.
+
+      @param cell
+          Describing the periodic boundary conditions, if any.
+
+      @param threshold
+          The maximum spacing between opposite faces of the subcell.
+
+   */
+  BoxSortedPoints(const double* points, size_t npoint, const Cell* cell, const double threshold);
+  //! Destruct a BoxSortedPoints
+  ~BoxSortedPoints();
+
+  //! Points after sorting and other sorts of manipulations.
+  const double* points() const { return points_; }
+  //! Number of points.
+  size_t npoint() const { return npoint_; }
+
+  //! Subcell used for binning.
+  const Cell* subcell() const { return subcell_; }
+  //! The number of repetitions of the subcell to obtain the periodic cell.
+  const int* shape() const { return shape_; }
+  //! The index of each point in the original array.
+  const size_t* ipoints() const { return ipoints_; }
+  //! The mapping from serials to ranges.
+  const RangesMap* ranges() const { return &ranges_; }
+
+ private:
+  double* points_;    //!< Points after wrapping in periodic cell.
+  size_t npoint_;     //!< Number of points.
+  Cell* subcell_;     //!< Subcell used for binning the points.
+  int shape_[3];      //!< Number of repetitions along each subcell vector.
+  /** @brief The reordering of the points.
+
+      First point in a cell is points_[ipoints_[ranges->at(serial)[0]]].
+   */
+  size_t* ipoints_;
+  //! The begin and end indices (after sorting) of the points within each subcell.
+  RangesMap ranges_;
+};
+
+
+/** @brief
+        Iterator over points within a cutoff sphere. Added in version 0.3.
+  */
+class BoxCutoffIterator {
+ public:
+  /** @brief
+          Create an iterator over points within a cutoff sphere.
+
+      @param bsp
+          A BoxSortedPoints instance.
+
+      @param center
+          The center of the cutoff sphere.
+
+      @params radius
+          Radius of the cutoff sphere.
+
+      @return ci
+          An iterator over the points within the cutoff.
+   */
+  BoxCutoffIterator(const BoxSortedPoints* bsp, const double* center, double radius);
+
+  //! Destruct the iterator.
+  ~BoxCutoffIterator();
+
+  //! Distance between current point and center.
+  double distance() const { return distance_; }
+  //! Relative vector from center to current point.
+  const double* delta() const { return delta_; }
+  //! Index of the current point in the user-provided points array.
+  size_t ipoint() const { return ipoint_; }
+
+  //! Return true when not at the end yet.
+  bool busy() const { return bar_iterator_->busy(); }
+  //! Iterate by one point.
+  BoxCutoffIterator& operator++();
+  //! Disables post-increment.
+  BoxCutoffIterator operator++(int);
+
+ private:
+  /** @brief
+          Low-level increment implementation.
+
+      The parameter initialization is only set to True for the first increment call in
+      the constructor.
+    */
+  void increment(bool initialization);
+
+  const BoxSortedPoints* bsp_;
+  std::vector<int> bars_;      //!< A bars vector created with bars_cutoff for subcell
+  BarIterator* bar_iterator_;  //!< Bar iterator to loop over subcells
+  double center_[3];
+  double radius_;
+  size_t ibegin_;
+  size_t iend_;
+  size_t icurrent_;
+  size_t ipoint_;              //!< Index of current point
+  //! Relative vector from the center to lower corner of the periodic cell
+  double cell_delta_[3];
+  double delta_[3];            //!< Relative vector from the center to the current point
+  double distance_;            //!< Distance between center and current point
 };
 
 

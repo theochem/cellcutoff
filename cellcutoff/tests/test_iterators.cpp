@@ -34,26 +34,19 @@
 
 namespace vec3 = cellcutoff::vec3;
 
+
 // Cutoff functions
-// ~~~~~~~~~~~~~---
+// ~~~~~~~~~~~~~~~~
 
 
-class CutoffTestP : public ::testing::TestWithParam<int> {
- public:
-  virtual void SetUp() {
-    nvec = GetParam();
-  }
-
-  std::unique_ptr<cl::Cell> create_random_cell(const unsigned int seed,
-      const double scale = 1.0, const double ratio = 0.1, const bool cuboid = false) {
-    return std::unique_ptr<cl::Cell>(cl::create_random_cell(seed, nvec, scale, ratio, cuboid));
-  }
-
-  int nvec;
-};
+class RangesCutoffTestP : public CellTestP {};
+class BarsCutoffTestP : public CellTestP {};
+class CutoffTest1 : public CellTest1 {};
+class CutoffTest2 : public CellTest2 {};
+class CutoffTest3 : public CellTest3 {};
 
 
-TEST_F(CellTest1, ranges_cutoff_example) {
+TEST_F(CutoffTest1, ranges_cutoff_example) {
   double center[3] = {6.3, 0.2, -0.8};
   int ranges_begin[1];
   int ranges_end[1];
@@ -73,7 +66,7 @@ TEST_F(CellTest1, ranges_cutoff_example) {
 }
 
 
-TEST_F(CellTest1, ranges_cutoff_edge) {
+TEST_F(CutoffTest1, ranges_cutoff_edge) {
   double center[3] = {2.0, 0.2, -0.8};
   int ranges_begin[1];
   int ranges_end[1];
@@ -93,7 +86,7 @@ TEST_F(CellTest1, ranges_cutoff_edge) {
 }
 
 
-TEST_F(CellTest2, ranges_cutoff_example) {
+TEST_F(CutoffTest2, ranges_cutoff_example) {
   double center[3] = {6.3, 0.2, -5.0};
   int ranges_begin[2];
   int ranges_end[2];
@@ -107,7 +100,7 @@ TEST_F(CellTest2, ranges_cutoff_example) {
 }
 
 
-TEST_F(CellTest2, ranges_cutoff_edge) {
+TEST_F(CutoffTest2, ranges_cutoff_edge) {
   double center[3] = {4.0, 0.2, -2.0};
   int ranges_begin[2];
   int ranges_end[2];
@@ -121,7 +114,7 @@ TEST_F(CellTest2, ranges_cutoff_edge) {
 }
 
 
-TEST_F(CellTest3, ranges_cutoff_example) {
+TEST_F(CutoffTest3, ranges_cutoff_example) {
   double center[3] = {6.3, 2.2, -5.8};
   int ranges_begin[3];
   int ranges_end[3];
@@ -137,7 +130,7 @@ TEST_F(CellTest3, ranges_cutoff_example) {
 }
 
 
-TEST_F(CellTest3, ranges_cutoff_edge) {
+TEST_F(CutoffTest3, ranges_cutoff_edge) {
   double center[3] = {10.0, -2.0, -6.0};
   int ranges_begin[3];
   int ranges_end[3];
@@ -153,7 +146,7 @@ TEST_F(CellTest3, ranges_cutoff_edge) {
 }
 
 
-TEST_P(CellTestP, ranges_cutoff_domain) {
+TEST_P(RangesCutoffTestP, ranges_cutoff_domain) {
   double center[3] = {6.3, 2.2, -5.8};
   int ranges_begin[3];
   int ranges_end[3];
@@ -164,7 +157,7 @@ TEST_P(CellTestP, ranges_cutoff_domain) {
 }
 
 
-TEST_P(CellTestP, ranges_cutoff_random) {
+TEST_P(RangesCutoffTestP, ranges_cutoff_random) {
   int npoint_total = 0;
   for (int irep = 0; irep < NREP; ++irep) {
     std::unique_ptr<cl::Cell> cell(create_random_cell(irep));
@@ -197,7 +190,7 @@ TEST_P(CellTestP, ranges_cutoff_random) {
 // bars_cutoff
 // ~~~~~~~~~~~
 
-TEST_P(CellTestP, bars_cutoff_domain) {
+TEST_P(BarsCutoffTestP, bars_cutoff_domain) {
   double center[3] = {2.5, 3.4, -0.6};
   std::vector<int> bars;
   EXPECT_THROW(bars_cutoff(mycell.get(), center, 0.0, &bars), std::domain_error);
@@ -207,7 +200,7 @@ TEST_P(CellTestP, bars_cutoff_domain) {
 }
 
 
-TEST_F(CellTest1, bars_cutoff_example) {
+TEST_F(CutoffTest1, bars_cutoff_example) {
   // All the parameters
   double cutoff = 5.0;
   double center[3] = {2.5, 3.4, -0.6};
@@ -225,7 +218,7 @@ TEST_F(CellTest1, bars_cutoff_example) {
 }
 
 
-TEST_F(CellTest2, bars_cutoff_example) {
+TEST_F(CutoffTest2, bars_cutoff_example) {
   // All the parameters
   double cutoff = 5.0;
   double center[3] = {2.5, 3.4, -0.6};
@@ -253,7 +246,7 @@ TEST_F(CellTest2, bars_cutoff_example) {
 }
 
 
-TEST_F(CellTest3, bars_cutoff_example) {
+TEST_F(CutoffTest3, bars_cutoff_example) {
   // All the parameters
   double cutoff = 1.9;
   double center[3] = {2.0, 2.0, 2.0};
@@ -289,7 +282,7 @@ TEST_F(CellTest3, bars_cutoff_example) {
 }
 
 
-TEST_P(CellTestP, bars_cutoff_random) {
+TEST_P(BarsCutoffTestP, bars_cutoff_random) {
   size_t ncell_total = 0;
   for (int irep = 0; irep < NREP; ++irep) {
     // Test parameters:
@@ -353,7 +346,7 @@ TEST_P(CellTestP, bars_cutoff_random) {
 }
 
 
-TEST_F(CellTest1, bars_cutoff_corners) {
+TEST_F(CutoffTest1, bars_cutoff_corners) {
   for (int irep = 0; irep < NREP; ++irep) {
     // Test parameters:
     // - Random cell
@@ -383,7 +376,7 @@ TEST_F(CellTest1, bars_cutoff_corners) {
 }
 
 
-TEST_F(CellTest2, bars_cutoff_corners) {
+TEST_F(CutoffTest2, bars_cutoff_corners) {
   size_t nbar_total = 0;
   for (int irep = 0; irep < NREP; ++irep) {
     // Test parameters:
@@ -435,7 +428,7 @@ TEST_F(CellTest2, bars_cutoff_corners) {
 }
 
 
-TEST_F(CellTest3, bars_cutoff_corners) {
+TEST_F(CutoffTest3, bars_cutoff_corners) {
   size_t nbar_total = 0;
   for (int irep = 0; irep < NREP; ++irep) {
     // Test parameters:
@@ -867,7 +860,7 @@ TEST(DeltaIteratorTest, examples) {
   EXPECT_EQ(2, dit1.ipoint());
   ++dit1;
   EXPECT_TRUE(dit1.busy());
-  // First iteration
+  // Third iteration
   EXPECT_NEAR(3.0, dit1.delta()[0], EPS);
   EXPECT_NEAR(4.2, dit1.delta()[1], EPS);
   EXPECT_NEAR(-4.0, dit1.delta()[2], EPS);
@@ -900,7 +893,7 @@ TEST(DeltaIteratorTest, examples) {
   EXPECT_EQ(0, dit2.ipoint());
   ++dit2;
   EXPECT_TRUE(dit2.busy());
-  // First iteration
+  // Second iteration
   EXPECT_NEAR(3.0, dit2.delta()[0], EPS);
   EXPECT_NEAR(4.1, dit2.delta()[1], EPS);
   EXPECT_NEAR(-4.0, dit2.delta()[2], EPS);
@@ -908,7 +901,7 @@ TEST(DeltaIteratorTest, examples) {
   EXPECT_EQ(2, dit2.ipoint());
   ++dit2;
   EXPECT_TRUE(dit2.busy());
-  // Second iteration
+  // Third iteration
   EXPECT_NEAR(3.0, dit2.delta()[0], EPS);
   EXPECT_NEAR(4.2, dit2.delta()[1], EPS);
   EXPECT_NEAR(-4.0, dit2.delta()[2], EPS);
@@ -919,9 +912,440 @@ TEST(DeltaIteratorTest, examples) {
 }
 
 
+// serialize_icell
+// ~~~~~~~~~~~~~~~
+
+TEST(SerializeICell, examples) {
+  EXPECT_EQ(0, cl::serialize_icell(0, 0, 0));
+  EXPECT_EQ(1, cl::serialize_icell(0, 0, -1));
+  EXPECT_EQ(2, cl::serialize_icell(0, -1, 0));
+  EXPECT_EQ(3, cl::serialize_icell(0, -1, -1));
+  EXPECT_EQ(4, cl::serialize_icell(-1, 0, 0));
+  EXPECT_EQ(5, cl::serialize_icell(-1, 0, -1));
+  EXPECT_EQ(6, cl::serialize_icell(-1, -1, 0));
+  EXPECT_EQ(7, cl::serialize_icell(-1, -1, -1));
+  EXPECT_EQ(8, cl::serialize_icell(0, 0, 1));
+  EXPECT_EQ(16, cl::serialize_icell(0, 1, 0));
+  EXPECT_EQ(24, cl::serialize_icell(1, 0, 0));
+  EXPECT_EQ(25, cl::serialize_icell(1, 0, -1));
+  EXPECT_EQ(26, cl::serialize_icell(1, -1, 0));
+  EXPECT_EQ(28, cl::serialize_icell(-2, 0, 0));
+  EXPECT_EQ(2696, cl::serialize_icell(6, 3, 2));
+  EXPECT_EQ(2697, cl::serialize_icell(6, 3, -3));
+  EXPECT_EQ(2698, cl::serialize_icell(6, -4, 2));
+  EXPECT_EQ(2700, cl::serialize_icell(-7, 3, 2));
+}
+
+TEST(SerializeICell, unique) {
+  std::set<size_t> s;
+  for (int i0 = -10; i0 < 10; ++i0) {
+    for (int i1 = -10; i1 < 10; ++i1) {
+      for (int i2 = -10; i2 < 10; ++i2) {
+        int icell[3]{i0, i1, i2};
+        size_t serial1 = cl::serialize_icell(icell);
+        size_t serial2 = cl::serialize_icell(i0, i1, i2);
+        EXPECT_EQ(serial1, serial2);
+        s.insert(serial1);
+      }
+    }
+  }
+  EXPECT_EQ(20*20*20, s.size());
+}
+
+
+// BoxSortedPoints
+// ~~~~~~~~~~~~~~~
+
+TEST(BoxSortedPointsTest, exception) {
+  double* points(nullptr);
+  cl::Cell cell(nullptr, 0);
+  EXPECT_THROW(cl::BoxSortedPoints bsp(points, 0, &cell, 0.2), std::logic_error);
+}
+
+
+TEST(BoxSortedPointsTest, ranges_example_0) {
+  double points[9]{3.1, -1.0, -0.5, 3.0, 2.9, 0.0, 0.7, -1.1, 0.1};
+  cl::Cell cell(nullptr, 0);
+  cl::BoxSortedPoints bsp(points, 3, &cell, 1.0);
+  EXPECT_EQ(3, bsp.npoint());
+  EXPECT_EQ(3, bsp.subcell()->nvec());
+  EXPECT_NEAR(1.0, bsp.subcell()->vecs()[0], EPS);
+  EXPECT_NEAR(0.0, bsp.subcell()->vecs()[1], EPS);
+  EXPECT_NEAR(0.0, bsp.subcell()->vecs()[2], EPS);
+  EXPECT_NEAR(0.0, bsp.subcell()->vecs()[3], EPS);
+  EXPECT_NEAR(1.0, bsp.subcell()->vecs()[4], EPS);
+  EXPECT_NEAR(0.0, bsp.subcell()->vecs()[5], EPS);
+  EXPECT_NEAR(0.0, bsp.subcell()->vecs()[6], EPS);
+  EXPECT_NEAR(0.0, bsp.subcell()->vecs()[7], EPS);
+  EXPECT_NEAR(1.0, bsp.subcell()->vecs()[8], EPS);
+  EXPECT_EQ(0, bsp.shape()[0]);
+  EXPECT_EQ(0, bsp.shape()[1]);
+  EXPECT_EQ(0, bsp.shape()[2]);
+  EXPECT_TRUE(std::equal(points, points + 9, bsp.points()));
+  EXPECT_EQ(2, bsp.ipoints()[0]);
+  EXPECT_EQ(0, bsp.ipoints()[1]);
+  EXPECT_EQ(1, bsp.ipoints()[2]);
+  // for (const auto& n : *bsp.ranges())
+  //  std::cout << "Key:[" << n.first << "] Value:[" << n.second[0] << "," << n.second[1] << "]\n";
+  size_t serial0(cl::serialize_icell(0, -2, 0));
+  EXPECT_EQ(0, bsp.ranges()->at(serial0)[0]);
+  EXPECT_EQ(1, bsp.ranges()->at(serial0)[1]);
+  size_t serial1(cl::serialize_icell(3, -1, -1));
+  EXPECT_EQ(1, bsp.ranges()->at(serial1)[0]);
+  EXPECT_EQ(2, bsp.ranges()->at(serial1)[1]);
+  size_t serial2(cl::serialize_icell(3, 2, 0));
+  EXPECT_EQ(2, bsp.ranges()->at(serial2)[0]);
+  EXPECT_EQ(3, bsp.ranges()->at(serial2)[1]);
+}
+
+
+TEST(BoxSortedPointsTest, ranges_example_3) {
+  double points[9]{3.1, -1.0, -0.5, 3.0, 2.9, 0.0, 0.7, -1.1, 0.1};
+  double vecs[9]{2.0, 0.0, 0.0, 0.0, 3.0, 0.0, 0.0, 0.0, 4.0};
+  cl::Cell cell(vecs, 3);
+  EXPECT_EQ(3, cell.nvec());
+  cl::BoxSortedPoints bsp(points, 3, &cell, 1.0);
+  EXPECT_EQ(3, bsp.npoint());
+  EXPECT_EQ(3, bsp.subcell()->nvec());
+  EXPECT_NEAR(1.0, bsp.subcell()->vecs()[0], EPS);
+  EXPECT_NEAR(0.0, bsp.subcell()->vecs()[1], EPS);
+  EXPECT_NEAR(0.0, bsp.subcell()->vecs()[2], EPS);
+  EXPECT_NEAR(0.0, bsp.subcell()->vecs()[3], EPS);
+  EXPECT_NEAR(1.0, bsp.subcell()->vecs()[4], EPS);
+  EXPECT_NEAR(0.0, bsp.subcell()->vecs()[5], EPS);
+  EXPECT_NEAR(0.0, bsp.subcell()->vecs()[6], EPS);
+  EXPECT_NEAR(0.0, bsp.subcell()->vecs()[7], EPS);
+  EXPECT_NEAR(1.0, bsp.subcell()->vecs()[8], EPS);
+  EXPECT_EQ(2, bsp.shape()[0]);
+  EXPECT_EQ(3, bsp.shape()[1]);
+  EXPECT_EQ(4, bsp.shape()[2]);
+  double wrapped_points[9] = {1.1, 2.0, 3.5, 1.0, 2.9, 0.0, 0.7, 1.9, 0.1};
+  EXPECT_TRUE(std::equal(wrapped_points, wrapped_points + 9, bsp.points(),
+                         [](double x1, double x2){ return fabs(x1 - x2) < EPS; }));
+  EXPECT_EQ(2, bsp.ipoints()[0]);
+  EXPECT_EQ(1, bsp.ipoints()[1]);
+  EXPECT_EQ(0, bsp.ipoints()[2]);
+  // for (const auto& n : *bsp.ranges())
+  //   std::cout << "Key:[" << n.first << "] Value:[" << n.second[0] << "," << n.second[1] << "]\n";
+  size_t serial0(cl::serialize_icell(0, 1, 0));
+  EXPECT_EQ(0, bsp.ranges()->at(serial0)[0]);
+  EXPECT_EQ(1, bsp.ranges()->at(serial0)[1]);
+  size_t serial1(cl::serialize_icell(1, 2, 0));
+  EXPECT_EQ(1, bsp.ranges()->at(serial1)[0]);
+  EXPECT_EQ(2, bsp.ranges()->at(serial1)[1]);
+  size_t serial2(cl::serialize_icell(1, 2, 3));
+  EXPECT_EQ(2, bsp.ranges()->at(serial2)[0]);
+  EXPECT_EQ(3, bsp.ranges()->at(serial2)[1]);
+}
+
+
+TEST(BoxSortedPointsTest, random_0) {
+  for (int irep = 0; irep < NREP; ++irep) {
+    // Non-periodic system.
+    cl::Cell cell(nullptr, 0);
+
+    // Generate random points, not yet wrapped in cell.
+    double points[3*NPOINT];
+    fill_random_double(3157 + irep, points, 3*NPOINT, -5.0, 5.0);
+
+    // make sorted points.
+    cl::BoxSortedPoints bsp(points, NPOINT, &cell, 0.6);
+
+    // Shape should be three zeros
+    EXPECT_EQ(0, bsp.shape()[0]);
+    EXPECT_EQ(0, bsp.shape()[1]);
+    EXPECT_EQ(0, bsp.shape()[2]);
+
+    // points should not have changed.
+    EXPECT_TRUE(std::equal(points, points + 3*NPOINT, bsp.points()));
+  }
+}
+
+
+TEST(BoxSortedPointsTest, random_1) {
+  for (int irep = 0; irep < NREP; ++irep) {
+    // Get a random 1D cell
+    std::unique_ptr<cl::Cell> cell(cl::create_random_cell(irep*NPOINT, 1, 2.0));
+
+    // Generate random points, not yet wrapped in cell.
+    double points[3*NPOINT];
+    fill_random_double(31 + irep, points, 3*NPOINT, -5.0, 5.0);
+
+    // make sorted points.
+    cl::BoxSortedPoints bsp(points, NPOINT, cell.get(), 0.6);
+
+    // Check shape
+    EXPECT_LT(0, bsp.shape()[0]);
+    EXPECT_EQ(0, bsp.shape()[1]);
+    EXPECT_EQ(0, bsp.shape()[2]);
+
+    // Check fractional coordinates of all  points
+    for (size_t ipoint=0; ipoint < NPOINT; ++ipoint) {
+      double frac0[3];
+      bsp.subcell()->to_frac(bsp.points() + 3*ipoint, frac0);
+      double frac1[3];
+      cell->to_frac(bsp.points() + 3*ipoint, frac1);
+      double frac2[3];
+      cell->to_frac(points + 3*ipoint, frac2);
+      EXPECT_LE(0.0, frac0[0]);
+      EXPECT_GT(bsp.shape()[0], frac0[0]);
+      EXPECT_LE(0.0, frac1[0]);
+      EXPECT_GT(1.0, frac1[0]);
+      double diff(frac1[0] - frac2[0]);
+      EXPECT_NEAR(diff, round(diff), EPS);
+      for (int ivec=1; ivec < 3; ++ivec) {
+        EXPECT_NEAR(frac1[ivec], frac2[ivec], EPS);
+      }
+    }
+  }
+}
+
+
+TEST(BoxSortedPointsTest, random_2) {
+  for (int irep = 0; irep < NREP; ++irep) {
+    // Get a random 2D cell
+    std::unique_ptr<cl::Cell> cell(cl::create_random_cell(irep*NPOINT, 2, 2.0));
+
+    // Generate random points, not yet wrapped in cell.
+    double points[3*NPOINT];
+    fill_random_double(31 + irep, points, 3*NPOINT, -5.0, 5.0);
+
+    // make sorted points.
+    cl::BoxSortedPoints bsp(points, NPOINT, cell.get(), 0.6);
+
+    // Check shape
+    EXPECT_LT(0, bsp.shape()[0]);
+    EXPECT_LT(0, bsp.shape()[1]);
+    EXPECT_EQ(0, bsp.shape()[2]);
+
+    // Check fractional coordinates of all  points
+    for (size_t ipoint=0; ipoint < NPOINT; ++ipoint) {
+      double frac0[3];
+      bsp.subcell()->to_frac(bsp.points() + 3*ipoint, frac0);
+      double frac1[3];
+      cell->to_frac(bsp.points() + 3*ipoint, frac1);
+      double frac2[3];
+      cell->to_frac(points + 3*ipoint, frac2);
+      for (int ivec=0; ivec < 2; ++ivec) {
+        EXPECT_LE(0.0, frac0[ivec]);
+        EXPECT_GT(bsp.shape()[ivec], frac0[ivec]);
+        EXPECT_LE(0.0, frac1[ivec]);
+        EXPECT_GT(1.0, frac1[ivec]);
+        double diff(frac1[0] - frac2[0]);
+        EXPECT_NEAR(diff, round(diff), EPS);
+      }
+      EXPECT_NEAR(frac1[2], frac2[2], EPS);
+    }
+  }
+}
+
+
+TEST(BoxSortedPointsTest, random_3) {
+  for (int irep = 0; irep < NREP; ++irep) {
+    // Get a random 3D cell
+    std::unique_ptr<cl::Cell> cell(cl::create_random_cell(irep*NPOINT, 3, 2.0));
+
+    // Generate random points, not yet wrapped in cell
+    double points[3*NPOINT];
+    fill_random_double(667 + irep, points, 3*NPOINT, -5.0, 5.0);
+
+    // make sorted points
+    cl::BoxSortedPoints bsp(points, NPOINT, cell.get(), 0.2);
+
+    // Check shape
+    EXPECT_LT(0, bsp.shape()[0]);
+    EXPECT_LT(0, bsp.shape()[1]);
+    EXPECT_LT(0, bsp.shape()[2]);
+
+    // Check subcell
+    for (int ivec = 0; ivec < 3; ++ivec)
+      EXPECT_NEAR(cell->spacings()[ivec],
+                  bsp.subcell()->spacings()[ivec]*bsp.shape()[ivec],
+                  EPS);
+
+    // Check fractional coordinates of all  points
+    for (size_t ipoint=0; ipoint < NPOINT; ++ipoint) {
+      double frac0[3];
+      bsp.subcell()->to_frac(bsp.points() + 3*ipoint, frac0);
+      double frac1[3];
+      cell->to_frac(bsp.points() + 3*ipoint, frac1);
+      double frac2[3];
+      cell->to_frac(points + 3*ipoint, frac2);
+      for (int ivec=0; ivec < 3; ++ivec) {
+        EXPECT_LE(0.0, frac0[ivec]);
+        EXPECT_GT(bsp.shape()[ivec], frac0[ivec]);
+        EXPECT_LE(0.0, frac1[ivec]);
+        EXPECT_GT(1.0, frac1[ivec]);
+        double diff(frac1[ivec] - frac2[ivec]);
+        EXPECT_NEAR(diff, round(diff), EPS);
+      }
+    }
+
+    // Test if all serials are from the list of allowed values
+    std::vector<size_t> allowed_serials;
+    for (int icell0 = 0; icell0 < bsp.shape()[0]; ++icell0) {
+      for (int icell1 = 0; icell1 < bsp.shape()[1]; ++icell1) {
+        for (int icell2 = 0; icell2 < bsp.shape()[2]; ++icell2) {
+          allowed_serials.push_back(cl::serialize_icell(icell0, icell1, icell2));
+        }
+      }
+    }
+    for (const auto& iter : *bsp.ranges())
+      EXPECT_NE(std::find(allowed_serials.begin(), allowed_serials.end(), iter.first),
+                allowed_serials.end());
+  }
+}
+
+
+TEST(BoxSortedPointsTest, ranges_example2_3) {
+  double vecs[9]{3.0, 0.0, 0.0, 0.0, 3.0, 0.0, 0.0, 0.0, 3.0};
+  cl::Cell cell(vecs, 3);
+  for (int ivec = 0; ivec < 3; ++ivec) {
+    double points[9]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    points[ivec] = 2.5;
+    cl::BoxSortedPoints bsp(points, 3, &cell, 1.0);
+    /*
+    for (const auto& n : *bsp.ranges()) {
+      std::cout << "Key:[" << n.first << "] Value:[" << n.second[0] << "," << n.second[1] << "]\n";
+      for (size_t ipoint = n.second[0]; ipoint < n.second[1]; ++ipoint) {
+        std::cout << ipoint << " " << bsp.ipoints()[ipoint] << std::endl;
+        for (int i = 0; i < 3; i++) {
+          std::cout << "  " << points[3*bsp.ipoints()[ipoint] + i];
+          std::cout << "  " << bsp.points()[3*bsp.ipoints()[ipoint] + i] << std::endl;
+        }
+      }
+    }
+    */
+    EXPECT_EQ(2, bsp.ranges()->size());
+    // icell0
+    std::array<size_t, 2> range0(bsp.ranges()->at(cl::serialize_icell(0, 0, 0)));
+    EXPECT_EQ(0, range0[0]);
+    EXPECT_EQ(2, range0[1]);
+    // icell1
+    int icell[3]{0, 0, 0};
+    icell[ivec] = 2;
+    std::array<size_t, 2> range1(bsp.ranges()->at(cl::serialize_icell(icell)));
+    EXPECT_EQ(2, range1[0]);
+    EXPECT_EQ(3, range1[1]);
+  }
+}
+
+
+// BoxCutoffIterator
+// ~~~~~~~~~~~~~~~~~
+
+TEST(BoxCutoffIteratorTest, exception_radius) {
+  double vecs[9]{2.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+  cl::Cell cell(vecs, 3);
+  const double points[6]{0.0, 0.0, 0.0, 1.0, 0.0, 0.0};
+  cl::BoxSortedPoints bsp(points, 2, &cell, 1.0);
+  const double center[3]{0.0, 0.0, 1.0};
+  EXPECT_THROW(new cl::BoxCutoffIterator(&bsp, center, -1.0), std::domain_error);
+}
+
+
+TEST(BoxCutoffIteratorTest, exception_increment) {
+  double vecs[9]{2.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+  cl::Cell cell(vecs, 3);
+  const double points[6]{0.0, 0.0, 0.0, 1.0, 0.0, 0.0};
+  cl::BoxSortedPoints bsp(points, 2, &cell, 1.0);
+  const double center[3]{0.0, 0.0, 1.0};
+  cl::BoxCutoffIterator bci(&bsp, center, 1e-15);
+  EXPECT_TRUE(bci.busy());
+  EXPECT_THROW(bci++, std::logic_error);
+}
+
+
+TEST(BoxCutoffIteratorTest, example1) {
+  // Problem definition: points, cell, center and cutoff.
+  // 1) points
+  double points[12]{9.0, 9.0, 99.0, 22.5, 0.0, 0.0, 4.0, 5.1, -3.0, 4.0, 5.2, -3.0};
+  // 2) cell
+  double vecs[9]{20.0, 0.0, 0.0, 0.0, 20.0, 0.0, 0.0, 0.0, 20.0};
+  cl::Cell cell(vecs, 3);
+  // 3) center and cutoff
+  double center[3]{1.0, 1.0, 1.0};
+  double cutoff = 10.0;
+
+  // Construct the iterator.
+  cl::BoxSortedPoints bsp(points, 4, &cell, 2.0);
+  cl::BoxCutoffIterator bci(&bsp, center, cutoff);
+  EXPECT_TRUE(bci.busy());
+
+  // Iteration
+  EXPECT_EQ(1, bci.ipoint());
+  EXPECT_NEAR(1.5, bci.delta()[0], EPS);
+  EXPECT_NEAR(-1.0, bci.delta()[1], EPS);
+  EXPECT_NEAR(-1.0, bci.delta()[2], EPS);
+  EXPECT_NEAR(sqrt(1.5*1.5 + 1.0 + 1.0), bci.distance(), EPS);
+  ++bci;
+  EXPECT_TRUE(bci.busy());
+  // Iteration
+  EXPECT_EQ(2, bci.ipoint());
+  EXPECT_NEAR(3.0, bci.delta()[0], EPS);
+  EXPECT_NEAR(4.1, bci.delta()[1], EPS);
+  EXPECT_NEAR(-4.0, bci.delta()[2], EPS);
+  EXPECT_NEAR(sqrt(3.0*3.0 + 4.1*4.1 + 4.0*4.0), bci.distance(), EPS);
+  ++bci;
+  EXPECT_TRUE(bci.busy());
+  // Iteration
+  EXPECT_EQ(3, bci.ipoint());
+  EXPECT_NEAR(3.0, bci.delta()[0], EPS);
+  EXPECT_NEAR(4.2, bci.delta()[1], EPS);
+  EXPECT_NEAR(-4.0, bci.delta()[2], EPS);
+  EXPECT_NEAR(sqrt(3.0*3.0 + 4.2*4.2 + 4.0*4.0), bci.distance(), EPS);
+  ++bci;
+  EXPECT_FALSE(bci.busy());
+}
+
+
+TEST(BoxCutoffIteratorTest, example2) {
+  // Problem definition: points, cell, center and cutoff.
+  // 1) points
+  double points[12]{0.0, 0.0, 0.0, 22.5, 0.0, 0.0, 4.0, 5.1, -3.0, 4.0, 5.2, -3.0};
+  // 2) cell
+  cl::Cell cell(nullptr, 0);
+  // 3) center and cutoff
+  double center[3]{1.0, 1.0, 1.0};
+  double cutoff = 10.0;
+
+  // Construct the iterator.
+  cl::BoxSortedPoints bsp(points, 4, &cell, 1.0);
+  cl::BoxCutoffIterator bci(&bsp, center, cutoff);
+  EXPECT_TRUE(bci.busy());
+
+  // First iteration
+  EXPECT_NEAR(-1.0, bci.delta()[0], EPS);
+  EXPECT_NEAR(-1.0, bci.delta()[1], EPS);
+  EXPECT_NEAR(-1.0, bci.delta()[2], EPS);
+  EXPECT_NEAR(sqrt(3.0), bci.distance(), EPS);
+  EXPECT_EQ(0, bci.ipoint());
+  ++bci;
+  EXPECT_TRUE(bci.busy());
+  // Second iteration
+  EXPECT_NEAR(3.0, bci.delta()[0], EPS);
+  EXPECT_NEAR(4.1, bci.delta()[1], EPS);
+  EXPECT_NEAR(-4.0, bci.delta()[2], EPS);
+  EXPECT_NEAR(sqrt(3.0*3.0 + 4.1*4.1 + 4.0*4.0), bci.distance(), EPS);
+  EXPECT_EQ(2, bci.ipoint());
+  ++bci;
+  EXPECT_TRUE(bci.busy());
+  // Third iteration
+  EXPECT_NEAR(3.0, bci.delta()[0], EPS);
+  EXPECT_NEAR(4.2, bci.delta()[1], EPS);
+  EXPECT_NEAR(-4.0, bci.delta()[2], EPS);
+  EXPECT_NEAR(sqrt(3.0*3.0 + 4.2*4.2 + 4.0*4.0), bci.distance(), EPS);
+  EXPECT_EQ(3, bci.ipoint());
+  ++bci;
+  EXPECT_FALSE(bci.busy());
+}
+
+
 // Instantiation of parameterized tests
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+INSTANTIATE_TEST_CASE_P(RangesCutoffTest0123, RangesCutoffTestP, ::testing::Range(0, 4));
+INSTANTIATE_TEST_CASE_P(BarsCutoffTest0123, BarsCutoffTestP, ::testing::Range(1, 4));
 INSTANTIATE_TEST_CASE_P(BarIteratorTest0123, BarIteratorTestP, ::testing::Range(0, 4));
 
 

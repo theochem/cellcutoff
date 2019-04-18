@@ -82,10 +82,11 @@ class Cell {
   */
   Cell(const double* vecs, const int nvec);
 
-  /** @brief
-          Construct a Cell object without cell vectors.
-  */
+  //! Construct a Cell object without cell vectors.
   Cell() : Cell(nullptr, 0) {}
+
+  //! Copy constructor
+  Cell(const Cell& cell) : Cell(cell.vecs(), cell.nvec()) {}
 
   /** @brief
           Create a Cell object with the reciprocal cell.
@@ -105,7 +106,7 @@ class Cell {
       This partitions space into bins (with the size and shape of the subcell) that can be
       used to do a domain decomposition.
 
-      @param spacing
+      @param threshold
           The spacing between the subcell crystal planes is guaranteed to be lower than
           or equal to this value. Within the constraints of an integer division of the
           active cell vectors and this threshold, the spacing between the subcell crystal

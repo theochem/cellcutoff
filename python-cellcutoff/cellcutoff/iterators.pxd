@@ -15,13 +15,21 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
-#
 # --
 # cython: linetrace=True, embedsignature=True, language_level=3
 
 
-cimport cellcutoff.cell
+cimport cellcutoff.cell as cell
 
 cdef extern from "cellcutoff/iterators.h" namespace "cellcutoff":
-    size_t ranges_cutoff(const cellcutoff.cell.Cell* cell, const double* center,
+    size_t ranges_cutoff(const cell.Cell* cell, const double* center,
         double cutoff, int* ranges_begin, int* ranges_end);
+
+    cdef cppclass BoxSortedPoints:
+        BoxSortedPoints(double* points, int npoint, cell.Cell* cell, double threshold) except +
+
+        const double* points()
+        size_t npoint()
+        const cell.Cell* subcell()
+        const int* shape()
+        const size_t* ipoints()

@@ -21,6 +21,10 @@
 
     Provides tools to sort grid points into cells.
 
+    The usage of this module is deprecated since version 0.3. It will be removed in version
+    0.1. Consider using BoxSortedPoints and BoxCutoffIterator instead. These should be
+    easier to work with.
+
   */
 
 
@@ -78,15 +82,7 @@ struct icell_hash {
       This is the usual folding trick, such that cells closer to the origin are assigned
       lower integer indices.
     */
-  size_t operator()(const std::array<int, 3>& icell) const {
-    const int small = 4*(icell[0] < 0) + 2*(icell[1] < 0) + (icell[2] < 0);
-    const size_t x = abs(icell[0]) + (icell[0] >= 0);
-    const size_t y = abs(icell[1]) + (icell[1] >= 0);
-    const size_t z = abs(icell[2]) + (icell[2] >= 0);
-    const size_t d0 = x + y + z;
-    const size_t d1 = x + y;
-    return (((d0-3)*(d0-2)*(d0-1))/6 + ((d1-2)*(d1-1))/2 + (x-1))*8 + small;
-  }
+  size_t operator()(const std::array<int, 3>& icell) const;
 };
 
 //! Unordered map for sorting points into cells.

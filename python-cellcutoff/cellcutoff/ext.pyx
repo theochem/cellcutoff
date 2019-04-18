@@ -26,12 +26,15 @@ np.import_array()
 
 from libc.string cimport memcpy
 from libcpp cimport bool
+from libcpp.vector cimport vector
 
 cimport cellcutoff.cell as cell
-cimport cellcutoff.iterators
+cimport cellcutoff.iterators as iterators
+cimport cellcutoff.wrapping as wrapping
 
 
-__all__ = ['Cell', 'ranges_cutoff', 'create_random_cell']
+__all__ = ['Cell', 'ranges_cutoff', 'create_random_cell', 'BoxSortedPoints',
+           'box_cutoff_points']
 
 
 def check_array_arg(name, arg, expected_shape):
@@ -43,7 +46,7 @@ def check_array_arg(name, arg, expected_shape):
                              'expecting %i') % (i, name, arg.shape[i], n))
 
 
-cdef class Cell(object):
+cdef class Cell:
     def __cinit__(self, np.ndarray[double, ndim=2] vecs=None, initvoid=False):
         """C-level constructor, allocates low-level object unless initvoid==True."""
         if initvoid:
@@ -114,14 +117,14 @@ cdef class Cell(object):
         def __get__(self):
             """The cell vectors."""
             cdef np.ndarray[double, ndim=2] vecs = np.zeros((3, 3), float)
-            memcpy(&vecs[0, 0], self._this.vecs(), sizeof(double)*9);
+            memcpy(&vecs[0, 0], self._this.vecs(), sizeof(double)*9)
             return vecs
 
     property gvecs:
         def __get__(self):
             """The reciprocal cell vectors."""
             cdef np.ndarray[double, ndim=2] gvecs = np.zeros((3, 3), float)
-            memcpy(&gvecs[0, 0], self._this.gvecs(), sizeof(double)*9);
+            memcpy(&gvecs[0, 0], self._this.gvecs(), sizeof(double)*9)
             return gvecs
 
     property volume:
@@ -138,28 +141,28 @@ cdef class Cell(object):
         def __get__(self):
             """The lengths of the cell vectors."""
             cdef np.ndarray[double, ndim=1] lengths = np.zeros(3, float)
-            memcpy(&lengths[0], self._this.lengths(), sizeof(double)*3);
+            memcpy(&lengths[0], self._this.lengths(), sizeof(double)*3)
             return lengths
 
     property glengths:
         def __get__(self):
             """The lengths of the reciprocal cell vectors."""
             cdef np.ndarray[double, ndim=1] glengths = np.zeros(3, float)
-            memcpy(&glengths[0], self._this.glengths(), sizeof(double)*3);
+            memcpy(&glengths[0], self._this.glengths(), sizeof(double)*3)
             return glengths
 
     property spacings:
         def __get__(self):
             """The distances between the cell planes."""
             cdef np.ndarray[double, ndim=1] spacings = np.zeros(3, float)
-            memcpy(&spacings[0], self._this.spacings(), sizeof(double)*3);
+            memcpy(&spacings[0], self._this.spacings(), sizeof(double)*3)
             return spacings
 
     property gspacings:
         def __get__(self):
             """The distances between the reciprocal cell planes."""
             cdef np.ndarray[double, ndim=1] gspacings = np.zeros(3, float)
-            memcpy(&gspacings[0], self._this.gspacings(), sizeof(double)*3);
+            memcpy(&gspacings[0], self._this.gspacings(), sizeof(double)*3)
             return gspacings
 
     property cubic:
@@ -267,8 +270,8 @@ def ranges_cutoff(Cell cell, np.ndarray[double, ndim=1] center not None, double 
     check_array_arg('center', center, (3,))
     cdef np.ndarray[int, ndim=1] ranges_begin = np.zeros(3, np.intc)
     cdef np.ndarray[int, ndim=1] ranges_end = np.zeros(3, np.intc)
-    cellcutoff.iterators.ranges_cutoff(cell._this, &center[0], cutoff,
-                                       &ranges_begin[0], &ranges_end[0])
+    iterators.ranges_cutoff(cell._this, &center[0], cutoff,
+                            &ranges_begin[0], &ranges_end[0])
     return ranges_begin, ranges_end
 
 
@@ -305,3 +308,118 @@ def create_random_cell(int seed, int nvec, double scale=10.0,
     cdef Cell result = Cell.__new__(Cell, None, initvoid=True)
     result._this = cpp_cell
     return result
+
+
+cdef class BoxSortedPoints:
+    def __cinit__(self, np.ndarray[double, ndim=2] points, Cell cell, double threshold):
+        """C-level constructor, allocates low-level object."""
+        check_array_arg('points', points, (-1, 3))
+        self._this = new iterators.BoxSortedPoints(&points[0, 0], points.shape[0], cell._this, threshold)
+
+    def __init__(self, np.ndarray[double, ndim=2] points, Cell cell, double threshold):
+        """Initialize box-sorted points.
+
+        Parameters
+        ----------
+        points
+            Cartesian coordinates of points to be sorted.
+        cell
+            Description of periodic boundary conditions.
+        threshold
+            Maximal spacing between subcell planes.
+
+        """
+        pass
+
+    def __dealloc__(self):
+        """Dealocate the cell object, also dealocates low-level object."""
+        if self._this != NULL:
+            del self._this
+
+    @property
+    def points(self):
+        """Return (a copy of) the wrapped points."""
+        cdef size_t npoint = self._this.npoint()
+        cdef np.ndarray[double, ndim=2] points = np.zeros((npoint, 3), float)
+        memcpy(&points[0, 0], self._this.points(), sizeof(double)*npoint*3)
+        return points
+
+    @property
+    def subcell(self):
+        """Return the subcell used to bin the points."""
+        cdef cell.Cell* cpp_cell = new cell.Cell(self._this.subcell()[0])
+        cdef Cell subcell = Cell.__new__(Cell, None, initvoid=True)
+        subcell._this = cpp_cell
+        return subcell
+
+    @property
+    def shape(self):
+        """Return repetitions of the subcell to obtain the periodic cell."""
+        cdef np.ndarray[int, ndim=1] shape = np.zeros(3, np.intc)
+        memcpy(&shape[0], self._this.shape(), sizeof(int)*3)
+        return shape
+
+    @property
+    def ipoints(self):
+        """Return the reordering of the points into bins."""
+        cdef size_t npoint = self._this.npoint()
+        cdef np.ndarray[size_t, ndim=1] ipoints = np.zeros(npoint, np.uintp)
+        memcpy(&ipoints[0], self._this.ipoints(), sizeof(size_t)*npoint)
+        return ipoints
+
+
+def box_cutoff_points(BoxSortedPoints bsp, np.ndarray[double, ndim=1] center, double radius):
+    """Look up all points within the given cutoff sphere.
+
+    Parameters
+    ----------
+    bsp
+        An instance with the sorted points (needs to be created once, after which
+        this function can be called many times.
+    center
+        The center of the cutoff sphere.
+    radius
+        The radius of the cutoff sphere.
+
+    Returns
+    -------
+    dds
+        An array with relative vectors and distances. Each row corresponds to
+        one point. The first three columns contain the Cartesian coordinates of
+        the vector from center to the point, while the last is the distance.
+    ipoints
+        The indices of the points in the points array used to construct the
+        bsp object.
+
+    In case of periodic boundary conditions, this function will include points
+    from the appropriate periodic images, which may result in duplicates in the
+    ipoints array.
+
+    The underlying C++ implementation is very efficient, with a cost that does
+    not depend on the total number of points. It only scales linearly with the
+    number of points within the cutoff.
+    """
+    cdef vector[double] *dds_vec = NULL
+    cdef vector[size_t] *ipoints_vec = NULL
+    cdef np.ndarray[double, ndim=2] dds
+    cdef np.ndarray[size_t, ndim=1] ipoints
+    check_array_arg('center', center, (3,))
+    try:
+        dds_vec = new vector[double]()
+        ipoints_vec = new vector[size_t]()
+        npoint = wrapping.box_cutoff_points(
+            bsp._this, &center[0], radius, dds_vec, ipoints_vec)
+        # We need to copy the data from the C++ vectors to the number arrays.
+        # Using the same memory would be unsafe as it gets deallocated as soon
+        # as the C++ array goes out of scope.
+        dds = np.zeros((npoint, 4), float)
+        ipoints = np.zeros(npoint, np.uintp)
+        if npoint > 0:
+            memcpy(&dds[0, 0], dds_vec.data(), sizeof(double)*npoint*4)
+            memcpy(&ipoints[0], ipoints_vec.data(), sizeof(size_t)*npoint)
+    finally:
+        if dds_vec != NULL:
+            del dds_vec
+        if ipoints_vec != NULL:
+            del ipoints_vec
+    return dds, ipoints

@@ -70,8 +70,10 @@ setup(
     },
     ext_modules=[Extension(
         "cellcutoff.ext",
-        sources=['cellcutoff/ext.pyx'],
-        depends=['cellcutoff/ext.pxd', 'cellcutoff/cell.pxd'],
+        sources=['cellcutoff/ext.pyx', 'cellcutoff/wrapping.cpp'],
+        depends=['cellcutoff/ext.pxd', 'cellcutoff/cell.pxd',
+                 'cellcutoff/iterators.pxd', 'cellcutoff/wrapping.h',
+                 'cellcutoff/wrapping.pxd'],
         libraries=['cellcutoff'],
         include_dirs=[np.get_include()],
         extra_compile_args=['-std=c++11', '-Wall', '-pedantic'],

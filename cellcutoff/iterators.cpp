@@ -21,6 +21,7 @@
 #include "cellcutoff/iterators.h"
 
 #include <algorithm>
+#include <numeric>
 #include <stdexcept>
 #include <vector>
 
@@ -181,7 +182,9 @@ void BarIterator::increment(const int ivec) {
 }
 
 
-// DeltaIterator
+//
+// DeltaIterator (DEPRECATED)
+//
 
 DeltaIterator::DeltaIterator(const Cell& subcell, const int* shape, const double* center,
     const double cutoff, const void* points, const size_t npoint, const size_t point_size,
@@ -297,6 +300,184 @@ void DeltaIterator::increment(bool initialization) {
     vec3::iadd(delta_, cell_delta_);
     distance_ = vec3::norm(delta_);
   } while (distance_ > cutoff_);
+}
+
+
+//
+// BoxSortedPoints
+//
+
+
+size_t serialize_icell(const int* icell) {
+  return serialize_icell(icell[0], icell[1], icell[2]);
+}
+
+
+size_t serialize_icell(const int i0, const int i1, const int i2) {
+  const int small = 4*(i0 < 0) + 2*(i1 < 0) + (i2 < 0);
+  const size_t x = abs(i0) + (i0 >= 0);
+  const size_t y = abs(i1) + (i1 >= 0);
+  const size_t z = abs(i2) + (i2 >= 0);
+  const size_t d0 = x + y + z;
+  const size_t d1 = x + y;
+  return (((d0-3)*(d0-2)*(d0-1))/6 + ((d1-2)*(d1-1))/2 + (x-1))*8 + small;
+}
+
+
+BoxSortedPoints::BoxSortedPoints(const double* points, size_t npoint, const Cell* cell,
+    const double threshold)
+    : points_(nullptr), npoint_(npoint), subcell_(nullptr), shape_{-1, -1, -1},
+      ipoints_(nullptr), ranges_() {
+  if (npoint == 0) {
+    throw std::domain_error("The number of points must be strictly positive.");
+  }
+  // Derive the subcell.
+  subcell_ = cell->create_subcell(threshold, shape_);
+  // Copy wrapped points and assign subcell serials for every point.
+  points_ = new double[3*npoint];
+  std::vector<size_t> serials(npoint);
+  for (size_t ipoint = 0; ipoint < npoint; ++ipoint) {
+    double cart[3];
+    vec3::copy(points + 3*ipoint, cart);
+    cell->iwrap_box(cart);
+    vec3::copy(cart, points_ + 3*ipoint);
+    double frac[3];
+    subcell_->to_frac(cart, frac);
+    int isubcell[3];
+    std::transform(frac, frac + 3, isubcell, &floor);
+    serials[ipoint] = serialize_icell(isubcell);
+  }
+  // Determine order for sorting.
+  ipoints_ = new size_t[npoint];
+  std::iota(ipoints_, ipoints_ + npoint, 0);
+  std::sort(ipoints_, ipoints_ + npoint,
+            [&serials](size_t i1, size_t i2) {return serials[i1] < serials[i2];});
+  // Construct the ranges map, which will be used to look up points in a subcell.
+  size_t begin = 0;
+  size_t last_serial = serials[ipoints_[0]];
+  for (size_t jpoint = 0; jpoint < npoint; ++jpoint) {
+    size_t ipoint = ipoints_[jpoint];
+    if (serials[ipoint] != last_serial) {
+      ranges_.insert({last_serial, {begin, jpoint}});
+      begin = jpoint;
+      last_serial = serials[ipoint];
+    }
+  }
+  ranges_.insert({last_serial, {begin, npoint}});
+}
+
+
+BoxSortedPoints::~BoxSortedPoints() {
+  if (points_ != nullptr) delete[] points_;
+  if (subcell_ != nullptr) delete subcell_;
+  if (ipoints_ != nullptr) delete[] ipoints_;
+}
+
+
+//
+// BoxCutoffIterator
+//
+
+
+BoxCutoffIterator::BoxCutoffIterator(const BoxSortedPoints* bsp, const double* center,
+    double radius)
+    : bsp_(bsp),
+      bars_(),
+      bar_iterator_(nullptr),
+      center_{NAN, NAN, NAN},
+      radius_(radius),
+      ibegin_(1),
+      iend_(1),
+      icurrent_(0),
+      ipoint_{0},
+      cell_delta_{NAN, NAN, NAN},
+      delta_{NAN, NAN, NAN},
+      distance_(NAN) {
+  // Create the bars vector, integers that encode the subcell indices to visit.
+  bars_cutoff(bsp_->subcell(), center, radius, &bars_);
+  bar_iterator_ = new BarIterator(bars_, bsp_->subcell()->nvec(), bsp_->shape());
+  // Copy center
+  vec3::copy(center, center_);
+  // Prepare first iteration
+  increment(true);
+}
+
+
+BoxCutoffIterator::~BoxCutoffIterator() {
+  if (bar_iterator_ != nullptr) delete bar_iterator_;
+}
+
+
+
+BoxCutoffIterator& BoxCutoffIterator::operator++() {
+  increment(false);
+  return *this;
+}
+
+
+BoxCutoffIterator BoxCutoffIterator::operator++(int) {
+  throw std::logic_error("Don't use the post-increment operator of BoxCutoffIterator.");
+  return *this;
+}
+
+
+void BoxCutoffIterator::increment(bool initialization) {
+  do {
+    // Just move one point further
+    ++icurrent_;
+    // If we moved past the last point in the cell, then do the outer loop
+    if (icurrent_ == iend_) {
+      do {
+        // Move to the next cell, if any
+        if (!initialization) {
+          ++(*bar_iterator_);
+        } else {
+          initialization = false;
+        }
+        // Check if there is a next cell.
+        if (!bar_iterator_->busy()) {
+          delta_[0] = NAN;
+          delta_[1] = NAN;
+          delta_[2] = NAN;
+          distance_ = NAN;
+          return;
+        }
+        // Take all relevant data from bar_iterator_ and bsp_.
+        // - the cell index, converting to serial
+        size_t serial = serialize_icell(bar_iterator_->icell());
+        // - the next range of points, if any. If the next range of points is not in
+        //   bsp_->ranges(), the while loop will try the next cell.
+        auto it = bsp_->ranges()->find(serial);
+        if (it != bsp_->ranges()->end()) {
+          // The range points + reset ipoint_ to the beginning if that range
+          ibegin_ = it->second[0];
+          iend_ = it->second[1];
+          icurrent_ = ibegin_;
+        }
+      } while (icurrent_ == iend_);
+      // When we get here, a new cell with some points is found.
+      // Compute the relative vector of the cutoff center to the lower corner of the
+      // periodic cell. (This is called the cell_delta_ vector, as it is, for a given
+      // cell, a constant part of the relative vector from center to a point within a
+      // given cell.)
+      cell_delta_[0] = -center_[0];
+      cell_delta_[1] = -center_[1];
+      cell_delta_[2] = -center_[2];
+      int translate_icell[3]{
+        bar_iterator_->coeffs()[0]*bsp_->shape()[0],
+        bar_iterator_->coeffs()[1]*bsp_->shape()[1],
+        bar_iterator_->coeffs()[2]*bsp_->shape()[2],
+      };
+      bsp_->subcell()->iadd_vec(cell_delta_, translate_icell);
+    }
+    // When we reach this point, a new point is found, either in a new cell or not. Some
+    // additional properties of that point are computed here. If the distance from the
+    // center is beyond the cutoff, we just move to the next point.
+    ipoint_ = bsp_->ipoints()[icurrent_];
+    vec3::copy(bsp_->points() + 3*ipoint_, delta_);
+    vec3::iadd(delta_, cell_delta_);
+    distance_ = vec3::norm(delta_);
+  } while (distance_ > radius_);
 }
 
 

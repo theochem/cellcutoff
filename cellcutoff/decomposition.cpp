@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "cellcutoff/cell.h"
+#include "cellcutoff/iterators.h"
 #include "cellcutoff/vec3.h"
 
 
@@ -52,6 +53,11 @@ bool Point::operator<(const Point& other) const {
   if (icell_[1] > other.icell_[1]) return false;
   if (icell_[2] < other.icell_[2]) return true;
   return false;
+}
+
+
+size_t icell_hash::operator()(const std::array<int, 3>& icell) const {
+  return serialize_icell(icell.data());
 }
 
 
