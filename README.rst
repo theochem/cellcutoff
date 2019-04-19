@@ -1,5 +1,5 @@
-.. image:: https://travis-ci.org/theochem/cellcutoff.svg?branch=master
-    :target: https://travis-ci.org/theochem/cellcutoff
+.. image:: https://travis-ci.com/theochem/cellcutoff.svg?branch=master
+    :target: https://travis-ci.com/theochem/cellcutoff/builds
 .. image:: https://img.shields.io/codecov/c/github/theochem/cellcutoff/master.svg
     :target: https://codecov.io/gh/theochem/cellcutoff
 .. image:: https://img.shields.io/conda/v/theochem/cellcutoff.svg
