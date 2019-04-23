@@ -32,13 +32,14 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wconversion -Wextra")
 # Additional compiler settings when doing a debug build
 string(TOUPPER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE)
 if(CMAKE_BUILD_TYPE STREQUAL "DEBUG")
-    # SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
-    # SET(CMAKE_INSTALL_RPATH $ENV{LIBRARY_PATH})
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        # These settings are only useful in dev mode. For now, only used for
+        # GNU compilers, because the current developers do not actively work
+        # with CLang.
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -pedantic")
         # When coding (debug mode), we want to know when there might be trouble ...
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -coverage")
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_CXX_FLAGS} -coverage")
-        set(CELLCUTOFF_DO_COVERAGE "ON")
         # Google test uses comparisons between signed and unsigned ...
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-sign-compare")
     endif()
@@ -59,8 +60,7 @@ endif(DOXYGEN_FOUND)
 
 # Source package with CPack
 set(CPACK_SOURCE_GENERATOR "TGZ")
-set(CPACK_SOURCE_PACKAGE_FILE_NAME
-  "cellcutoff-${CELLCUTOFF_VERSION}")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "cellcutoff-${CELLCUTOFF_VERSION}")
 set(CPACK_SOURCE_IGNORE_FILES
   "/build/;/release/;/debug/;/.git/;/python-cellcutoff/;/HEADER/;${CPACK_SOURCE_IGNORE_FILES}")
 include(CPack)
