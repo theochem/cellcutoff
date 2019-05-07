@@ -263,10 +263,10 @@ void DeltaIterator::increment(bool initialization) {
         }
         // Take all relevant data from bar_iterator_ and cell_map_.
         // - the cell index
-        std::array<int, 3> key{
+        std::array<int, 3> key{{
           bar_iterator_->icell()[0],
           bar_iterator_->icell()[1],
-          bar_iterator_->icell()[2]};
+          bar_iterator_->icell()[2]}};
         // - the next range of points, if any. If the next range of points is not in
         //   cell_map_, the while loop will try the next cell.
         auto it = cell_map_.find(key);
@@ -377,8 +377,10 @@ BoxSortedPoints::BoxSortedPoints(const double* points, size_t npoint, const Cell
     vec3::copy(cart, points_ + 3*ipoint);
     double frac[3];
     subcell_->to_frac(cart, frac);
-    int isubcell[3];
-    std::transform(frac, frac + 3, isubcell, &floor);
+    int isubcell[3]{
+      static_cast<int>(floor(frac[0])),
+      static_cast<int>(floor(frac[1])),
+      static_cast<int>(floor(frac[2]))};
     serials[ipoint] = serialize_icell(isubcell);
   }
   // Determine order for sorting.
@@ -392,7 +394,7 @@ BoxSortedPoints::BoxSortedPoints(const double* points, size_t npoint, const Cell
   for (size_t jpoint = 0; jpoint < npoint; ++jpoint) {
     size_t ipoint = ipoints_[jpoint];
     if (serials[ipoint] != last_serial) {
-      ranges_.insert({last_serial, {begin, jpoint}});
+      ranges_.insert({last_serial, {{begin, jpoint}}});
       begin = jpoint;
       last_serial = serials[ipoint];
     }

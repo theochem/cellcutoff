@@ -27,7 +27,7 @@ set(CELLCUTOFF_SOVERSION ${GIT_TAG_SOVERSION})
 set(PROJECT_BRIEF "Library for periodic boundary conditions and real-space cutoff calculations")
 
 # General compiler flags
-set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wconversion -Wextra")
+set(CMAKE_CXX_FLAGS "-std=c++14 -Wall -Wconversion -Wextra")
 
 # Additional compiler settings when doing a debug build
 string(TOUPPER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE)
