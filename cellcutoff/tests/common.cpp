@@ -27,7 +27,6 @@
 #include <random>
 #include <stdexcept>
 
-#include <gtest/gtest.h>
 #include <cellcutoff/vec3.h>
 
 
@@ -104,6 +103,41 @@ unsigned int random_point(unsigned int seed,  const double* center,
   *norm = vec3::norm(point);
   vec3::iadd(point, center);
   return seed;
+}
+
+
+// Fixtures
+// --------
+
+void CellTest::set_up_data() {
+  // Example tests
+  std::fill(myvecs, myvecs + 9, 0.0);
+  myvecs[0] = 2;
+  myvecs[4] = 1;
+  myvecs[8] = 4;
+  if (nvec == 2) {
+    myvecs[4] = 0.0;
+    myvecs[5] = 4.0;
+  }
+  mycell.reset(new cl::Cell(myvecs, nvec));
+  // Singular cell vectors
+  std::fill(singvecs, singvecs + 9, 0.0);
+  if (nvec > 1) {
+    singvecs[0] = 1.0;
+    singvecs[3] = 0.5;
+  }
+  if (nvec == 3) {
+    singvecs[3] = 0.0;
+    singvecs[4] = 2.0;
+    singvecs[6] = 0.5;
+    singvecs[7] = 0.8;
+  }
+}
+
+
+std::unique_ptr<cl::Cell> CellTest::create_random_cell(const unsigned int seed,
+    const double scale, const double ratio, const bool cuboid) {
+  return std::unique_ptr<cl::Cell>(cl::create_random_cell(seed, nvec, scale, ratio, cuboid));
 }
 
 

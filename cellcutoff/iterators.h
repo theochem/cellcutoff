@@ -35,10 +35,12 @@
 #ifndef CELLCUTOFF_ITERATORS_H_
 #define CELLCUTOFF_ITERATORS_H_
 
-#include <vector>
 #include <array>
+#include <unordered_map>
+#include <vector>
 
 #include "cellcutoff/cell.h"
+#include "cellcutoff/sphere_slice.h"
 #include "cellcutoff/decomposition.h"
 
 
@@ -46,19 +48,107 @@ namespace cellcutoff {
 
 
 /** @brief
+        Get the ranges of cells within a cutoff radius.
+
+    This function assumes the space is divided into boxes by crystal planes at integer
+    indexes. For example, these planes for the first cell vector are parallel to the
+    second and third cell vector and have one point in (first vector)*index where index
+    is the integer index for these planes. Similar definitions are used for the other
+    two cell vectors. The returned ranges are arrays referring to the integer indexes
+    that demarcate the cutoff sphere. One could interpret the result as a supercell
+    that contains the entire cutoff sphere.
+
+    @param center
+        A pointer to 3 doubles that specify the center of the cutoff sphere in
+        Cartesian coordinates.
+
+    @param cutoff
+        The cutoff radius.
+
+    @param ranges_begin
+        A pointer to `nvec` ints, to which the begin of each range of cells along a cell
+        vector is written. These integers are the highest indices of the crystal planes
+        below the cutoff sphere.
+
+    @param ranges_end
+        A pointer to `nvec` ints to which the end of each range of cells along a cell
+        vector is written. These integers are the lowest indices of the crystal planes
+        above the cutoff sphere.
+
+    @return
+        The number of cells contained in the supercell.
+ */
+size_t cutoff_ranges(const Cell* cell, const double* center, const double cutoff,
+    int* ranges_begin, int* ranges_end);
+
+
+/** @brief
+        Selects cells inside or at least partially overlapping with a cutoff sphere.
+
+    This function assumes space is divided in a regular grid of subcells. The shape of
+    one subcell is defined by `vecs` and `nvec` (>= 1). This function then finds all
+    subcells that overlap with a cutoff sphere.
+
+    @param center
+        A pointer to 3 doubles that specify the center of the cutoff sphere in
+        Cartesian coordinates.
+
+    @param cutoff
+        The cutoff radius.
+
+    @param bars
+        A std::vector<int> pointer in which the results, i.e. the cells overlapping with
+        the cutoff sphere, are stored.
+
+        To keep the array compact, the following format is used to specify all cells
+        that overlap with the cutoff sphere. The integers are always to be interpreted
+        in (begin, end) pairs, corresponding to crystal planes just before and after the
+        cutoff sphere. The first pair, (begin0, end0), corresponds to the planes along
+        the [100] direction. If `nvec==2`, a list of pairs follows, corresponding to
+        (begin1, end1) ranges along the [010] direction. One such pair is present for
+        each slice of the cutoff sphere along the [100] direction, i.e. for (begin0,
+        begin0 + 1), (begin0 + 1, begin0 + 2), etc. Similarly, if `nvec==3`, each pair
+        for the [010] direction is followed with a set of pairs for the [001] direction.
+
+        The above format assumes that one know `nvec` when parsing the list of integers.
+
+    @return
+        The number bars. The size of the bars vector is `nbar*(nvec+1)`.
+ */
+void cutoff_bars(const Cell* cell, const double* center, const double cutoff,
+    std::vector<int>* bars);
+
+
+/** @brief
+        Low-level functions used by cutoff_bars.
+
+    TODO. This method may change in future, so I'm not going to try explaining it in
+    detail. This can be fixed after the `sphere_slice` will be completely finalized.
+    (The current implementation sphere_slice and cutoff_bars is good but not optimal.)
+
+    This method goes recursively through all active cell vectors and divides space along
+    this axis in cells that overlap with the cutoff sphere/circle/line, depending on
+    the dimension at hand (i.e. the recursion depth). It makes use of the SphereSlice\
+    object to find the begin-end range along each cell vector.
+ */
+void cutoff_bars_low(const Cell* cell, SphereSlice* slice, int ivec, std::vector<int>* bars);
+
+
+
+/** @brief
         Loop over cells that have some overlap with a cutoff sphere.
 
     The cells to loop over must be provided as "bars", which can be generated with the
-    function Cell::bars_cutoff. This class is mainly intended for usage by DeltaIterator,
+    function cutoff_bars. This class is mainly intended for usage by DeltaIterator,
     but in rare cases it might also be directly useful.
-  */
+ */
 class BarIterator {
  public:
   /** @brief
           Create a BarIterator.
 
       @param bars
-          The output of the function Cell::bars_cutoff applied to a subcell.
+          The output of the function cutoff_bars applied to a subcell.
 
       @param nvec
           The number of periodic dimensions. This is needed to interpret the bars argument
@@ -100,7 +190,7 @@ class BarIterator {
     */
   void increment(const int ivec);
 
-  const std::vector<int>& bars_;  //!< Vector produced by Cell::bars_cutoff
+  const std::vector<int>& bars_;  //!< Vector produced by cutoff_bars
   const int nvec_;                //!< Number of dimensions encoded in the bars vector
   size_t ibar_;                   //!< Current position in the bars vector
   int* shape_;                    //!< Number of subcells in the periodic cell along each vector
@@ -115,6 +205,10 @@ class BarIterator {
 
 /** @brief
         Loop over points within a cutoff sphere around some center.
+
+    The usage of this class is deprecated since version 0.3. It will be removed in version
+    0.1. Consider using BoxSortedPoints and BoxCutoffIterator instead. These should be
+    easier to work with.
   */
 class DeltaIterator {
  public:
@@ -194,7 +288,7 @@ class DeltaIterator {
   const CellMap& cell_map_;    //!< Segments in sorted points for each cell index
 
   // Internal data
-  std::vector<int> bars_;      //!< A bars vector created with subcell::bars_cutoff
+  std::vector<int> bars_;      //!< A bars vector created with cutoff_bars for subcell
   BarIterator* bar_iterator_;  //!< Bar iterator to loop over subcells
   const Point* point_;         //!< Current point object
   /** @brief
@@ -206,6 +300,182 @@ class DeltaIterator {
   size_t ipoint_;              //!< Index of current point
   size_t ibegin_;              //!< First index of points in current subcell
   size_t iend_;                //!< Non-inclusive last index of points in current subcell
+};
+
+
+//! Map type to locate sorted points easily in BoxSortedPoints.
+typedef std::unordered_map<size_t, std::array<size_t, 2>> RangesMap;
+
+
+/** @brief
+        Return a positive serial for given (sub)cell indices.
+
+    @param icell
+        Array with cell indexes.
+
+    @return serial
+        The positive integer identifying the cell.
+ */
+size_t serialize_icell(const int* icell);
+
+
+/** @brief
+        Return a positive serial for given (sub)cell indices.
+
+    @param i0
+        cell index 0.
+
+    @param i1
+        cell index 1.
+
+    @param i2
+        cell index 2.
+
+    @return serial
+        The positive integer identifying the cell.
+ */
+size_t serialize_icell(const int i0, const int i1, const int i2);
+
+
+/** @brief
+        Estimate a suitable threshold for binning the points into subcells.
+
+    @param points
+        C-contigiuous array of 3D Cartesian coordinates.
+
+    @param npoint
+        Number of points.
+
+    @param cell
+        Describing the periodic boundary conditions, if any.
+
+    @return threshold
+        The maximum distance between subsequent subcell planes.
+ */
+double sensible_threshold(const double* points, size_t npoint, const Cell* cell);
+
+
+/** @brief
+        Sort points and construct iterators over points within cutoff. Added in version 0.3.
+  */
+class BoxSortedPoints {
+ public:
+  /** @brief
+          Create a BoxSortedPoints object.
+
+      This would group all the points into subcells of the given cell. The size of the
+      subcells is controlled by the threshold parameter.
+
+      @param points
+          C-contigiuous array of 3D Cartesian coordinates.
+
+      @param npoint
+          Number of points.
+
+      @param cell
+          Describing the periodic boundary conditions, if any.
+
+      @param threshold
+          The maximum spacing between opposite faces of the subcell. When not given or
+          when not positive, a sensible default threshold is determined, which is the
+          recommended usage.
+
+   */
+  BoxSortedPoints(const double* points, size_t npoint, const Cell* cell,
+    double threshold = 0.0);
+  //! Destruct a BoxSortedPoints
+  ~BoxSortedPoints();
+
+  //! Points after sorting and other sorts of manipulations.
+  const double* points() const { return points_; }
+  //! Number of points.
+  size_t npoint() const { return npoint_; }
+
+  //! Subcell used for binning.
+  const Cell* subcell() const { return subcell_; }
+  //! The number of repetitions of the subcell to obtain the periodic cell.
+  const int* shape() const { return shape_; }
+  //! The index of each point in the original array.
+  const size_t* ipoints() const { return ipoints_; }
+  //! The mapping from serials to ranges.
+  const RangesMap* ranges() const { return &ranges_; }
+
+ private:
+  double* points_;    //!< Points after wrapping in periodic cell.
+  size_t npoint_;     //!< Number of points.
+  Cell* subcell_;     //!< Subcell used for binning the points.
+  int shape_[3];      //!< Number of repetitions along each subcell vector.
+  /** @brief The reordering of the points.
+
+      First point in a cell is points_[ipoints_[ranges->at(serial)[0]]].
+   */
+  size_t* ipoints_;
+  //! The begin and end indices (after sorting) of the points within each subcell.
+  RangesMap ranges_;
+};
+
+
+/** @brief
+        Iterator over points within a cutoff sphere. Added in version 0.3.
+  */
+class BoxCutoffIterator {
+ public:
+  /** @brief
+          Create an iterator over points within a cutoff sphere.
+
+      @param bsp
+          A BoxSortedPoints instance.
+
+      @param center
+          The center of the cutoff sphere.
+
+      @params radius
+          Radius of the cutoff sphere.
+
+      @return ci
+          An iterator over the points within the cutoff.
+   */
+  BoxCutoffIterator(const BoxSortedPoints* bsp, const double* center, double radius);
+
+  //! Destruct the iterator.
+  ~BoxCutoffIterator();
+
+  //! Distance between current point and center.
+  double distance() const { return distance_; }
+  //! Relative vector from center to current point.
+  const double* delta() const { return delta_; }
+  //! Index of the current point in the user-provided points array.
+  size_t ipoint() const { return ipoint_; }
+
+  //! Return true when not at the end yet.
+  bool busy() const { return bar_iterator_->busy(); }
+  //! Iterate by one point.
+  BoxCutoffIterator& operator++();
+  //! Disables post-increment.
+  BoxCutoffIterator operator++(int);
+
+ private:
+  /** @brief
+          Low-level increment implementation.
+
+      The parameter initialization is only set to True for the first increment call in
+      the constructor.
+    */
+  void increment(bool initialization);
+
+  const BoxSortedPoints* bsp_;
+  std::vector<int> bars_;      //!< A bars vector created with cutoff_bars for subcell
+  BarIterator* bar_iterator_;  //!< Bar iterator to loop over subcells
+  double center_[3];
+  double radius_;
+  size_t ibegin_;
+  size_t iend_;
+  size_t icurrent_;
+  size_t ipoint_;              //!< Index of current point
+  //! Relative vector from the center to lower corner of the periodic cell
+  double cell_delta_[3];
+  double delta_[3];            //!< Relative vector from the center to the current point
+  double distance_;            //!< Distance between center and current point
 };
 
 

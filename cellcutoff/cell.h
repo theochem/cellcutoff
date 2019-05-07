@@ -33,8 +33,6 @@
 #include <string>
 #include <vector>
 
-#include "cellcutoff/sphere_slice.h"
-
 
 namespace cellcutoff {
 
@@ -82,10 +80,11 @@ class Cell {
   */
   Cell(const double* vecs, const int nvec);
 
-  /** @brief
-          Construct a Cell object without cell vectors.
-  */
+  //! Construct a Cell object without cell vectors.
   Cell() : Cell(nullptr, 0) {}
+
+  //! Copy constructor
+  Cell(const Cell& cell) : Cell(cell.vecs(), cell.nvec()) {}
 
   /** @brief
           Create a Cell object with the reciprocal cell.
@@ -105,7 +104,7 @@ class Cell {
       This partitions space into bins (with the size and shape of the subcell) that can be
       used to do a domain decomposition.
 
-      @param spacing
+      @param threshold
           The spacing between the subcell crystal planes is guaranteed to be lower than
           or equal to this value. Within the constraints of an integer division of the
           active cell vectors and this threshold, the spacing between the subcell crystal
@@ -244,37 +243,12 @@ class Cell {
    */
   void iadd_vec(double* delta, const int* coeffs) const;
 
-
   /** @brief
           Get the ranges of cells within a cutoff radius.
 
-      This function assumes the space is divided into boxes by crystal planes at integer
-      indexes. For example, these planes for the first cell vector are parallel to the
-      second and third cell vector and have one point in (first vector)*index where index
-      is the integer index for these planes. Similar definitions are used for the other
-      two cell vectors. The returned ranges are arrays referring to the integer indexes
-      that demarcate the cutoff sphere. One could interpret the result as a supercell
-      that contains the entire cutoff sphere.
+      This member function is deprecated since version 0.3 and will be removed in version
+      1.0. Please use the free function ranges_cutoff from the iterators module instead.
 
-      @param center
-          A pointer to 3 doubles that specify the center of the cutoff sphere in
-          Cartesian coordinates.
-
-      @param cutoff
-          The cutoff radius.
-
-      @param ranges_begin
-          A pointer to `nvec` ints, to which the begin of each range of cells along a cell
-          vector is written. These integers are the highest indices of the crystal planes
-          below the cutoff sphere.
-
-      @param ranges_end
-          A pointer to `nvec` ints to which the end of each range of cells along a cell
-          vector is written. These integers are the lowest indices of the crystal planes
-          above the cutoff sphere.
-
-      @return
-          The number of cells contained in the supercell.
    */
   size_t ranges_cutoff(const double* center, const double cutoff, int* ranges_begin,
       int* ranges_end) const;
@@ -283,38 +257,11 @@ class Cell {
   /** @brief
           Selects cells inside or at least partially overlapping with a cutoff sphere.
 
-      This function assumes space is divided in a regular grid of subcells. The shape of
-      one subcell is defined by `vecs` and `nvec` (>= 1). This function then finds all
-      subcells that overlap with a cutoff sphere.
+      This member function is deprecated since version 0.3 and will be removed in version
+      1.0. Please use the free function ranges_cutoff from the iterators module instead.
 
-      @param center
-          A pointer to 3 doubles that specify the center of the cutoff sphere in
-          Cartesian coordinates.
-
-      @param cutoff
-          The cutoff radius.
-
-      @param bars
-          A std::vector<int> pointer in which the results, i.e. the cells overlapping with
-          the cutoff sphere, are stored.
-
-          To keep the array compact, the following format is used to specify all cells
-          that overlap with the cutoff sphere. The integers are always to be interpreted
-          in (begin, end) pairs, corresponding to crystal planes just before and after the
-          cutoff sphere. The first pair, (begin0, end0), corresponds to the planes along
-          the [100] direction. If `nvec==2`, a list of pairs follows, corresponding to
-          (begin1, end1) ranges along the [010] direction. One such pair is present for
-          each slice of the cutoff sphere along the [100] direction, i.e. for (begin0,
-          begin0 + 1), (begin0 + 1, begin0 + 2), etc. Similarly, if `nvec==3`, each pair
-          for the [010] direction is followed with a set of pairs for the [001] direction.
-
-          The above format assumes that one know `nvec` when parsing the list of integers.
-
-      @return
-          The number bars. The size of the bars vector is `nbar*(nvec+1)`.
     */
-  void bars_cutoff(const double* center, const double cutoff,
-      std::vector<int>* bars) const;
+  void bars_cutoff(const double* center, const double cutoff, std::vector<int>* bars) const;
 
  protected:
   /** @brief
@@ -325,20 +272,6 @@ class Cell {
        const double volume, const double gvolume,
        const double* lengths, const double* glenths,
        const double* spacings, const double* gspacings);
-
-  /** @brief
-          Low-level functions used by bars_cutoff.
-
-      TODO. This method may change in future, so I'm not going to try explaining it in
-      detail. This can be fixed after the `sphere_slice` will be completely finalized.
-      (The current implementation sphere_slice and bars_cutoff is good but not optimal.)
-
-      This method goes recursively through all active cell vectors and divides space along
-      this axis in cells that overlap with the cutoff sphere/circle/line, depending on
-      the dimension at hand (i.e. the recursion depth). It makes use of the SphereSlice\
-      object to find the begin-end range along each cell vector.
-   */
-  void bars_cutoff_low(SphereSlice* slice, int ivec, std::vector<int>* bars) const;
 
  private:
   double vecs_[9];        //!< cell vectors, one per row, row-major

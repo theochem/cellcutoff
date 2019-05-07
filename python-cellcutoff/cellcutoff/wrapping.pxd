@@ -16,9 +16,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 # --
-"""Python wrapper for cellcutoff C++ library."""
+# cython: linetrace=True, embedsignature=True, language_level=3
 
 
-from .version import __version__
-from .ext import (Cell, cutoff_ranges, create_random_cell, BoxSortedPoints,
-                  box_cutoff_points)
+from libcpp.vector cimport vector
+
+cimport cellcutoff.iterators as iterators
+
+cdef extern from "wrapping.h":
+    int box_cutoff_points(const iterators.BoxSortedPoints* bsp, const double* center,
+                          const double radius, vector[double] *dds,
+                          vector[size_t] *ipoints);

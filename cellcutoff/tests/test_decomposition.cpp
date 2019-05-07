@@ -327,43 +327,4 @@ TEST(SmartWrap, examples_division) {
 }
 
 
-// icell_hash
-// ~~~~~~~~~~
-
-TEST(ICellHash, examples) {
-  cl::icell_hash fn;
-  EXPECT_EQ(0, fn(std::array<int, 3>{0, 0, 0}));
-  EXPECT_EQ(1, fn(std::array<int, 3>{0, 0, -1}));
-  EXPECT_EQ(2, fn(std::array<int, 3>{0, -1, 0}));
-  EXPECT_EQ(3, fn(std::array<int, 3>{0, -1, -1}));
-  EXPECT_EQ(4, fn(std::array<int, 3>{-1, 0, 0}));
-  EXPECT_EQ(5, fn(std::array<int, 3>{-1, 0, -1}));
-  EXPECT_EQ(6, fn(std::array<int, 3>{-1, -1, 0}));
-  EXPECT_EQ(7, fn(std::array<int, 3>{-1, -1, -1}));
-  EXPECT_EQ(8, fn(std::array<int, 3>{0, 0, 1}));
-  EXPECT_EQ(16, fn(std::array<int, 3>{0, 1, 0}));
-  EXPECT_EQ(24, fn(std::array<int, 3>{1, 0, 0}));
-  EXPECT_EQ(25, fn(std::array<int, 3>{1, 0, -1}));
-  EXPECT_EQ(26, fn(std::array<int, 3>{1, -1, 0}));
-  EXPECT_EQ(28, fn(std::array<int, 3>{-2, 0, 0}));
-  EXPECT_EQ(2696, fn(std::array<int, 3>{6, 3, 2}));
-  EXPECT_EQ(2697, fn(std::array<int, 3>{6, 3, -3}));
-  EXPECT_EQ(2698, fn(std::array<int, 3>{6, -4, 2}));
-  EXPECT_EQ(2700, fn(std::array<int, 3>{-7, 3, 2}));
-}
-
-TEST(ICellHash, unique) {
-  std::set<size_t> s;
-  cl::icell_hash fn;
-  for (int i0 = -10; i0 < 10; ++i0) {
-    for (int i1 = -10; i1 < 10; ++i1) {
-      for (int i2 = -10; i2 < 10; ++i2) {
-        size_t key = fn(std::array<int, 3>{i0, i1, i2});
-        s.insert(key);
-      }
-    }
-  }
-  EXPECT_EQ(20*20*20, s.size());
-}
-
 // vim: textwidth=90 et ts=2 sw=2

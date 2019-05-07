@@ -98,6 +98,7 @@ TEST_P(UsageTestP, points_within_cutoff) {
       ++npoint_total;
       ipoints_bars.push_back(dit.ipoint());
       EXPECT_NEAR(dit.distance(), vec3::norm(dit.delta()), EPS);
+      EXPECT_LE(dit.distance(), cutoff);
       // No duplicates allowed!
       std::array<double, 3> delta;
       std::copy(dit.delta(), dit.delta() + 3, delta.data());
@@ -107,10 +108,10 @@ TEST_P(UsageTestP, points_within_cutoff) {
     std::sort(ipoints_bars.begin(), ipoints_bars.end());
 
     // Compute the points within the cutoff in a less efficient way, i.e. using
-    // Cell::ranges_cutoff. Results should match.
-    int ranges_begin[3];
-    int ranges_end[3];
-    size_t ncell = subcell->ranges_cutoff(center, cutoff, ranges_begin, ranges_end);
+    // cutoff_ranges. Results should match.
+    int ranges_begin[3]{0, 0, 0};
+    int ranges_end[3]{1, 1, 1};
+    size_t ncell = cutoff_ranges(subcell.get(), center, cutoff, ranges_begin, ranges_end);
     EXPECT_LT(0, ncell);
     std::vector<size_t> ipoints_ranges;
     for (int icell0 = ranges_begin[0]; icell0 < ranges_end[0]; ++icell0) {
@@ -159,6 +160,105 @@ TEST_P(UsageTestP, points_within_cutoff) {
       EXPECT_EQ(ipoints_bars.size(), ipoints_dumb.size());
       for (size_t i = 0; i < ipoints_bars.size(); ++i) {
         EXPECT_EQ(ipoints_bars.at(i), ipoints_dumb.at(i));
+      }
+    }
+  }
+  // Sufficiency check
+  EXPECT_LE((NREP*NPOINT)/10, npoint_total);
+}
+
+
+TEST_P(UsageTestP, points_within_cutoff_new_api) {
+  size_t npoint_total = 0;
+  for (int irep = 0; irep < NREP; ++irep) {
+    // Select a random center and a cutoff
+    double cutoff = 1.0 + static_cast<double>(irep)/NREP;
+    double center[3];
+    unsigned int seed = fill_random_double(irep, center, 3, -cutoff, cutoff);
+
+    // Generate a set of random points (in and beyond cutoff)
+    std::unique_ptr<double[]> points{new double[3*NPOINT]};
+    seed = fill_random_double(seed, points.get(), 3*NPOINT, -cutoff, cutoff);
+
+    // Make a reasonable cell
+    std::unique_ptr<cl::Cell> cell(create_random_cell(seed, cutoff, 0.6, false));
+
+    // Make a SortedPoints object. The spacing argument is optional. We
+    // give it a specific value to make sure various scenarios are tested.
+    double threshold(irep % 2 == 0 ? cutoff*0.2 : -1.0);
+    cl::BoxSortedPoints bsp(points.get(), NPOINT, cell.get(), threshold);
+
+    // Loop through points within the cutoff and collect for later testing.
+    std::vector<size_t> ipoints;
+    std::set<std::array<double, 3>> deltas;
+    for (cl::BoxCutoffIterator ci(&bsp, center, cutoff); ci.busy(); ++ci) {
+      ++npoint_total;
+      ipoints.push_back(ci.ipoint());
+      EXPECT_NEAR(ci.distance(), vec3::norm(ci.delta()), EPS);
+      EXPECT_LE(ci.distance(), cutoff);
+      // No duplicates allowed!
+      std::array<double, 3> delta;
+      std::copy(ci.delta(), ci.delta() + 3, delta.data());
+      EXPECT_EQ(0, deltas.count(delta));
+      deltas.insert(delta);
+    }
+    // Sort ipoints to facilitate comparison.
+    std::sort(ipoints.begin(), ipoints.end());
+    EXPECT_EQ(ipoints.size(), deltas.size());
+
+    // Compute the points within the cutoff in a less efficient way, i.e. using
+    // cutoff_ranges. Results should match.
+    int ranges_begin[3]{0, 0, 0};
+    int ranges_end[3]{1, 1, 1};
+    size_t ncell = cutoff_ranges(cell.get(), center, cutoff, ranges_begin, ranges_end);
+    EXPECT_LT(0, ncell);
+    std::vector<size_t> ipoints_ranges;
+    for (size_t ipoint = 0; ipoint < NPOINT; ++ipoint) {
+      double cart0[3];
+      vec3::copy(points.get() + 3*ipoint, cart0);
+      cell->iwrap_box(cart0);
+      int icell[3];
+      for (int icell0 = ranges_begin[0]; icell0 < ranges_end[0]; ++icell0) {
+        icell[0] = icell0;
+        for (int icell1 = ranges_begin[1]; icell1 < ranges_end[1]; ++icell1) {
+          icell[1] = icell1;
+          for (int icell2 = ranges_begin[2]; icell2 < ranges_end[2]; ++icell2) {
+            icell[2] = icell2;
+            double cart1[3];
+            vec3::copy(cart0, cart1);
+            cell->iadd_vec(cart1, icell);
+            double d = vec3::distance(center, cart1);
+            if (d < cutoff) {
+              ipoints_ranges.push_back(ipoint);
+            }
+          }
+        }
+      }
+    }
+    // Sort ipoints to facilitate comparison.
+    std::sort(ipoints_ranges.begin(), ipoints_ranges.end());
+
+    // Compare the two so far;
+    EXPECT_EQ(ipoints.size(), ipoints_ranges.size());
+    for (size_t i = 0; i < ipoints.size(); ++i) {
+      EXPECT_EQ(ipoints.at(i), ipoints_ranges.at(i));
+    }
+
+    // If aperiodic, compute the points within the cutoff in a dumb way: just try them
+    // all! Results should match.
+    if (nvec == 0) {
+      std::vector<size_t> ipoints_dumb;
+      for (size_t ipoint = 0; ipoint < NPOINT; ++ipoint) {
+        double d = vec3::distance(center, points.get() + 3*ipoint);
+        if (d < cutoff) {
+          ipoints_dumb.push_back(ipoint);
+        }
+      }
+
+      // Compare, no need to sort ipoints_dumb because already sorted by construction.
+      EXPECT_EQ(ipoints.size(), ipoints_dumb.size());
+      for (size_t i = 0; i < ipoints.size(); ++i) {
+        EXPECT_EQ(ipoints.at(i), ipoints_dumb.at(i));
       }
     }
   }

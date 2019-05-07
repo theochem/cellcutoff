@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "cellcutoff/cell.h"
+#include "cellcutoff/iterators.h"
 #include "cellcutoff/vec3.h"
 
 
@@ -52,6 +53,11 @@ bool Point::operator<(const Point& other) const {
   if (icell_[1] > other.icell_[1]) return false;
   if (icell_[2] < other.icell_[2]) return true;
   return false;
+}
+
+
+size_t icell_hash::operator()(const std::array<int, 3>& icell) const {
+  return serialize_icell(icell.data());
 }
 
 
@@ -117,8 +123,8 @@ static inline void _store_in_cell_map(const int* icell, size_t ibegin, size_t ie
     CellMap* cell_map) {
   // Try to store the new range in the cell_map
   auto emplace_output = cell_map->emplace(
-    std::array<int, 3>{icell[0], icell[1], icell[2]},
-    std::array<size_t, 2>{ibegin, iend});
+    std::array<int, 3>{{icell[0], icell[1], icell[2]}},
+    std::array<size_t, 2>{{ibegin, iend}});
   // If the is already present, the input for create_cell_map was incorrect.
   if (!emplace_output.second) {
     delete cell_map;
