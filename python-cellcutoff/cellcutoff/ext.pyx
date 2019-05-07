@@ -33,7 +33,7 @@ cimport cellcutoff.iterators as iterators
 cimport cellcutoff.wrapping as wrapping
 
 
-__all__ = ['Cell', 'ranges_cutoff', 'create_random_cell', 'BoxSortedPoints',
+__all__ = ['Cell', 'cutoff_ranges', 'create_random_cell', 'BoxSortedPoints',
            'box_cutoff_points']
 
 
@@ -236,7 +236,7 @@ cdef class Cell:
             self._this.iwrap_box(&deltas[i, 0])
 
 
-def ranges_cutoff(Cell cell, np.ndarray[double, ndim=1] center not None, double cutoff):
+def cutoff_ranges(Cell cell, np.ndarray[double, ndim=1] center not None, double cutoff):
     """Get the ranges of periodic images which contain a given cutoff sphere.
 
     This function assumes the space is divided into boxes by crystal planes
@@ -270,7 +270,7 @@ def ranges_cutoff(Cell cell, np.ndarray[double, ndim=1] center not None, double 
     check_array_arg('center', center, (3,))
     cdef np.ndarray[int, ndim=1] ranges_begin = np.zeros(3, np.intc)
     cdef np.ndarray[int, ndim=1] ranges_end = np.zeros(3, np.intc)
-    iterators.ranges_cutoff(cell._this, &center[0], cutoff,
+    iterators.cutoff_ranges(cell._this, &center[0], cutoff,
                             &ranges_begin[0], &ranges_end[0])
     return ranges_begin, ranges_end
 

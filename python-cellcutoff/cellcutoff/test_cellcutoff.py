@@ -25,7 +25,7 @@ import numpy as np
 from numpy.testing import assert_equal, assert_allclose
 from pytest import raises
 
-from cellcutoff import (Cell, ranges_cutoff, create_random_cell,
+from cellcutoff import (Cell, cutoff_ranges, create_random_cell,
                         BoxSortedPoints, box_cutoff_points)
 
 
@@ -171,12 +171,12 @@ def test_iwrap_box_many():
         assert_allclose(delta, np.round(delta), atol=1e-8)
 
 
-def test_ranges_cutoff_simple():
+def test_cutoff_ranges_simple():
     cell = Cell(np.identity(3) * 5.0)
-    ranges_begin, ranges_end = ranges_cutoff(cell, np.array([0.0, 0.0, 0.0]), 4.0)
+    ranges_begin, ranges_end = cutoff_ranges(cell, np.array([0.0, 0.0, 0.0]), 4.0)
     assert_equal(ranges_begin, [-1, -1, -1])
     assert_equal(ranges_end, [1, 1, 1])
-    ranges_begin, ranges_end = ranges_cutoff(cell, np.array([2.5, 2.5, 2.5]), 5.0)
+    ranges_begin, ranges_end = cutoff_ranges(cell, np.array([2.5, 2.5, 2.5]), 5.0)
     assert_equal(ranges_begin, [-1, -1, -1])
     assert_equal(ranges_end, [2, 2, 2])
 
@@ -228,7 +228,7 @@ def test_sorted_points3():
     cell.iwrap_box(my_points)
     my_dds = []
     my_ipoints = []
-    ranges_begin, ranges_end = ranges_cutoff(cell, center, radius)
+    ranges_begin, ranges_end = cutoff_ranges(cell, center, radius)
     for icell0 in range(ranges_begin[0], ranges_end[0]):
         for icell1 in range(ranges_begin[1], ranges_end[1]):
             for icell2 in range(ranges_begin[2], ranges_end[2]):

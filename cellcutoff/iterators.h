@@ -40,6 +40,7 @@
 #include <vector>
 
 #include "cellcutoff/cell.h"
+#include "cellcutoff/sphere_slice.h"
 #include "cellcutoff/decomposition.h"
 
 
@@ -77,7 +78,7 @@ namespace cellcutoff {
     @return
         The number of cells contained in the supercell.
  */
-size_t ranges_cutoff(const Cell* cell, const double* center, const double cutoff,
+size_t cutoff_ranges(const Cell* cell, const double* center, const double cutoff,
     int* ranges_begin, int* ranges_end);
 
 
@@ -114,23 +115,23 @@ size_t ranges_cutoff(const Cell* cell, const double* center, const double cutoff
     @return
         The number bars. The size of the bars vector is `nbar*(nvec+1)`.
  */
-void bars_cutoff(const Cell* cell, const double* center, const double cutoff,
+void cutoff_bars(const Cell* cell, const double* center, const double cutoff,
     std::vector<int>* bars);
 
 
 /** @brief
-        Low-level functions used by bars_cutoff.
+        Low-level functions used by cutoff_bars.
 
     TODO. This method may change in future, so I'm not going to try explaining it in
     detail. This can be fixed after the `sphere_slice` will be completely finalized.
-    (The current implementation sphere_slice and bars_cutoff is good but not optimal.)
+    (The current implementation sphere_slice and cutoff_bars is good but not optimal.)
 
     This method goes recursively through all active cell vectors and divides space along
     this axis in cells that overlap with the cutoff sphere/circle/line, depending on
     the dimension at hand (i.e. the recursion depth). It makes use of the SphereSlice\
     object to find the begin-end range along each cell vector.
  */
-void bars_cutoff_low(const Cell* cell, SphereSlice* slice, int ivec, std::vector<int>* bars);
+void cutoff_bars_low(const Cell* cell, SphereSlice* slice, int ivec, std::vector<int>* bars);
 
 
 
@@ -138,7 +139,7 @@ void bars_cutoff_low(const Cell* cell, SphereSlice* slice, int ivec, std::vector
         Loop over cells that have some overlap with a cutoff sphere.
 
     The cells to loop over must be provided as "bars", which can be generated with the
-    function bars_cutoff. This class is mainly intended for usage by DeltaIterator,
+    function cutoff_bars. This class is mainly intended for usage by DeltaIterator,
     but in rare cases it might also be directly useful.
  */
 class BarIterator {
@@ -147,7 +148,7 @@ class BarIterator {
           Create a BarIterator.
 
       @param bars
-          The output of the function bars_cutoff applied to a subcell.
+          The output of the function cutoff_bars applied to a subcell.
 
       @param nvec
           The number of periodic dimensions. This is needed to interpret the bars argument
@@ -189,7 +190,7 @@ class BarIterator {
     */
   void increment(const int ivec);
 
-  const std::vector<int>& bars_;  //!< Vector produced by bars_cutoff
+  const std::vector<int>& bars_;  //!< Vector produced by cutoff_bars
   const int nvec_;                //!< Number of dimensions encoded in the bars vector
   size_t ibar_;                   //!< Current position in the bars vector
   int* shape_;                    //!< Number of subcells in the periodic cell along each vector
@@ -287,7 +288,7 @@ class DeltaIterator {
   const CellMap& cell_map_;    //!< Segments in sorted points for each cell index
 
   // Internal data
-  std::vector<int> bars_;      //!< A bars vector created with bars_cutoff for subcell
+  std::vector<int> bars_;      //!< A bars vector created with cutoff_bars for subcell
   BarIterator* bar_iterator_;  //!< Bar iterator to loop over subcells
   const Point* point_;         //!< Current point object
   /** @brief
@@ -441,7 +442,7 @@ class BoxCutoffIterator {
   void increment(bool initialization);
 
   const BoxSortedPoints* bsp_;
-  std::vector<int> bars_;      //!< A bars vector created with bars_cutoff for subcell
+  std::vector<int> bars_;      //!< A bars vector created with cutoff_bars for subcell
   BarIterator* bar_iterator_;  //!< Bar iterator to loop over subcells
   double center_[3];
   double radius_;

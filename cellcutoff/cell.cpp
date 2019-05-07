@@ -27,6 +27,7 @@
 #include <vector>
 
 #include "cellcutoff/vec3.h"
+#include "cellcutoff/iterators.h"
 
 
 namespace cellcutoff {
@@ -264,6 +265,17 @@ bool Cell::cuboid() const {
   if (vecs_[6] != 0.0) return false;
   if (vecs_[7] != 0.0) return false;
   return true;
+}
+
+
+size_t Cell::ranges_cutoff(const double* center, const double cutoff, int* ranges_begin,
+    int* ranges_end) const {
+  return cutoff_ranges(this, center, cutoff, ranges_begin, ranges_end);
+}
+
+
+void Cell::bars_cutoff(const double* center, const double cutoff, std::vector<int>* bars) const {
+  cutoff_bars(this, center, cutoff, bars);
 }
 
 

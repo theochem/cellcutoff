@@ -20,5 +20,5 @@
 
 
 from .version import __version__
-from .ext import (Cell, ranges_cutoff, create_random_cell, BoxSortedPoints,
+from .ext import (Cell, cutoff_ranges, create_random_cell, BoxSortedPoints,
                   box_cutoff_points)

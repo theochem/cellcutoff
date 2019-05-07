@@ -46,52 +46,52 @@ class CutoffTest2 : public CellTest2 {};
 class CutoffTest3 : public CellTest3 {};
 
 
-TEST_F(CutoffTest1, ranges_cutoff_example) {
+TEST_F(CutoffTest1, cutoff_ranges_example) {
   double center[3] = {6.3, 0.2, -0.8};
   int ranges_begin[1];
   int ranges_end[1];
   size_t ncell = 0;
-  ncell = ranges_cutoff(mycell.get(), center, 1.0, ranges_begin, ranges_end);
+  ncell = cutoff_ranges(mycell.get(), center, 1.0, ranges_begin, ranges_end);
   EXPECT_EQ(2, ncell);
   EXPECT_EQ(2, ranges_begin[0]);
   EXPECT_EQ(4, ranges_end[0]);
-  ncell = ranges_cutoff(mycell.get(), center, 2.0, ranges_begin, ranges_end);
+  ncell = cutoff_ranges(mycell.get(), center, 2.0, ranges_begin, ranges_end);
   EXPECT_EQ(3, ncell);
   EXPECT_EQ(2, ranges_begin[0]);
   EXPECT_EQ(5, ranges_end[0]);
-  ncell = ranges_cutoff(mycell.get(), center, 3.0, ranges_begin, ranges_end);
+  ncell = cutoff_ranges(mycell.get(), center, 3.0, ranges_begin, ranges_end);
   EXPECT_EQ(4, ncell);
   EXPECT_EQ(1, ranges_begin[0]);
   EXPECT_EQ(5, ranges_end[0]);
 }
 
 
-TEST_F(CutoffTest1, ranges_cutoff_edge) {
+TEST_F(CutoffTest1, cutoff_ranges_edge) {
   double center[3] = {2.0, 0.2, -0.8};
   int ranges_begin[1];
   int ranges_end[1];
   size_t ncell = 0;
-  ncell = ranges_cutoff(mycell.get(), center, 1.0, ranges_begin, ranges_end);
+  ncell = cutoff_ranges(mycell.get(), center, 1.0, ranges_begin, ranges_end);
   EXPECT_EQ(2, ncell);
   EXPECT_EQ(0, ranges_begin[0]);
   EXPECT_EQ(2, ranges_end[0]);
-  ncell = ranges_cutoff(mycell.get(), center, 2.0, ranges_begin, ranges_end);
+  ncell = cutoff_ranges(mycell.get(), center, 2.0, ranges_begin, ranges_end);
   EXPECT_EQ(2, ncell);
   EXPECT_EQ(0, ranges_begin[0]);
   EXPECT_EQ(2, ranges_end[0]);
-  ncell = ranges_cutoff(mycell.get(), center, 3.0, ranges_begin, ranges_end);
+  ncell = cutoff_ranges(mycell.get(), center, 3.0, ranges_begin, ranges_end);
   EXPECT_EQ(4, ncell);
   EXPECT_EQ(-1, ranges_begin[0]);
   EXPECT_EQ(3, ranges_end[0]);
 }
 
 
-TEST_F(CutoffTest2, ranges_cutoff_example) {
+TEST_F(CutoffTest2, cutoff_ranges_example) {
   double center[3] = {6.3, 0.2, -5.0};
   int ranges_begin[2];
   int ranges_end[2];
   size_t ncell = 0;
-  ncell = ranges_cutoff(mycell.get(), center, 1.1, ranges_begin, ranges_end);
+  ncell = cutoff_ranges(mycell.get(), center, 1.1, ranges_begin, ranges_end);
   EXPECT_EQ(2*2, ncell);
   EXPECT_EQ(2, ranges_begin[0]);
   EXPECT_EQ(-2, ranges_begin[1]);
@@ -100,12 +100,12 @@ TEST_F(CutoffTest2, ranges_cutoff_example) {
 }
 
 
-TEST_F(CutoffTest2, ranges_cutoff_edge) {
+TEST_F(CutoffTest2, cutoff_ranges_edge) {
   double center[3] = {4.0, 0.2, -2.0};
   int ranges_begin[2];
   int ranges_end[2];
   size_t ncell = 0;
-  ncell = ranges_cutoff(mycell.get(), center, 2.0, ranges_begin, ranges_end);
+  ncell = cutoff_ranges(mycell.get(), center, 2.0, ranges_begin, ranges_end);
   EXPECT_EQ(2, ncell);
   EXPECT_EQ(1, ranges_begin[0]);
   EXPECT_EQ(-1, ranges_begin[1]);
@@ -114,12 +114,12 @@ TEST_F(CutoffTest2, ranges_cutoff_edge) {
 }
 
 
-TEST_F(CutoffTest3, ranges_cutoff_example) {
+TEST_F(CutoffTest3, cutoff_ranges_example) {
   double center[3] = {6.3, 2.2, -5.8};
   int ranges_begin[3];
   int ranges_end[3];
   size_t ncell = 0;
-  ncell = ranges_cutoff(mycell.get(), center, 1.0, ranges_begin, ranges_end);
+  ncell = cutoff_ranges(mycell.get(), center, 1.0, ranges_begin, ranges_end);
   EXPECT_EQ(2*3*1, ncell);
   EXPECT_EQ(2, ranges_begin[0]);
   EXPECT_EQ(1, ranges_begin[1]);
@@ -130,12 +130,12 @@ TEST_F(CutoffTest3, ranges_cutoff_example) {
 }
 
 
-TEST_F(CutoffTest3, ranges_cutoff_edge) {
+TEST_F(CutoffTest3, cutoff_ranges_edge) {
   double center[3] = {10.0, -2.0, -6.0};
   int ranges_begin[3];
   int ranges_end[3];
   size_t ncell = 0;
-  ncell = ranges_cutoff(mycell.get(), center, 2.0, ranges_begin, ranges_end);
+  ncell = cutoff_ranges(mycell.get(), center, 2.0, ranges_begin, ranges_end);
   EXPECT_EQ(2*4*1, ncell);
   EXPECT_EQ(4, ranges_begin[0]);
   EXPECT_EQ(-4, ranges_begin[1]);
@@ -146,18 +146,18 @@ TEST_F(CutoffTest3, ranges_cutoff_edge) {
 }
 
 
-TEST_P(RangesCutoffTestP, ranges_cutoff_domain) {
+TEST_P(RangesCutoffTestP, cutoff_ranges_domain) {
   double center[3] = {6.3, 2.2, -5.8};
   int ranges_begin[3];
   int ranges_end[3];
-  EXPECT_THROW(ranges_cutoff(mycell.get(), center, -1.0, ranges_begin, ranges_end),
+  EXPECT_THROW(cutoff_ranges(mycell.get(), center, -1.0, ranges_begin, ranges_end),
                std::domain_error);
-  EXPECT_THROW(ranges_cutoff(mycell.get(), center, 0.0, ranges_begin, ranges_end),
+  EXPECT_THROW(cutoff_ranges(mycell.get(), center, 0.0, ranges_begin, ranges_end),
                std::domain_error);
 }
 
 
-TEST_P(RangesCutoffTestP, ranges_cutoff_random) {
+TEST_P(RangesCutoffTestP, cutoff_ranges_random) {
   int npoint_total = 0;
   for (int irep = 0; irep < NREP; ++irep) {
     std::unique_ptr<cl::Cell> cell(create_random_cell(irep));
@@ -166,7 +166,7 @@ TEST_P(RangesCutoffTestP, ranges_cutoff_random) {
     int ranges_end[3];
     double cutoff = 0.3*(irep + 1);
     fill_random_double(irep + 2, center, 3, -5.0, 5.0);
-    ranges_cutoff(cell.get(), center, cutoff, ranges_begin, ranges_end);
+    cutoff_ranges(cell.get(), center, cutoff, ranges_begin, ranges_end);
     for (int ipoint=0; ipoint < NPOINT; ++ipoint) {
       double point[3];
       double norm;
@@ -181,33 +181,41 @@ TEST_P(RangesCutoffTestP, ranges_cutoff_random) {
         ++npoint_total;
       }
     }
+    // Check of the old API, will be removed from 1.0.
+    int ranges_begin_bis[3];
+    int ranges_end_bis[3];
+    cell->ranges_cutoff(center, cutoff, ranges_begin_bis, ranges_end_bis);
+    for (int ivec=0; ivec < nvec; ++ivec) {
+      EXPECT_EQ(ranges_begin[ivec], ranges_begin_bis[ivec]);
+      EXPECT_EQ(ranges_end[ivec], ranges_end_bis[ivec]);
+    }
   }
   // Check sufficiency
   EXPECT_LT((NREP*NPOINT)/3, npoint_total);
 }
 
 
-// bars_cutoff
+// cutoff_bars
 // ~~~~~~~~~~~
 
-TEST_P(BarsCutoffTestP, bars_cutoff_domain) {
+TEST_P(BarsCutoffTestP, cutoff_bars_domain) {
   double center[3] = {2.5, 3.4, -0.6};
   std::vector<int> bars;
-  EXPECT_THROW(bars_cutoff(mycell.get(), center, 0.0, &bars), std::domain_error);
-  EXPECT_THROW(bars_cutoff(mycell.get(), center, -1.0, &bars), std::domain_error);
+  EXPECT_THROW(cutoff_bars(mycell.get(), center, 0.0, &bars), std::domain_error);
+  EXPECT_THROW(cutoff_bars(mycell.get(), center, -1.0, &bars), std::domain_error);
   cl::Cell zero_cell(nullptr, 0);
-  EXPECT_THROW(bars_cutoff(&zero_cell, center, 1.0, &bars), std::domain_error);
+  EXPECT_THROW(cutoff_bars(&zero_cell, center, 1.0, &bars), std::domain_error);
 }
 
 
-TEST_F(CutoffTest1, bars_cutoff_example) {
+TEST_F(CutoffTest1, cutoff_bars_example) {
   // All the parameters
   double cutoff = 5.0;
   double center[3] = {2.5, 3.4, -0.6};
 
   // Call
   std::vector<int> bars;
-  bars_cutoff(mycell.get(), center, cutoff, &bars);
+  cutoff_bars(mycell.get(), center, cutoff, &bars);
   EXPECT_EQ(2, bars.size());
 
   // Check results
@@ -218,14 +226,14 @@ TEST_F(CutoffTest1, bars_cutoff_example) {
 }
 
 
-TEST_F(CutoffTest2, bars_cutoff_example) {
+TEST_F(CutoffTest2, cutoff_bars_example) {
   // All the parameters
   double cutoff = 5.0;
   double center[3] = {2.5, 3.4, -0.6};
 
   // Call
   std::vector<int> bars;
-  bars_cutoff(mycell.get(), center, cutoff, &bars);
+  cutoff_bars(mycell.get(), center, cutoff, &bars);
   EXPECT_EQ((1+6)*2, bars.size());
 
   // Test
@@ -246,14 +254,14 @@ TEST_F(CutoffTest2, bars_cutoff_example) {
 }
 
 
-TEST_F(CutoffTest3, bars_cutoff_example) {
+TEST_F(CutoffTest3, cutoff_bars_example) {
   // All the parameters
   double cutoff = 1.9;
   double center[3] = {2.0, 2.0, 2.0};
 
   // Call
   std::vector<int> bars;
-  bars_cutoff(mycell.get(), center, cutoff, &bars);
+  cutoff_bars(mycell.get(), center, cutoff, &bars);
   EXPECT_EQ((1+1+4+1+4)*2, bars.size());
 
   // Test
@@ -282,7 +290,7 @@ TEST_F(CutoffTest3, bars_cutoff_example) {
 }
 
 
-TEST_P(BarsCutoffTestP, bars_cutoff_random) {
+TEST_P(BarsCutoffTestP, cutoff_bars_random) {
   size_t ncell_total = 0;
   for (int irep = 0; irep < NREP; ++irep) {
     // Test parameters:
@@ -296,7 +304,7 @@ TEST_P(BarsCutoffTestP, bars_cutoff_random) {
 
     // Compute the bars.
     std::vector<int> bars;
-    bars_cutoff(cell.get(), center, cutoff, &bars);
+    cutoff_bars(cell.get(), center, cutoff, &bars);
 
     // Construct a random vector in a cubic box around the cutoff sphere.
     double cart[3];
@@ -339,14 +347,19 @@ TEST_P(BarsCutoffTestP, bars_cutoff_random) {
       //              or the point is outside a non-periodic boundary.
       EXPECT_FALSE(in_sphere);
     }
-    // Clean up
+
+    // Check of the old API, will be removed from 1.0.
+    std::vector<int> bars_bis;
+    cell->bars_cutoff(center, cutoff, &bars_bis);
+    EXPECT_EQ(bars.size(), bars_bis.size());
+    EXPECT_EQ(bars, bars_bis);
   }
   // Sufficiency check
   EXPECT_LE(NREP*((nvec - 1)*3 + 1), ncell_total);
 }
 
 
-TEST_F(CutoffTest1, bars_cutoff_corners) {
+TEST_F(CutoffTest1, cutoff_bars_corners) {
   for (int irep = 0; irep < NREP; ++irep) {
     // Test parameters:
     // - Random cell
@@ -359,7 +372,7 @@ TEST_F(CutoffTest1, bars_cutoff_corners) {
 
     // Compute the bars.
     std::vector<int> bars;
-    bars_cutoff(cell.get(), center, cutoff, &bars);
+    cutoff_bars(cell.get(), center, cutoff, &bars);
     EXPECT_EQ(2, bars.size());
 
     // Check the ranges
@@ -376,7 +389,7 @@ TEST_F(CutoffTest1, bars_cutoff_corners) {
 }
 
 
-TEST_F(CutoffTest2, bars_cutoff_corners) {
+TEST_F(CutoffTest2, cutoff_bars_corners) {
   size_t nbar_total = 0;
   for (int irep = 0; irep < NREP; ++irep) {
     // Test parameters:
@@ -390,7 +403,7 @@ TEST_F(CutoffTest2, bars_cutoff_corners) {
 
     // Compute the bars.
     std::vector<int> bars;
-    bars_cutoff(cell.get(), center, cutoff, &bars);
+    cutoff_bars(cell.get(), center, cutoff, &bars);
     EXPECT_LE(4, bars.size());
     nbar_total += bars.size();
 
@@ -428,7 +441,7 @@ TEST_F(CutoffTest2, bars_cutoff_corners) {
 }
 
 
-TEST_F(CutoffTest3, bars_cutoff_corners) {
+TEST_F(CutoffTest3, cutoff_bars_corners) {
   size_t nbar_total = 0;
   for (int irep = 0; irep < NREP; ++irep) {
     // Test parameters:
@@ -442,7 +455,7 @@ TEST_F(CutoffTest3, bars_cutoff_corners) {
 
     // Compute the bars.
     std::vector<int> bars;
-    bars_cutoff(cell.get(), center, cutoff, &bars);
+    cutoff_bars(cell.get(), center, cutoff, &bars);
     EXPECT_LE(6, bars.size());
     nbar_total += bars.size();
 
@@ -767,7 +780,7 @@ TEST_P(BarIteratorTestP, example_3_random) {
     EXPECT_LT(-1, shape[2]);
 
     std::vector<int> bars;
-    bars_cutoff(subcell.get(), center, cutoff, &bars);
+    cutoff_bars(subcell.get(), center, cutoff, &bars);
     cl::BarIterator bit(bars, 3, shape);
 
     int ibar = 2;

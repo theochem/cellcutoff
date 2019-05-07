@@ -33,8 +33,6 @@
 #include <string>
 #include <vector>
 
-#include "cellcutoff/sphere_slice.h"
-
 
 namespace cellcutoff {
 
@@ -244,6 +242,26 @@ class Cell {
           A pointer to 3 ints with the coefficients of the linear combination.
    */
   void iadd_vec(double* delta, const int* coeffs) const;
+
+  /** @brief
+          Get the ranges of cells within a cutoff radius.
+
+      This member function is deprecated since version 0.3 and will be removed in version
+      1.0. Please use the free function ranges_cutoff from the iterators module instead.
+
+   */
+  size_t ranges_cutoff(const double* center, const double cutoff, int* ranges_begin,
+      int* ranges_end) const;
+
+
+  /** @brief
+          Selects cells inside or at least partially overlapping with a cutoff sphere.
+
+      This member function is deprecated since version 0.3 and will be removed in version
+      1.0. Please use the free function ranges_cutoff from the iterators module instead.
+
+    */
+  void bars_cutoff(const double* center, const double cutoff, std::vector<int>* bars) const;
 
  protected:
   /** @brief

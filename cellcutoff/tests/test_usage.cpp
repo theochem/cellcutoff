@@ -108,10 +108,10 @@ TEST_P(UsageTestP, points_within_cutoff) {
     std::sort(ipoints_bars.begin(), ipoints_bars.end());
 
     // Compute the points within the cutoff in a less efficient way, i.e. using
-    // ranges_cutoff. Results should match.
+    // cutoff_ranges. Results should match.
     int ranges_begin[3]{0, 0, 0};
     int ranges_end[3]{1, 1, 1};
-    size_t ncell = ranges_cutoff(subcell.get(), center, cutoff, ranges_begin, ranges_end);
+    size_t ncell = cutoff_ranges(subcell.get(), center, cutoff, ranges_begin, ranges_end);
     EXPECT_LT(0, ncell);
     std::vector<size_t> ipoints_ranges;
     for (int icell0 = ranges_begin[0]; icell0 < ranges_end[0]; ++icell0) {
@@ -206,10 +206,10 @@ TEST_P(UsageTestP, points_within_cutoff_new_api) {
     EXPECT_EQ(ipoints.size(), deltas.size());
 
     // Compute the points within the cutoff in a less efficient way, i.e. using
-    // ranges_cutoff. Results should match.
+    // cutoff_ranges. Results should match.
     int ranges_begin[3]{0, 0, 0};
     int ranges_end[3]{1, 1, 1};
-    size_t ncell = ranges_cutoff(cell.get(), center, cutoff, ranges_begin, ranges_end);
+    size_t ncell = cutoff_ranges(cell.get(), center, cutoff, ranges_begin, ranges_end);
     EXPECT_LT(0, ncell);
     std::vector<size_t> ipoints_ranges;
     for (size_t ipoint = 0; ipoint < NPOINT; ++ipoint) {

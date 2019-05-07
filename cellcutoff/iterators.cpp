@@ -38,7 +38,7 @@ namespace cellcutoff {
 //
 
 
-size_t ranges_cutoff(const Cell* cell, const double* center, const double cutoff,
+size_t cutoff_ranges(const Cell* cell, const double* center, const double cutoff,
     int* ranges_begin, int* ranges_end) {
   if (cutoff <= 0) {
     throw std::domain_error("cutoff must be strictly positive.");
@@ -60,7 +60,7 @@ size_t ranges_cutoff(const Cell* cell, const double* center, const double cutoff
 }
 
 
-void bars_cutoff(const Cell* cell, const double* center, const double cutoff,
+void cutoff_bars(const Cell* cell, const double* center, const double cutoff,
     std::vector<int>* bars) {
   // Check arguments
   if (cell->nvec() == 0) {
@@ -72,11 +72,11 @@ void bars_cutoff(const Cell* cell, const double* center, const double cutoff,
   // For all the heavy work, a SphereSlice object is used, which precomputes a lot.
   SphereSlice sphere_slice(center, cell->gvecs(), cutoff);
   // Compute bars and return the number of bars
-  bars_cutoff_low(cell, &sphere_slice, 0, bars);
+  cutoff_bars_low(cell, &sphere_slice, 0, bars);
 }
 
 
-void bars_cutoff_low(const Cell* cell, SphereSlice* slice, int ivec, std::vector<int>* bars) {
+void cutoff_bars_low(const Cell* cell, SphereSlice* slice, int ivec, std::vector<int>* bars) {
   // Use SphereSlice object to solve the tedious of problem of finding begin and end.
   double begin_exact = 0.0;
   double end_exact = 0.0;
@@ -94,7 +94,7 @@ void bars_cutoff_low(const Cell* cell, SphereSlice* slice, int ivec, std::vector
       // Define a slice (two cuts) in the sphere.
       slice->set_cut_begin_end(ivec, i, i + 1);
       // Recursive call in which the remaining details of the bar/bars is/are solved.
-      bars_cutoff_low(cell, slice, ivec + 1, bars);
+      cutoff_bars_low(cell, slice, ivec + 1, bars);
     }
   }
 }
@@ -215,7 +215,7 @@ DeltaIterator::DeltaIterator(const Cell& subcell, const int* shape, const double
     std::copy(shape, shape + nvec, shape_);
   }
   // Set up the bar_iterator_
-  bars_cutoff(&subcell_, center_, cutoff_, &bars_);
+  cutoff_bars(&subcell_, center_, cutoff_, &bars_);
   bar_iterator_ = new BarIterator(bars_, nvec, shape_);
   // Prepare first iteration
   increment(true);
@@ -394,7 +394,7 @@ BoxCutoffIterator::BoxCutoffIterator(const BoxSortedPoints* bsp, const double* c
       delta_{NAN, NAN, NAN},
       distance_(NAN) {
   // Create the bars vector, integers that encode the subcell indices to visit.
-  bars_cutoff(bsp_->subcell(), center, radius, &bars_);
+  cutoff_bars(bsp_->subcell(), center, radius, &bars_);
   bar_iterator_ = new BarIterator(bars_, bsp_->subcell()->nvec(), bsp_->shape());
   // Copy center
   vec3::copy(center, center_);

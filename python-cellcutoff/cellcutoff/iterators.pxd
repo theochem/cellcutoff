@@ -22,7 +22,7 @@
 cimport cellcutoff.cell as cell
 
 cdef extern from "cellcutoff/iterators.h" namespace "cellcutoff":
-    size_t ranges_cutoff(const cell.Cell* cell, const double* center,
+    size_t cutoff_ranges(const cell.Cell* cell, const double* center,
         double cutoff, int* ranges_begin, int* ranges_end);
 
     cdef cppclass BoxSortedPoints:
