@@ -324,13 +324,47 @@ size_t serialize_icell(const int i0, const int i1, const int i2) {
 }
 
 
+double sensible_threshold(const double* points, size_t npoint, const Cell* cell) {
+  // Copy the entire cell vector array, including non-periodic vectors.
+  double envelope_vecs[9];
+  std::copy(cell->vecs(), cell->vecs() + 9, envelope_vecs);
+  // Add info for non-periodic dimensions.
+  if (cell->nvec() < 3) {
+    double frac_min[3] {NAN, NAN, NAN};
+    double frac_max[3] {NAN, NAN, NAN};
+    cell->to_frac(points, frac_min);
+    vec3::copy(frac_min, frac_max);
+    for (size_t ipoint=1; ipoint < npoint; ++ipoint) {
+      double frac[3];
+      cell->to_frac(points + 3*ipoint, frac);
+      for (int ivec = cell->nvec(); ivec < 3; ++ivec) {
+        frac_min[ivec] = std::min(frac_min[ivec], frac[ivec]);
+        frac_max[ivec] = std::max(frac_max[ivec], frac[ivec]);
+      }
+    }
+    for (int ivec = cell->nvec(); ivec < 3; ++ivec)
+      vec3::iscale(envelope_vecs + 3*ivec, frac_max[ivec] - frac_min[ivec]);
+  }
+  // Determine the the enveloping cell.
+  Cell envelope_cell(envelope_vecs, 3);
+  // Guestimate the threshold value that results in a number of cells equal to the
+  // square root of the number of points.
+  return std::cbrt(
+    envelope_cell.spacings()[0]*envelope_cell.spacings()[1]*envelope_cell.spacings()[1]/
+    std::sqrt(npoint));
+}
+
+
 BoxSortedPoints::BoxSortedPoints(const double* points, size_t npoint, const Cell* cell,
-    const double threshold)
+    double threshold)
     : points_(nullptr), npoint_(npoint), subcell_(nullptr), shape_{-1, -1, -1},
       ipoints_(nullptr), ranges_() {
   if (npoint == 0) {
     throw std::domain_error("The number of points must be strictly positive.");
   }
+  // Set the threshold to a sensible default if needed
+  if (threshold <= 0.0)
+    threshold = sensible_threshold(points, npoint, cell);
   // Derive the subcell.
   subcell_ = cell->create_subcell(threshold, shape_);
   // Copy wrapped points and assign subcell serials for every point.

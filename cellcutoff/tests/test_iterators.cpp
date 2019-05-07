@@ -966,6 +966,50 @@ TEST(SerializeICell, unique) {
 }
 
 
+// sensible_threshold
+// ~~~~~~~~~~~~~~~~~~
+
+TEST(SensibleThreshold, examples) {
+  for (int irep = 0; irep < NREP; ++irep) {
+    // Random points
+    double points[3*NPOINT];
+    fill_random_double(31 + irep, points, 3*NPOINT, -5.0, 5.0);
+
+    // Non-periodic case
+    cl::Cell cell0;
+    double threshold0(cl::sensible_threshold(points, NPOINT, &cell0));
+    EXPECT_LT(3.0, threshold0);
+    EXPECT_GT(4.0, threshold0);
+    int shape0[3];
+    std::unique_ptr<cl::Cell> subcell0(cell0.create_subcell(threshold0, shape0));
+    EXPECT_EQ(0, shape0[0]);
+    EXPECT_EQ(0, shape0[1]);
+    EXPECT_EQ(0, shape0[2]);
+    EXPECT_TRUE(subcell0->cubic());
+    EXPECT_LT(27.0, subcell0->volume());
+    EXPECT_GT(64.0, subcell0->volume());
+
+    // 1D periodic case
+    std::unique_ptr<cl::Cell> cell1(cl::create_random_cell(irep + 50, 1, 10.0, 0.3));
+    double threshold1(cl::sensible_threshold(points, NPOINT, cell1.get()));
+    EXPECT_LT(2.0, threshold1);
+    EXPECT_GT(5.0, threshold1);
+
+    // 2D periodic case
+    std::unique_ptr<cl::Cell> cell2(cl::create_random_cell(irep + 50, 2, 2.0, 0.3));
+    double threshold2(cl::sensible_threshold(points, NPOINT, cell2.get()));
+    EXPECT_LT(0.0, threshold2);
+    EXPECT_GT(2.0, threshold2);
+
+    // 3D periodic case
+    std::unique_ptr<cl::Cell> cell3(cl::create_random_cell(irep + 50, 3, 5.0, 0.3));
+    double threshold3(cl::sensible_threshold(nullptr, NPOINT, cell3.get()));
+    EXPECT_LT(0.0, threshold3);
+    EXPECT_GT(2.0, threshold3);
+  }
+}
+
+
 // BoxSortedPoints
 // ~~~~~~~~~~~~~~~
 
@@ -1062,7 +1106,8 @@ TEST(BoxSortedPointsTest, random_0) {
     fill_random_double(3157 + irep, points, 3*NPOINT, -5.0, 5.0);
 
     // make sorted points.
-    cl::BoxSortedPoints bsp(points, NPOINT, &cell, 0.6);
+    double threshold(irep % 2 == 0 ? 0.6 : -1.0);
+    cl::BoxSortedPoints bsp(points, NPOINT, &cell, threshold);
 
     // Shape should be three zeros
     EXPECT_EQ(0, bsp.shape()[0]);
@@ -1085,7 +1130,8 @@ TEST(BoxSortedPointsTest, random_1) {
     fill_random_double(31 + irep, points, 3*NPOINT, -5.0, 5.0);
 
     // make sorted points.
-    cl::BoxSortedPoints bsp(points, NPOINT, cell.get(), 0.6);
+    double threshold(irep % 2 == 0 ? 0.6 : -1.0);
+    cl::BoxSortedPoints bsp(points, NPOINT, cell.get(), threshold);
 
     // Check shape
     EXPECT_LT(0, bsp.shape()[0]);
@@ -1124,7 +1170,8 @@ TEST(BoxSortedPointsTest, random_2) {
     fill_random_double(31 + irep, points, 3*NPOINT, -5.0, 5.0);
 
     // make sorted points.
-    cl::BoxSortedPoints bsp(points, NPOINT, cell.get(), 0.6);
+    double threshold(irep % 2 == 0 ? 0.6 : -1.0);
+    cl::BoxSortedPoints bsp(points, NPOINT, cell.get(), threshold);
 
     // Check shape
     EXPECT_LT(0, bsp.shape()[0]);
@@ -1163,7 +1210,8 @@ TEST(BoxSortedPointsTest, random_3) {
     fill_random_double(667 + irep, points, 3*NPOINT, -5.0, 5.0);
 
     // make sorted points
-    cl::BoxSortedPoints bsp(points, NPOINT, cell.get(), 0.2);
+    double threshold(irep % 2 == 0 ? 0.2 : -1.0);
+    cl::BoxSortedPoints bsp(points, NPOINT, cell.get(), threshold);
 
     // Check shape
     EXPECT_LT(0, bsp.shape()[0]);
@@ -1251,7 +1299,7 @@ TEST(BoxCutoffIteratorTest, exception_radius) {
   double vecs[9]{2.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
   cl::Cell cell(vecs, 3);
   const double points[6]{0.0, 0.0, 0.0, 1.0, 0.0, 0.0};
-  cl::BoxSortedPoints bsp(points, 2, &cell, 1.0);
+  cl::BoxSortedPoints bsp(points, 2, &cell);
   const double center[3]{0.0, 0.0, 1.0};
   EXPECT_THROW(new cl::BoxCutoffIterator(&bsp, center, -1.0), std::domain_error);
 }

@@ -311,12 +311,13 @@ def create_random_cell(int seed, int nvec, double scale=10.0,
 
 
 cdef class BoxSortedPoints:
-    def __cinit__(self, np.ndarray[double, ndim=2] points, Cell cell, double threshold):
+    def __cinit__(self, np.ndarray[double, ndim=2] points, Cell cell, double threshold=0.0):
         """C-level constructor, allocates low-level object."""
         check_array_arg('points', points, (-1, 3))
-        self._this = new iterators.BoxSortedPoints(&points[0, 0], points.shape[0], cell._this, threshold)
+        self._this = new iterators.BoxSortedPoints(
+            &points[0, 0], points.shape[0], cell._this, threshold)
 
-    def __init__(self, np.ndarray[double, ndim=2] points, Cell cell, double threshold):
+    def __init__(self, np.ndarray[double, ndim=2] points, Cell cell, double threshold=0.0):
         """Initialize box-sorted points.
 
         Parameters
@@ -326,7 +327,9 @@ cdef class BoxSortedPoints:
         cell
             Description of periodic boundary conditions.
         threshold
-            Maximal spacing between subcell planes.
+            Maximal spacing between subcell planes. When not given or when not
+            zero, a sensible default is determined, which is the recommended
+            usage.
 
         """
         pass

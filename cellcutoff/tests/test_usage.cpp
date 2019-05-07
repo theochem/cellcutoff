@@ -185,7 +185,8 @@ TEST_P(UsageTestP, points_within_cutoff_new_api) {
 
     // Make a SortedPoints object. The spacing argument is optional. We
     // give it a specific value to make sure various scenarios are tested.
-    cl::BoxSortedPoints bsp(points.get(), NPOINT, cell.get(), cutoff*0.2);
+    double threshold(irep % 2 == 0 ? cutoff*0.2 : -1.0);
+    cl::BoxSortedPoints bsp(points.get(), NPOINT, cell.get(), threshold);
 
     // Loop through points within the cutoff and collect for later testing.
     std::vector<size_t> ipoints;

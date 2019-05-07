@@ -336,6 +336,25 @@ size_t serialize_icell(const int* icell);
  */
 size_t serialize_icell(const int i0, const int i1, const int i2);
 
+
+/** @brief
+        Estimate a suitable threshold for binning the points into subcells.
+
+    @param points
+        C-contigiuous array of 3D Cartesian coordinates.
+
+    @param npoint
+        Number of points.
+
+    @param cell
+        Describing the periodic boundary conditions, if any.
+
+    @return threshold
+        The maximum distance between subsequent subcell planes.
+ */
+double sensible_threshold(const double* points, size_t npoint, const Cell* cell);
+
+
 /** @brief
         Sort points and construct iterators over points within cutoff. Added in version 0.3.
   */
@@ -357,10 +376,13 @@ class BoxSortedPoints {
           Describing the periodic boundary conditions, if any.
 
       @param threshold
-          The maximum spacing between opposite faces of the subcell.
+          The maximum spacing between opposite faces of the subcell. When not given or
+          when not positive, a sensible default threshold is determined, which is the
+          recommended usage.
 
    */
-  BoxSortedPoints(const double* points, size_t npoint, const Cell* cell, const double threshold);
+  BoxSortedPoints(const double* points, size_t npoint, const Cell* cell,
+    double threshold = 0.0);
   //! Destruct a BoxSortedPoints
   ~BoxSortedPoints();
 

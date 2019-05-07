@@ -209,7 +209,7 @@ def test_sorted_points3():
     cell = create_random_cell(10.0, 3, 3.0)
     with seed(10):
         points = np.random.uniform(-30, 30, (500, 3))
-    bsp = BoxSortedPoints(points, cell, 1.0)
+    bsp = BoxSortedPoints(points, cell)
     assert bsp.points.shape == points.shape
     # pylint false alarm
     # pylint: disable=unsubscriptable-object
